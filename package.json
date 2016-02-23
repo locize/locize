@@ -1,0 +1,50 @@
+{
+  "name": "locize",
+  "version": "0.0.1",
+  "description": "locize service",
+  "main": "./lib/index.js",
+  "keywords": [
+    "locize",
+    "i18next-service",
+    "translation",
+    "localization as a service"
+  ],
+  "homepage": "https://github.com/locize/locize",
+  "bugs": "https://github.com/locize/locize/issues",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/locize/locize.git"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "babel-cli": "6.0.0",
+    "babel-core": "6.4.5",
+    "babel-eslint": "5.0.0-beta6",
+    "babel-preset-es2015": "6.3.13",
+    "babel-preset-stage-0": "6.3.13",
+    "babel-register": "6.4.3",
+    "babelify": "7.2.0",
+    "browserify": "13.0.0",
+    "chai": "3.5.0",
+    "coveralls": "2.11.6",
+    "eslint": "1.10.3",
+    "i18next": "2.0.26",
+    "isparta": "4.0.0",
+    "mocha": "2.4.5",
+    "uglifyify": "3.0.1"
+  },
+  "scripts": {
+    "tdd": "mocha test/*.js --compilers js:babel-register --watch",
+    "test": "mocha test/*.js --compilers js:babel-register",
+    "coverage": "babel-node node_modules/.bin/isparta cover _mocha",
+    "coveralls": "npm run coverage && coveralls < coverage/lcov.info",
+    "transpile": "babel src -d lib",
+    "browserify": "browserify ./src/index.js --outfile ./bin/index.js -g uglifyify -t babelify -s locize",
+    "copy": "cp ./bin/index.js ./locize.min.js",
+    "build": "npm run transpile && npm run browserify && npm run copy",
+    "version": "npm run build",
+    "postversion": "git push && git push --tags"
+  },
+  "author": "Jan Mühlemann <jan.muehlemann@gmail.com> (https://github.com/jamuhl)",
+  "license": "MIT"
+}
