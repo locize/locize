@@ -15,7 +15,10 @@
     "type": "git",
     "url": "git://github.com/locize/locize.git"
   },
-  "dependencies": {},
+  "dependencies": {
+    "i18next": "2.2.0",
+    "i18next-locize-backend": "0.0.1"
+  },
   "devDependencies": {
     "babel-cli": "6.0.0",
     "babel-core": "6.4.5",
@@ -41,7 +44,7 @@
     "transpile": "babel src -d lib",
     "browserify": "browserify ./src/index.js --outfile ./bin/index.js -g uglifyify -t babelify -s locize",
     "copy": "cp ./bin/index.js ./locize.min.js",
-    "build": "npm run transpile && npm run browserify && npm run copy",
+    "build": "npm run transpile && npm run browserify && npm run copy && git commit -a -m 'updated build output'",
     "version": "npm run build",
     "postversion": "git push && git push --tags"
   },
