@@ -1,6 +1,6 @@
 {
   "name": "locize",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "locize service",
   "main": "./lib/index.js",
   "keywords": [
@@ -44,7 +44,6 @@
     "browserify": "browserify ./src/index.js --outfile ./bin/index.js -g uglifyify -t babelify -s locize",
     "copy": "cp ./bin/index.js ./locize.min.js",
     "build": "npm run transpile && npm run browserify && npm run copy && git commit -a -m 'updated build output' && git push"
-
   },
   "author": "Jan Mühlemann <jan.muehlemann@gmail.com> (https://github.com/jamuhl)",
   "license": "MIT"
