@@ -43,9 +43,8 @@
     "transpile": "babel src -d lib",
     "browserify": "browserify ./src/index.js --outfile ./bin/index.js -g uglifyify -t babelify -s locize",
     "copy": "cp ./bin/index.js ./locize.min.js",
-    "build": "npm run transpile && npm run browserify && npm run copy && git commit -a -m 'updated build output' && git push",
-    "version": "npm run build",
-    "postversion": "git push && git push --tags"
+    "build": "npm run transpile && npm run browserify && npm run copy && git commit -a -m 'updated build output' && git push"
+
   },
   "author": "Jan Mühlemann <jan.muehlemann@gmail.com> (https://github.com/jamuhl)",
   "license": "MIT"
