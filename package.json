@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "i18next": "2.3.0",
-    "i18next-locize-backend": "0.0.1"
+    "i18next-locize-backend": "0.1.0"
   },
   "devDependencies": {
     "babel-cli": "6.6.5",
