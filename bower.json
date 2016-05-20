@@ -8,6 +8,7 @@
     "src/",
     "bin/",
     "coverage/",
+    "deployment/",
     ".babelrc",
     ".gitignore",
     ".editorconfig",
