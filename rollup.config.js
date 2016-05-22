@@ -28,6 +28,6 @@ export default {
     commonjs()
   ].concat(compress ? uglify() : []),
   moduleName: 'locize',
-  moduleId: 'locize',
+  // moduleId: 'locize',
   dest
 };
