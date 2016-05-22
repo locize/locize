@@ -1,6 +1,6 @@
 {
   "name": "locize",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "locize service",
   "main": "dist/commonjs/index.js",
   "jsnext:main": "dist/es/index.js",
