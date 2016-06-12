@@ -2095,6 +2095,7 @@
 	function getDefaults() {
 	  return {
 	    loadPath: 'https://api.locize.io/{{projectId}}/{{version}}/{{lng}}/{{ns}}',
+	    getLanguagesPath: 'https://api.locize.io/languages/{{projectId}}',
 	    addPath: 'https://api.locize.io/missing/{{projectId}}/{{version}}/{{lng}}/{{ns}}',
 	    referenceLng: 'en',
 	    crossDomain: true,
@@ -2125,6 +2126,13 @@
 	      this.debouncedWrite = debounce(this.write, 10000);
 	    }
 	  }, {
+	    key: 'getLanguages',
+	    value: function getLanguages(callback) {
+	      var url = this.services.interpolator.interpolate(this.options.getLanguagesPath, { projectId: this.options.projectId });
+
+	      this.loadUrl(url, callback);
+	    }
+	  }, {
 	    key: 'read',
 	    value: function read(language, namespace, callback) {
 	      var url = this.services.interpolator.interpolate(this.options.loadPath, { lng: language, ns: namespace, projectId: this.options.projectId, version: this.options.version });
@@ -2135,9 +2143,8 @@
 	    key: 'loadUrl',
 	    value: function loadUrl(url, callback) {
 	      ajax(url, this.options, function (data, xhr) {
-	        var statusCode = xhr.status.toString();
-	        if (statusCode.indexOf('5') === 0) return callback('failed loading ' + url, true /* retry */);
-	        if (statusCode.indexOf('4') === 0) return callback('failed loading ' + url, false /* no retry */);
+	        if (xhr.status >= 500 && xhr.status < 600) return callback('failed loading ' + url, true /* retry */);
+	        if (xhr.status >= 400 && xhr.status < 500) return callback('failed loading ' + url, false /* no retry */);
 
 	        var ret = void 0,
 	            err = void 0;
@@ -2494,6 +2501,21 @@
 	var originalInit = i18next.init;
 	i18next.init = function (options, callback) {
 	  originalInit.call(i18next, babelHelpers.extends({}, defaults, options, enforce), callback);
+	};
+
+	i18next.getLanguages = function (callback) {
+	  if (i18next.services.backendConnector) {
+	    i18next.services.backendConnector.backend.getLanguages(callback);
+	  } else {
+	    (function () {
+	      var ready = function ready() {
+	        i18next.off('initialized', ready);
+	        i18next.services.backendConnector.backend.getLanguages(callback);
+	      };
+
+	      i18next.on('initialized', ready);
+	    })();
+	  }
 	};
 
 	return i18next;

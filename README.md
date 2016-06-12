@@ -49,3 +49,25 @@ For more information visit the i18next website:
 - [Translation Functionality](http://i18next.com/translate/)
 - [API](http://i18next.com/docs/api/)
 - [Migration Guide from v1.11.x](http://i18next.com/docs/migration/)
+
+## Get project languages
+
+To build some dynamic language selector you can load the available languages:
+
+```js
+locize.getLanguages(function(err, lngs) {
+  console.warn(lngs);
+});
+
+// returns something like
+{
+  "en": {
+    "name": "English",
+    "nativeName": "English"
+  },
+  "de": {
+    "name": "German",
+    "nativeName": "Deutsch"
+  }
+}
+```
