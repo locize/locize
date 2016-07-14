@@ -4,24 +4,6 @@
 	(global.locize = factory());
 }(this, function () { 'use strict';
 
-	var babelHelpers = {};
-
-	babelHelpers.extends = Object.assign || function (target) {
-	  for (var i = 1; i < arguments.length; i++) {
-	    var source = arguments[i];
-
-	    for (var key in source) {
-	      if (Object.prototype.hasOwnProperty.call(source, key)) {
-	        target[key] = source[key];
-	      }
-	    }
-	  }
-
-	  return target;
-	};
-
-	babelHelpers;
-
 	var _extends$1 = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 	function _classCallCheck$1(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -750,7 +732,7 @@
 	    // interpolate
 	    var data = options.replace && typeof options.replace !== 'string' ? options.replace : options;
 	    if (this.options.interpolation.defaultVariables) data = _extends$3({}, this.options.interpolation.defaultVariables, data);
-	    res = this.interpolator.interpolate(res, data);
+	    res = this.interpolator.interpolate(res, data, this.language);
 
 	    // nesting
 	    res = this.interpolator.nest(res, function () {
@@ -902,8 +884,10 @@
 	    }
 	  };
 
-	  LanguageUtil.prototype.isWhitelisted = function isWhitelisted(code) {
-	    if (this.options.load === 'languageOnly') code = this.getLanguagePartFromCode(code);
+	  LanguageUtil.prototype.isWhitelisted = function isWhitelisted(code, exactMatch) {
+	    if (this.options.load === 'languageOnly' || this.options.nonExplicitWhitelist && !exactMatch) {
+	      code = this.getLanguagePartFromCode(code);
+	    }
 	    return !this.whitelist || !this.whitelist.length || this.whitelist.indexOf(code) > -1 ? true : false;
 	  };
 
@@ -915,7 +899,9 @@
 
 	    var codes = [];
 	    var addCode = function addCode(code) {
-	      if (_this.isWhitelisted(code)) {
+	      var exactMatch = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+	      if (_this.isWhitelisted(code, exactMatch)) {
 	        codes.push(code);
 	      } else {
 	        _this.logger.warn('rejecting non-whitelisted language code: ' + code);
@@ -923,7 +909,7 @@
 	    };
 
 	    if (typeof code === 'string' && code.indexOf('-') > -1) {
-	      if (this.options.load !== 'languageOnly') addCode(this.formatLanguageCode(code));
+	      if (this.options.load !== 'languageOnly') addCode(this.formatLanguageCode(code), true);
 	      if (this.options.load !== 'currentOnly') addCode(this.getLanguagePartFromCode(code));
 	    } else if (typeof code === 'string') {
 	      addCode(this.formatLanguageCode(code));
@@ -1144,7 +1130,12 @@
 	    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 	    var reset = arguments[1];
 
-	    if (reset) this.options = options;
+	    if (reset) {
+	      this.options = options;
+	      this.format = options.interpolation && options.interpolation.format || function (value) {
+	        return value;
+	      };
+	    }
 	    if (!options.interpolation) options.interpolation = { escapeValue: true };
 
 	    var iOpts = options.interpolation;
@@ -1153,6 +1144,7 @@
 
 	    this.prefix = iOpts.prefix ? regexEscape(iOpts.prefix) : iOpts.prefixEscaped || '{{';
 	    this.suffix = iOpts.suffix ? regexEscape(iOpts.suffix) : iOpts.suffixEscaped || '}}';
+	    this.formatSeparator = iOpts.formatSeparator ? regexEscape(iOpts.formatSeparator) : iOpts.formatSeparator || ',';
 
 	    this.unescapePrefix = iOpts.unescapeSuffix ? '' : iOpts.unescapePrefix || '-';
 	    this.unescapeSuffix = this.unescapePrefix ? '' : iOpts.unescapeSuffix || '';
@@ -1175,7 +1167,9 @@
 	    if (this.options) this.init(this.options);
 	  };
 
-	  Interpolator.prototype.interpolate = function interpolate(str, data) {
+	  Interpolator.prototype.interpolate = function interpolate(str, data, lng) {
+	    var _this = this;
+
 	    var match = void 0,
 	        value = void 0;
 
@@ -1183,15 +1177,26 @@
 	      return val.replace(/\$/g, '$$$$');
 	    }
 
+	    var handleFormat = function handleFormat(key) {
+	      if (key.indexOf(_this.formatSeparator) < 0) return getPath(data, key);
+
+	      var p = key.split(_this.formatSeparator);
+	      var k = p.shift().trim();
+	      var f = p.join(_this.formatSeparator).trim();
+
+	      return _this.format(getPath(data, k), f, lng);
+	    };
+
 	    // unescape if has unescapePrefix/Suffix
 	    while (match = this.regexpUnescape.exec(str)) {
-	      var _value = getPath(data, match[1].trim());
+	      var _value = handleFormat(match[1].trim());
 	      str = str.replace(match[0], _value);
+	      this.regexpUnescape.lastIndex = 0;
 	    }
 
 	    // regular escape on demand
 	    while (match = this.regexp.exec(str)) {
-	      value = getPath(data, match[1].trim());
+	      value = handleFormat(match[1].trim());
 	      if (typeof value !== 'string') value = makeString(value);
 	      if (!value) {
 	        this.logger.warn('missed to pass in variable ' + match[1] + ' for interpolating ' + str);
@@ -1455,7 +1460,7 @@
 	    // load one by one
 	    else {
 	        (function () {
-	          var read = function read(name) {
+	          var readOne = function readOne(name) {
 	            var _this6 = this;
 
 	            var _name$split5 = name.split('|');
@@ -1477,7 +1482,72 @@
 	          ;
 
 	          toLoad.toLoad.forEach(function (name) {
-	            read.call(_this5, name);
+	            readOne.call(_this5, name);
+	          });
+	        })();
+	      }
+	  };
+
+	  Connector.prototype.reload = function reload(languages, namespaces) {
+	    var _this7 = this;
+
+	    if (!this.backend) {
+	      this.logger.warn('No backend was added via i18next.use. Will not load resources.');
+	    }
+	    var options = _extends$4({}, this.backend.options, this.options.backend);
+
+	    if (typeof languages === 'string') languages = this.services.languageUtils.toResolveHierarchy(languages);
+	    if (typeof namespaces === 'string') namespaces = [namespaces];
+
+	    // load with multi-load
+	    if (options.allowMultiLoading && this.backend.readMulti) {
+	      this.read(languages, namespaces, 'readMulti', null, null, function (err, data) {
+	        if (err) _this7.logger.warn('reloading namespaces ' + namespaces.join(', ') + ' for languages ' + languages.join(', ') + ' via multiloading failed', err);
+	        if (!err && data) _this7.logger.log('reloaded namespaces ' + namespaces.join(', ') + ' for languages ' + languages.join(', ') + ' via multiloading', data);
+
+	        languages.forEach(function (l) {
+	          namespaces.forEach(function (n) {
+	            var bundle = getPath(data, [l, n]);
+	            if (bundle) {
+	              _this7.loaded(l + '|' + n, err, bundle);
+	            } else {
+	              var _err2 = 'reloading namespace ' + n + ' for language ' + l + ' via multiloading failed';
+	              _this7.loaded(l + '|' + n, _err2);
+	              _this7.logger.error(_err2);
+	            }
+	          });
+	        });
+	      });
+	    }
+
+	    // load one by one
+	    else {
+	        (function () {
+	          var readOne = function readOne(name) {
+	            var _this8 = this;
+
+	            var _name$split7 = name.split('|');
+
+	            var _name$split8 = _slicedToArray(_name$split7, 2);
+
+	            var lng = _name$split8[0];
+	            var ns = _name$split8[1];
+
+
+	            this.read(lng, ns, 'read', null, null, function (err, data) {
+	              if (err) _this8.logger.warn('reloading namespace ' + ns + ' for language ' + lng + ' failed', err);
+	              if (!err && data) _this8.logger.log('reloaded namespace ' + ns + ' for language ' + lng, data);
+
+	              _this8.loaded(name, err, data);
+	            });
+	          };
+
+	          ;
+
+	          languages.forEach(function (l) {
+	            namespaces.forEach(function (n) {
+	              readOne.call(_this7, l + '|' + n);
+	            });
 	          });
 	        })();
 	      }
@@ -1570,6 +1640,7 @@
 	    fallbackNS: false, // string or array of namespaces
 
 	    whitelist: false, // array with whitelisted languages
+	    nonExplicitWhitelist: false,
 	    load: 'all', // | currentOnly | languageOnly
 	    preload: false, // array with preload languages
 
@@ -1596,8 +1667,12 @@
 
 	    interpolation: {
 	      escapeValue: true,
+	      format: function format(value, _format, lng) {
+	        return value;
+	      },
 	      prefix: '{{',
 	      suffix: '}}',
+	      formatSeparator: ',',
 	      // prefixEscaped: '{{',
 	      // suffixEscaped: '}}',
 	      // unescapeSuffix: '',
@@ -1807,6 +1882,12 @@
 	    } else {
 	      callback(null);
 	    }
+	  };
+
+	  I18n.prototype.reloadResources = function reloadResources(lngs, ns) {
+	    if (!lngs) lngs = this.languages;
+	    if (!ns) ns = this.options.ns;
+	    this.services.backendConnector.reload(lngs, ns);
 	  };
 
 	  I18n.prototype.use = function use(module) {
@@ -2487,6 +2568,20 @@
 
 	Browser.type = 'languageDetector';
 
+	var _extends$7 = Object.assign || function (target) {
+	  for (var i = 1; i < arguments.length; i++) {
+	    var source = arguments[i];
+
+	    for (var key in source) {
+	      if (Object.prototype.hasOwnProperty.call(source, key)) {
+	        target[key] = source[key];
+	      }
+	    }
+	  }
+
+	  return target;
+	};
+
 	i18next.use(Backend).use(Browser);
 
 	var enforce = {
@@ -2500,7 +2595,7 @@
 	// override init
 	var originalInit = i18next.init;
 	i18next.init = function (options, callback) {
-	  originalInit.call(i18next, babelHelpers.extends({}, defaults, options, enforce), callback);
+	  originalInit.call(i18next, _extends$7({}, defaults, options, enforce), callback);
 	};
 
 	i18next.getLanguages = function (callback) {
