@@ -25,13 +25,6 @@ import locize from 'locize';
 
 locize.init({
   lng: 'en',
-  resources: {
-    en: {
-      translation: {
-        "key": "hello world"
-      }
-    }
-  },
   backend: {
     projectId: '[PROJECT_ID]',
     apiKey: '[API_KEY]',
