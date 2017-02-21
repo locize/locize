@@ -31,7 +31,6 @@ var Logger = function () {
 
     _classCallCheck$1(this, Logger);
 
-    this.subs = [];
     this.init(concreteLogger, options);
   }
 
@@ -46,9 +45,6 @@ var Logger = function () {
 
   Logger.prototype.setDebug = function setDebug(bool) {
     this.debug = bool;
-    this.subs.forEach(function (sub) {
-      sub.setDebug(bool);
-    });
   };
 
   Logger.prototype.log = function log() {
@@ -75,7 +71,6 @@ var Logger = function () {
 
   Logger.prototype.create = function create(moduleName) {
     var sub = new Logger(this.logger, _extends$2({ prefix: this.prefix + ':' + moduleName + ':' }, this.options));
-    this.subs.push(sub);
 
     return sub;
   };
@@ -134,13 +129,15 @@ var EventEmitter = function () {
 		}
 
 		if (this.observers[event]) {
-			this.observers[event].forEach(function (observer) {
+			var cloned = [].concat(this.observers[event]);
+			cloned.forEach(function (observer) {
 				observer.apply(undefined, args);
 			});
 		}
 
 		if (this.observers['*']) {
-			this.observers['*'].forEach(function (observer) {
+			var _cloned = [].concat(this.observers['*']);
+			_cloned.forEach(function (observer) {
 				var _ref;
 
 				observer.apply(observer, (_ref = [event]).concat.apply(_ref, args));
@@ -445,8 +442,8 @@ function convertAPIOptions(options) {
   options.parseMissingKeyHandler = options.parseMissingKey;
   options.appendNamespaceToMissingKey = true;
 
-  options.nsSeparator = options.nsseparator;
-  options.keySeparator = options.keyseparator;
+  options.nsSeparator = options.nsseparator || ':';
+  options.keySeparator = options.keyseparator || '.';
 
   if (options.shortcutFunction === 'sprintf') {
     options.overloadTranslationOptionHandler = function (args) {
@@ -591,12 +588,13 @@ var Translator = function (_EventEmitter) {
   Translator.prototype.extractFromKey = function extractFromKey(key, options) {
     var nsSeparator = options.nsSeparator || this.options.nsSeparator;
     if (nsSeparator === undefined) nsSeparator = ':';
+    var keySeparator = options.keySeparator || this.options.keySeparator || '.';
 
     var namespaces = options.ns || this.options.defaultNS;
     if (nsSeparator && key.indexOf(nsSeparator) > -1) {
       var parts = key.split(nsSeparator);
-      namespaces = parts[0];
-      key = parts[1];
+      if (nsSeparator !== keySeparator || nsSeparator === keySeparator && this.options.ns.indexOf(parts[0]) > -1) namespaces = parts.shift();
+      key = parts.join(keySeparator);
     }
     if (typeof namespaces === 'string') namespaces = [namespaces];
 
@@ -620,10 +618,6 @@ var Translator = function (_EventEmitter) {
     if (typeof keys === 'number') keys = String(keys);
     if (typeof keys === 'string') keys = [keys];
 
-    // return key on CIMode
-    var lng = options.lng || this.language;
-    if (lng && lng.toLowerCase() === 'cimode') return keys[keys.length - 1];
-
     // separators
     var keySeparator = options.keySeparator || this.options.keySeparator || '.';
 
@@ -634,6 +628,18 @@ var Translator = function (_EventEmitter) {
         namespaces = _extractFromKey.namespaces;
 
     var namespace = namespaces[namespaces.length - 1];
+
+    // return key on CIMode
+    var lng = options.lng || this.language;
+    var appendNamespaceToCIMode = options.appendNamespaceToCIMode || this.options.appendNamespaceToCIMode;
+    if (lng && lng.toLowerCase() === 'cimode') {
+      if (appendNamespaceToCIMode) {
+        var nsSeparator = options.nsSeparator || this.options.nsSeparator;
+        return namespace + nsSeparator + key;
+      }
+
+      return key;
+    }
 
     // resolve from store
     var res = this.resolve(keys, options);
@@ -649,12 +655,16 @@ var Translator = function (_EventEmitter) {
         return this.options.returnedObjectHandler ? this.options.returnedObjectHandler(key, res, options) : 'key \'' + key + ' (' + this.language + ')\' returned an object instead of string.';
       }
 
-      var copy$$1 = resType === '[object Array]' ? [] : {}; // apply child translation on a copy
+      // if we got a separator we loop over children - else we just return object as is
+      // as having it set to false means no hierarchy so no lookup for nested values
+      if (options.keySeparator || this.options.keySeparator) {
+        var copy$$1 = resType === '[object Array]' ? [] : {}; // apply child translation on a copy
 
-      for (var m in res) {
-        copy$$1[m] = this.translate('' + key + keySeparator + m, _extends$4({ joinArrays: false, ns: namespaces }, options));
+        for (var m in res) {
+          copy$$1[m] = this.translate('' + key + keySeparator + m, _extends$4({ joinArrays: false, ns: namespaces }, options));
+        }
+        res = copy$$1;
       }
-      res = copy$$1;
     }
     // array special treatment
     else if (joinArrays && resType === '[object Array]') {
@@ -837,16 +847,8 @@ var LanguageUtil = function () {
     this.logger = baseLogger.create('languageUtils');
   }
 
-  LanguageUtil.prototype.getLanguagePartFromCode = function getLanguagePartFromCode(code) {
-    if (code.indexOf('-') < 0) return code;
-
-    var specialCases = ['NB-NO', 'NN-NO', 'nb-NO', 'nn-NO', 'nb-no', 'nn-no'];
-    var p = code.split('-');
-    return this.formatLanguageCode(specialCases.indexOf(code) > -1 ? p[1].toLowerCase() : p[0]);
-  };
-
   LanguageUtil.prototype.getScriptPartFromCode = function getScriptPartFromCode(code) {
-    if (code.indexOf('-') < 0) return null;
+    if (!code || code.indexOf('-') < 0) return null;
 
     var p = code.split('-');
     if (p.length === 2) return null;
@@ -855,11 +857,10 @@ var LanguageUtil = function () {
   };
 
   LanguageUtil.prototype.getLanguagePartFromCode = function getLanguagePartFromCode(code) {
-    if (code.indexOf('-') < 0) return code;
+    if (!code || code.indexOf('-') < 0) return code;
 
-    var specialCases = ['NB-NO', 'NN-NO', 'nb-NO', 'nn-NO', 'nb-no', 'nn-no'];
     var p = code.split('-');
-    return this.formatLanguageCode(specialCases.indexOf(code) > -1 ? p[1].toLowerCase() : p[0]);
+    return this.formatLanguageCode(p[0]);
   };
 
   LanguageUtil.prototype.formatLanguageCode = function formatLanguageCode(code) {
@@ -905,6 +906,8 @@ var LanguageUtil = function () {
     if (!fallbacks) return [];
     if (typeof fallbacks === 'string') fallbacks = [fallbacks];
     if (Object.prototype.toString.apply(fallbacks) === '[object Array]') return fallbacks;
+
+    if (!code) return fallbacks.default || [];
 
     // asume we have an object defining fallbacks
     var found = fallbacks[code];
@@ -1134,6 +1137,8 @@ var PluralResolver = function () {
   return PluralResolver;
 }();
 
+var _extends$5 = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 function _classCallCheck$7(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Interpolator = function () {
@@ -1244,14 +1249,9 @@ var Interpolator = function () {
     var match = void 0,
         value = void 0;
 
-    var clonedOptions = JSON.parse(JSON.stringify(options));
+    var clonedOptions = _extends$5({}, options);
     clonedOptions.applyPostProcessor = false; // avoid post processing on nested lookup
 
-    function regexSafe(val) {
-      return val.replace(/\$/g, '$$$$');
-    }
-
-    // if value is something like "myKey": "lorem $(anotherKey, { "count": {{aValueInOptions}} })"
     function handleHasOptions(key) {
       if (key.indexOf(',') < 0) return key;
 
@@ -1278,7 +1278,8 @@ var Interpolator = function () {
         this.logger.warn('missed to pass in variable ' + match[1] + ' for interpolating ' + str);
         value = '';
       }
-      value = this.escapeValue ? regexSafe(escape(value)) : regexSafe(value);
+      // Nested keys should not be escaped by default #854
+      // value = this.escapeValue ? regexSafe(utils.escape(value)) : regexSafe(value);
       str = str.replace(match[0], value);
       this.regexp.lastIndex = 0;
     }
@@ -1288,7 +1289,7 @@ var Interpolator = function () {
   return Interpolator;
 }();
 
-var _extends$5 = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+var _extends$6 = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -1300,7 +1301,7 @@ function _possibleConstructorReturn$3(self, call) { if (!self) { throw new Refer
 
 function _inherits$3(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults$3(subClass, superClass); }
 
-function remove$1(arr, what) {
+function remove(arr, what) {
   var found = arr.indexOf(what);
 
   while (found !== -1) {
@@ -1403,13 +1404,13 @@ var Connector = function (_EventEmitter) {
     // callback if ready
     this.queue.forEach(function (q) {
       pushPath(q.loaded, [lng], ns);
-      remove$1(q.pending, name);
+      remove(q.pending, name);
 
       if (err) q.errors.push(err);
 
       if (q.pending.length === 0 && !q.done) {
-        q.errors.length ? q.callback(q.errors) : q.callback();
         _this3.emit('loaded', q.loaded);
+        q.errors.length ? q.callback(q.errors) : q.callback();
         q.done = true;
       }
     });
@@ -1446,7 +1447,7 @@ var Connector = function (_EventEmitter) {
       this.logger.warn('No backend was added via i18next.use. Will not load resources.');
       return callback && callback();
     }
-    var options = _extends$5({}, this.backend.options, this.options.backend);
+    var options = _extends$6({}, this.backend.options, this.options.backend);
 
     if (typeof languages === 'string') languages = this.services.languageUtils.toResolveHierarchy(languages);
     if (typeof namespaces === 'string') namespaces = [namespaces];
@@ -1515,7 +1516,7 @@ var Connector = function (_EventEmitter) {
     if (!this.backend) {
       this.logger.warn('No backend was added via i18next.use. Will not load resources.');
     }
-    var options = _extends$5({}, this.backend.options, this.options.backend);
+    var options = _extends$6({}, this.backend.options, this.options.backend);
 
     if (typeof languages === 'string') languages = this.services.languageUtils.toResolveHierarchy(languages);
     if (typeof namespaces === 'string') namespaces = [namespaces];
@@ -1582,7 +1583,7 @@ var Connector = function (_EventEmitter) {
   return Connector;
 }(EventEmitter);
 
-var _extends$6 = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+var _extends$7 = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 function _defaults$4(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
 
@@ -1616,7 +1617,7 @@ var Connector$1 = function (_EventEmitter) {
     var _this2 = this;
 
     if (!this.cache) return callback && callback();
-    var options = _extends$6({}, this.cache.options, this.options.cache);
+    var options = _extends$7({}, this.cache.options, this.options.cache);
 
     if (typeof languages === 'string') languages = this.services.languageUtils.toResolveHierarchy(languages);
     if (typeof namespaces === 'string') namespaces = [namespaces];
@@ -1679,6 +1680,7 @@ function get() {
     returnedObjectHandler: function returnedObjectHandler() {}, // function(key, value, options) triggered if key returns object but returnObjects is set to false
     parseMissingKeyHandler: false, // function(key) parsed a key that was not found in t() before returning
     appendNamespaceToMissingKey: false,
+    appendNamespaceToCIMode: false,
     overloadTranslationOptionHandler: function overloadTranslationOptionHandler(args) {
       return { defaultValue: args[1] };
     },
@@ -1729,6 +1731,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults(subClass, superClass); }
 
+function noop() {}
+
 var I18n = function (_EventEmitter) {
   _inherits(I18n, _EventEmitter);
 
@@ -1745,7 +1749,7 @@ var I18n = function (_EventEmitter) {
     _this.logger = baseLogger;
     _this.modules = {};
 
-    if (callback && !_this.isInitialized) _this.init(options, callback);
+    if (callback && !_this.isInitialized && !options.isClone) _this.init(options, callback);
     return _this;
   }
 
@@ -1765,7 +1769,7 @@ var I18n = function (_EventEmitter) {
     } else {
       this.options = _extends$1({}, get(), this.options, transformOptions(options));
     }
-    if (!callback) callback = function callback() {};
+    if (!callback) callback = noop;
 
     function createClassOnDemand(ClassOrObject) {
       if (!ClassOrObject) return;
@@ -1847,8 +1851,9 @@ var I18n = function (_EventEmitter) {
 
     var load = function load() {
       _this2.changeLanguage(_this2.options.lng, function (err, t) {
-        _this2.emit('initialized', _this2.options);
+        _this2.isInitialized = true;
         _this2.logger.log('initialized', _this2.options);
+        _this2.emit('initialized', _this2.options);
 
         callback(err, t);
       });
@@ -1863,10 +1868,10 @@ var I18n = function (_EventEmitter) {
     return this;
   };
 
-  I18n.prototype.loadResources = function loadResources(callback) {
+  I18n.prototype.loadResources = function loadResources() {
     var _this3 = this;
 
-    if (!callback) callback = function callback() {};
+    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : noop;
 
     if (!this.options.resources) {
       var _ret = function () {
@@ -1877,6 +1882,7 @@ var I18n = function (_EventEmitter) {
         var toLoad = [];
 
         var append = function append(lng) {
+          if (!lng) return;
           var lngs = _this3.services.languageUtils.toResolveHierarchy(lng);
           lngs.forEach(function (l) {
             if (toLoad.indexOf(l) < 0) toLoad.push(l);
@@ -1917,7 +1923,7 @@ var I18n = function (_EventEmitter) {
       this.modules.cache = module;
     }
 
-    if (module.type === 'logger' || module.log && module.warn && module.warn) {
+    if (module.type === 'logger' || module.log && module.warn && module.error) {
       this.modules.logger = module;
     }
 
@@ -1969,8 +1975,10 @@ var I18n = function (_EventEmitter) {
   I18n.prototype.getFixedT = function getFixedT(lng, ns) {
     var _this5 = this;
 
-    var fixedT = function fixedT(key, options) {
-      options = options || {};
+    var fixedT = function fixedT(key) {
+      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      var options = _extends$1({}, opts);
       options.lng = options.lng || fixedT.lng;
       options.ns = options.ns || fixedT.ns;
       return _this5.t(key, options);
@@ -2039,9 +2047,10 @@ var I18n = function (_EventEmitter) {
     var _this7 = this;
 
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    var callback = arguments[1];
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop;
 
-    var clone = new I18n(_extends$1({}, options, this.options, { isClone: true }), callback);
+    var mergedOptions = _extends$1({}, options, this.options, { isClone: true });
+    var clone = new I18n(mergedOptions, callback);
     var membersToCopy = ['store', 'services', 'language'];
     membersToCopy.forEach(function (m) {
       clone[m] = _this7[m];
@@ -2054,6 +2063,7 @@ var I18n = function (_EventEmitter) {
 
       clone.emit.apply(clone, [event].concat(args));
     });
+    clone.init(mergedOptions, callback);
 
     return clone;
   };
@@ -2062,6 +2072,22 @@ var I18n = function (_EventEmitter) {
 }(EventEmitter);
 
 var i18next$2 = new I18n();
+
+var changeLanguage = i18next$2.changeLanguage.bind(i18next$2);
+var cloneInstance = i18next$2.cloneInstance.bind(i18next$2);
+var createInstance = i18next$2.createInstance.bind(i18next$2);
+var dir = i18next$2.dir.bind(i18next$2);
+var exists = i18next$2.exists.bind(i18next$2);
+var getFixedT = i18next$2.getFixedT.bind(i18next$2);
+var init = i18next$2.init.bind(i18next$2);
+var loadLanguages = i18next$2.loadLanguages.bind(i18next$2);
+var loadNamespaces = i18next$2.loadNamespaces.bind(i18next$2);
+var loadResources = i18next$2.loadResources.bind(i18next$2);
+var off = i18next$2.off.bind(i18next$2);
+var on = i18next$2.on.bind(i18next$2);
+var setDefaultNamespace = i18next$2.setDefaultNamespace.bind(i18next$2);
+var t = i18next$2.t.bind(i18next$2);
+var use = i18next$2.use.bind(i18next$2);
 
 function debounce(func, wait, immediate) {
   var timeout;
@@ -2127,7 +2153,7 @@ function getPath$1(object, path) {
   return obj[k];
 }
 
-var _extends$7 = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+var _extends$8 = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -2182,7 +2208,7 @@ var Backend = function () {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       this.services = services;
-      this.options = _extends$7({}, getDefaults(), this.options, options);
+      this.options = _extends$8({}, getDefaults(), this.options, options);
 
       this.queuedWrites = {};
       this.debouncedWrite = debounce(this.write, 10000);
@@ -2254,7 +2280,7 @@ var Backend = function () {
             payload[item.key] = item.fallbackValue || '';
           });
 
-          ajax(url, _extends$7({ authorize: true }, _this2.options), function (data, xhr) {
+          ajax(url, _extends$8({ authorize: true }, _this2.options), function (data, xhr) {
             //const statusCode = xhr.status.toString();
             // TODO: if statusCode === 4xx do log
 
@@ -2559,14 +2585,12 @@ i18next$2.getLanguages = function (callback) {
   if (i18next$2.services.backendConnector) {
     i18next$2.services.backendConnector.backend.getLanguages(callback);
   } else {
-    (function () {
-      var ready = function ready() {
-        i18next$2.off('initialized', ready);
-        i18next$2.services.backendConnector.backend.getLanguages(callback);
-      };
+    var ready = function ready() {
+      i18next$2.off('initialized', ready);
+      i18next$2.services.backendConnector.backend.getLanguages(callback);
+    };
 
-      i18next$2.on('initialized', ready);
-    })();
+    i18next$2.on('initialized', ready);
   }
 };
 
