@@ -4,7 +4,41 @@
 [![Bower](https://img.shields.io/bower/v/locize.svg)]()
 [![David](https://img.shields.io/david/locize/locize.svg?style=flat-square)](https://david-dm.org/locize/locize)
 
-# locize.js
+# [DEPRECATED] locize.js
+
+This module was marked deprecated as the benefits are to low. Directly using [i18next](http://i18next.com/) with the [locize backend](https://github.com/locize/i18next-locize-backend) keeps you more close to latest releases.
+
+So just:
+
+```bash
+npm i i18next i18next-browser-languagedetector i18next-locize-backend --save
+```
+
+And in your code:
+
+```js
+import i18next from 'i18next';
+import LocizeBackend from 'i18next-locize-backend';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+i18next
+  .use(LocizeBackend)
+  .use(LanguageDetector);
+  .init({
+    fallbackLng: 'en',
+    backend: {
+      projectId: '[PROJECT_ID]',
+      apiKey: '[API_KEY]',
+      referenceLng: 'en'
+    }
+  });
+
+export default i18next;
+```
+
+And you got the same result as using this module.
+
+------
 
 locize.js is a prebundled i18next client to use in the browser. It bundles [i18next](http://i18next.com/), the [language detector](https://github.com/i18next/i18next-browser-languageDetector) and the [locize backend](https://github.com/locize/i18next-locize-backend).
 
