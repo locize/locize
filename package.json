@@ -1,6 +1,6 @@
 {
   "name": "locize",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "locize incontext editor binding",
   "main": "./dist/cjs/locize.js",
   "module": "./dist/esm/locize.js",
