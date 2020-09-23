@@ -27,5 +27,5 @@ import 'locize';
 ### by including the script
 
 ```html
-<script src="https://unpkg.com/locize/locize.min.js@^2.0.0" />
+<script src="https://unpkg.com/locize/locize.min.js" />
 ```
