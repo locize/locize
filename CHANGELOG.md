@@ -1,9 +1,7 @@
-### v1.1.0
-- update dependencies
-- add browser entrypoint
+### 2.0.0
 
-### v1.0.0
-- adds module entry point for webpack2
-- updates dependencies
-- update rollup build
-- add an entry point for commonjs circumventing export.default
+- initial version for using with the locize UI in context editor (postMessage API)
+
+### pre 2.0.0
+
+- locize module was used as a combination of i18next + the locize-backend

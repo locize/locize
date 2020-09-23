@@ -1,108 +1,31 @@
-[![Travis](https://img.shields.io/travis/locize/locize/master.svg?style=flat-square)](https://travis-ci.org/locize/i18next-locize-backend)
-[![Coveralls](https://img.shields.io/coveralls/locize/locize/master.svg?style=flat-square)](https://coveralls.io/github/locize/locize)
 [![npm version](https://img.shields.io/npm/v/locize.svg?style=flat-square)](https://www.npmjs.com/package/locize)
-[![Bower](https://img.shields.io/bower/v/locize.svg)]()
 [![David](https://img.shields.io/david/locize/locize.svg?style=flat-square)](https://david-dm.org/locize/locize)
 
-# [DEPRECATED] locize.js
+# locize
 
-This module was marked deprecated as the benefits are to low. Directly using [i18next](http://i18next.com/) with the [locize backend](https://github.com/locize/i18next-locize-backend) keeps you more close to latest releases.
+The locize script enables you to directly connect content from your website / application with your content on your localization project on locize.
 
-So just:
 
-```bash
-npm i i18next i18next-browser-languagedetector i18next-locize-backend --save
-```
+## Getting started
 
-And in your code:
+Source can be loaded via [npm](https://www.npmjs.com/package/locize), [downloaded](https://github.com/locize/locize/blob/master/locize.min.js) from this repo or loaded from the npm CDN [unpkg.com/locize](https://unpkg.com/locize/locize.min.js).
 
-```js
-import i18next from 'i18next';
-import LocizeBackend from 'i18next-locize-backend';
-import LanguageDetector from 'i18next-browser-languagedetector';
+Adding the script or importing it is enough.
 
-i18next
-  .use(LocizeBackend)
-  .use(LanguageDetector);
-  .init({
-    fallbackLng: 'en',
-    backend: {
-      projectId: '[PROJECT_ID]',
-      apiKey: '[API_KEY]',
-      referenceLng: 'en'
-    }
-  });
+**Hint:** This module runs only in browser.
 
-export default i18next;
-```
+## Using
 
-And you got the same result as using this module.
+### with a bundler
 
-------
-
-locize.js is a prebundled i18next client to use in the browser. It bundles [i18next](http://i18next.com/), the [language detector](https://github.com/i18next/i18next-browser-languageDetector) and the [locize backend](https://github.com/locize/i18next-locize-backend).
-
-# Getting started
-
-Source can be loaded via [npm](https://www.npmjs.com/package/locize), bower or [downloaded](https://github.com/locize/locize/blob/master/locize.min.js) from this repo.
-
-```
-# npm package
-$ npm install locize
-
-# bower
-$ bower install locize
-```
-
-```
-import locize from 'locize';
-
-locize.init({
-  lng: 'en',
-  backend: {
-    projectId: '[PROJECT_ID]',
-    apiKey: '[API_KEY]',
-    referenceLng: 'en'
-  }
-}, (err, t) => {
-  // initialized and ready to go!
-  const hw = locize.t('key'); // hw = 'hello world'
-});
-```
-
-For more information visit the i18next website:
-
-- [Getting started](http://i18next.com/docs/)
-- [Translation Functionality](http://i18next.com/translate/)
-- [API](http://i18next.com/docs/api/)
-- [Migration Guide from v1.11.x](http://i18next.com/docs/migration/)
-
-## Get project languages
-
-To build some dynamic language selector you can load the available languages:
+Just init like:
 
 ```js
-locize.getLanguages(function(err, lngs) {
-  console.warn(lngs);
-});
+import 'locize';
+```
 
-// returns something like
-{
-  "en": {
-    "name": "English",
-    "nativeName": "English",
-    "translated": {
-       "latest": 1,
-       "production": 1
-     }
-  },
-  "de": {
-    "name": "German",
-    "nativeName": "Deutsch",
-    "translated": {
-       "latest": 0.8,
-       "production": 1
-     }
-  }
-}
+### by including the script
+
+```html
+<script src="https://unpkg.com/locize/locize.min.js@^2.0.0" />
 ```

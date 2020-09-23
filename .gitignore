@@ -17,8 +17,3 @@ node_modules
 node_modules/**/*
 coverage/**/*
 dist/**/*
-bin/**/*
-
-
-# Deployment
-aws-credentials.json

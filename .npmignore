@@ -1,7 +1,6 @@
 test/
 src/
 coverage/
-bin/
 .babelrc
 .editorconfig
 .eslintignore
@@ -10,7 +9,3 @@ bin/
 bower.json
 gulpfile.js
 karma.conf.js
-
-
-# Deployment
-deployment/
