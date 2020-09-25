@@ -1,7 +1,8 @@
-(function (factory) {
-  typeof define === 'function' && define.amd ? define(factory) :
-  factory();
-}((function () { 'use strict';
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+  typeof define === 'function' && define.amd ? define(['exports'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.locize = {}));
+}(this, (function (exports) { 'use strict';
 
   function _typeof(obj) {
     "@babel/helpers - typeof";
@@ -187,39 +188,55 @@
   var origin;
   var handler;
   var clickInterceptionEnabled;
-  window.addEventListener('message', function (e) {
-    if (e.data.message === 'isLocizeEnabled') {
-      // console.warn("result: ", ev.data);
-      // parent => ev.source;
-      if (!source) {
-        source = e.source;
-        origin = e.origin;
-        handler = createClickHandler(function (payload) {
-          source.postMessage({
-            message: 'clickedElement',
-            payload: payload
-          }, origin);
-        }); // document.body.addEventListener('click', handler, true);
-        // clickInterceptionEnabled = true;
-      }
+  var handleLocizeSaved;
+  function addLocizeSavedHandler(handler) {
+    handleLocizeSaved = handler;
+  }
 
-      source.postMessage({
-        message: 'locizeIsEnabled',
-        enabled: true
-      }, e.origin);
-    } else if (e.data.message === 'turnOn') {
-      if (!clickInterceptionEnabled) document.body.addEventListener('click', handler, true);
-      clickInterceptionEnabled = true;
-      source.postMessage({
-        message: 'turnedOn'
-      }, origin);
-    } else if (e.data.message === 'turnOff') {
-      if (clickInterceptionEnabled) document.body.removeEventListener('click', handler, true);
-      clickInterceptionEnabled = false;
-      source.postMessage({
-        message: 'turnedOff'
-      }, origin);
-    }
-  });
+  if (!window.locizeBoundPostMessageAPI) {
+    window.addEventListener('message', function (e) {
+      if (e.data.message === 'isLocizeEnabled') {
+        // console.warn("result: ", ev.data);
+        // parent => ev.source;
+        if (!source) {
+          source = e.source;
+          origin = e.origin;
+          handler = createClickHandler(function (payload) {
+            source.postMessage({
+              message: 'clickedElement',
+              payload: payload
+            }, origin);
+          }); // document.body.addEventListener('click', handler, true);
+          // clickInterceptionEnabled = true;
+        }
+
+        source.postMessage({
+          message: 'locizeIsEnabled',
+          enabled: true
+        }, e.origin);
+      } else if (e.data.message === 'turnOn') {
+        if (!clickInterceptionEnabled) document.body.addEventListener('click', handler, true);
+        clickInterceptionEnabled = true;
+        source.postMessage({
+          message: 'turnedOn'
+        }, origin);
+      } else if (e.data.message === 'turnOff') {
+        if (clickInterceptionEnabled) document.body.removeEventListener('click', handler, true);
+        clickInterceptionEnabled = false;
+        source.postMessage({
+          message: 'turnedOff'
+        }, origin);
+      } else if (e.data.message === 'committed') {
+        var data = e.data.payload;
+        if (window.locizeSavedHandler) window.locizeSavedHandler(data);
+        if (handleLocizeSaved) handleLocizeSaved(data);
+      }
+    });
+    window.locizeBoundPostMessageAPI = true;
+  }
+
+  exports.addLocizeSavedHandler = addLocizeSavedHandler;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
 
 })));

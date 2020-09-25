@@ -1,1 +1,1 @@
-import './PostMessageAPI'
+export { addLocizeSavedHandler } from './PostMessageAPI'
