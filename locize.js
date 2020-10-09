@@ -189,8 +189,38 @@
   var handler;
   var clickInterceptionEnabled;
   var handleLocizeSaved;
+  var locizePlugin = {
+    type: '3rdParty',
+    init: function init(i18n) {
+      addLocizeSavedHandler(function (res) {
+        res.updated.forEach(function (item) {
+          var lng = item.lng,
+              ns = item.ns,
+              key = item.key,
+              data = item.data;
+          i18n.addResource(lng, ns, key, data.value, {
+            silent: true
+          });
+          i18n.emit('editorSaved');
+        });
+      });
+
+      i18n.options.missingKeyHandler = function (lng, ns, k, val, isUpdate, opts) {
+        if (!isUpdate) onAddedKey(lng, ns, k, val);
+      };
+    }
+  };
   function addLocizeSavedHandler(handler) {
     handleLocizeSaved = handler;
+  }
+  function onAddedKey(lng, ns, key, value) {
+    if (source) source.postMessage({
+      message: 'added',
+      lng: lng,
+      ns: ns,
+      key: key,
+      value: value
+    }, origin);
   }
 
   if (!window.locizeBoundPostMessageAPI) {
@@ -236,6 +266,8 @@
   }
 
   exports.addLocizeSavedHandler = addLocizeSavedHandler;
+  exports.locizePlugin = locizePlugin;
+  exports.onAddedKey = onAddedKey;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

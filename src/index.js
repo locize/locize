@@ -1,1 +1,1 @@
-export { addLocizeSavedHandler } from './PostMessageAPI'
+export { addLocizeSavedHandler, onAddedKey, locizePlugin } from './PostMessageAPI'

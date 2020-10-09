@@ -1,3 +1,8 @@
+### 2.2.0
+
+- add locizePlugin to be used in i18next
+- add onAddedKey function
+
 ### 2.1.0
 
 - add addLocizeSavedHandler

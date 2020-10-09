@@ -5,9 +5,35 @@ let origin;
 let handler;
 let clickInterceptionEnabled;
 let handleLocizeSaved;
+let i18next
+
+export const locizePlugin = {
+  type: '3rdParty',
+
+  init(i18n) {
+    i18next = i18n;
+
+    addLocizeSavedHandler((res) => {
+      res.updated.forEach((item) => {
+        const { lng, ns, key, data } = item;
+        i18n.addResource(lng, ns, key, data.value, { silent: true });
+        i18n.emit('editorSaved');
+      })
+    })
+
+    i18n.options.missingKeyHandler = (lng, ns, k, val, isUpdate, opts) => {
+      if (!isUpdate) onAddedKey(lng, ns, k, val);
+    }
+  }
+}
+
 
 export function addLocizeSavedHandler(handler) {
   handleLocizeSaved = handler;
+}
+
+export function onAddedKey(lng, ns, key, value) {
+  if (source) source.postMessage({ message: 'added', lng, ns, key, value }, origin);
 }
 
 if (!window.locizeBoundPostMessageAPI) {
