@@ -31,7 +31,7 @@ export function offset(elem) {
 
 export function getClickedElement(e) {
   // clicked input
-  if (e.srcElement && e.srcElement.nodeType === 1) {
+  if (e.srcElement && e.srcElement.nodeType === 1 && (e.srcElement.nodeName === 'BUTTON' || e.srcElement.nodeName === 'INPUT')) {
     if (e.srcElement.getAttribute && e.srcElement.getAttribute('ignorelocizeeditor') === '') return null;
     return e.srcElement;
   }

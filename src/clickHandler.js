@@ -11,9 +11,11 @@ export function createClickHandler(cb) {
     e.stopPropagation();
 
     const text = getElementText(el);
-    const { top, left, width, height } = el.getBoundingClientRect();
 
-    const style = window.getComputedStyle(el, null);
+    const rectEl = el.getBoundingClientRect ? el : el.parentElement;
+    const { top, left, width, height } = rectEl.getBoundingClientRect();
+
+    const style = window.getComputedStyle(rectEl, null);
     const pT = parseFloat(style.getPropertyValue('padding-top'));
     const pB = parseFloat(style.getPropertyValue('padding-bottom'));
     const pR = parseFloat(style.getPropertyValue('padding-right'));
@@ -21,7 +23,7 @@ export function createClickHandler(cb) {
     const sizing = style.getPropertyValue('box-sizing');
 
     cb({
-      tagName: el.tagName,
+      tagName: rectEl.tagName,
       text,
       ns: getElementNamespace(el),
       box: {
