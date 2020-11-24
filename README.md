@@ -29,3 +29,44 @@ import 'locize';
 ```html
 <script src="https://unpkg.com/locize/locize.min.js" />
 ```
+
+### with i18next
+
+```js
+import { locizePlugin } from 'locize';
+
+i18next.use(locizePlugin)
+```
+
+### with locizify
+
+This plugin is already included in [locizify](https://github.com/locize/locizify) >= v4.1.0
+
+
+### with other as module
+
+```js
+import { addLocizeSavedHandler } from 'locize';
+
+addLocizeSavedHandler((res) => {
+  res.updated.forEach((item) => {
+    const { lng, ns, key, data } = item;
+    // load the translations somewhere...
+    // and maybe rerender your UI
+  })
+});
+```
+
+### with other in vanilla javascript
+```html
+<script src="https://unpkg.com/locize/locize.min.js" />
+```
+```js
+window.locizeSavedHandler = (res) => {
+  res.updated.forEach((item) => {
+    const { lng, ns, key, data } = item;
+    // load the translations somewhere...
+    // and maybe rerender your UI
+  })
+};
+```

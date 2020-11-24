@@ -1,3 +1,11 @@
+### 2.2.2
+
+- select partial text for divs
+
+### 2.2.1
+
+- remove window.locizeBoundPostMessageAPI check
+
 ### 2.2.0
 
 - add locizePlugin to be used in i18next

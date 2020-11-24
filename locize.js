@@ -27,23 +27,21 @@
     return isWindow(elem) ? elem : elem.nodeType === 9 && elem.defaultView;
   }
   function offset(elem) {
-    var docElem,
-        win,
-        box = {
+    var box = {
       top: 0,
       left: 0,
       right: 0,
       bottom: 0
-    },
-        doc = elem && elem.ownerDocument;
-    docElem = doc && doc.documentElement;
+    };
+    var doc = elem && elem.ownerDocument;
+    var docElem = doc && doc.documentElement;
     if (!docElem) return box;
 
     if (_typeof(elem.getBoundingClientRect) !== ( "undefined" )) {
       box = elem.getBoundingClientRect();
     }
 
-    win = getWindow(doc);
+    var win = getWindow(doc);
     var top = box.top + win.pageYOffset - docElem.clientTop;
     var left = box.left + win.pageXOffset - docElem.clientLeft;
     return {
@@ -55,7 +53,7 @@
   }
   function getClickedElement(e) {
     // clicked input
-    if (e.srcElement && e.srcElement.nodeType === 1) {
+    if (e.srcElement && e.srcElement.nodeType === 1 && (e.srcElement.nodeName === 'BUTTON' || e.srcElement.nodeName === 'INPUT')) {
       if (e.srcElement.getAttribute && e.srcElement.getAttribute('ignorelocizeeditor') === '') return null;
       return e.srcElement;
     }
@@ -73,7 +71,7 @@
       // console.warn('parent', parent, pOffset, parent.clientHeight, parent.offsetHeight);
 
       var topStartsAt = 0;
-      var topBreaksAt;
+      var topBreaksAt; // eslint-disable-next-line no-plusplus
 
       for (var i = 0; i < parent.childNodes.length; i++) {
         var n = parent.childNodes[i];
@@ -89,6 +87,7 @@
       if (topStartsAt + 1 > parent.childNodes.length) topStartsAt = parent.childNodes.length - 1;
       if (!topBreaksAt) topBreaksAt = parent.childNodes.length; // console.warn('bound', topStartsAt, topBreaksAt)
       // inside our boundaries check when left is to big and out of clicks left
+      // eslint-disable-next-line no-plusplus
 
       for (var y = topStartsAt; y < topBreaksAt; y++) {
         var _n = parent.childNodes[y];
@@ -107,7 +106,8 @@
   }
   function getElementText(el) {
     var str = el.textContent || el.text && el.text.innerText || el.placeholder;
-    if (typeof str !== 'string') return;
+    if (typeof str !== 'string') return; // eslint-disable-next-line consistent-return
+
     return str.replace(/\n +/g, '').trim();
   }
 
@@ -118,11 +118,11 @@
   function getElementNamespace(el) {
     var found;
 
-    var find = function find(el) {
-      var opts = getAttribute(el, 'i18next-options');
-      if (!opts) opts = getAttribute(el, 'data-i18next-options');
-      if (!opts) opts = getAttribute(el, 'i18n-options');
-      if (!opts) opts = getAttribute(el, 'data-i18n-options');
+    var find = function find(ele) {
+      var opts = getAttribute(ele, 'i18next-options');
+      if (!opts) opts = getAttribute(ele, 'data-i18next-options');
+      if (!opts) opts = getAttribute(ele, 'i18n-options');
+      if (!opts) opts = getAttribute(ele, 'data-i18n-options');
 
       if (opts) {
         var jsonData = {};
@@ -135,11 +135,11 @@
         if (jsonData.ns) found = jsonData.ns;
       }
 
-      if (!found) found = getAttribute(el, 'i18next-ns');
-      if (!found) found = getAttribute(el, 'data-i18next-ns');
-      if (!found) found = getAttribute(el, 'i18n-ns');
-      if (!found) found = getAttribute(el, 'data-i18n-ns');
-      if (!found && el.parentElement) find(el.parentElement);
+      if (!found) found = getAttribute(ele, 'i18next-ns');
+      if (!found) found = getAttribute(ele, 'data-i18next-ns');
+      if (!found) found = getAttribute(ele, 'i18n-ns');
+      if (!found) found = getAttribute(ele, 'data-i18n-ns');
+      if (!found && ele.parentElement) find(ele.parentElement);
     };
 
     find(el);
@@ -148,27 +148,29 @@
 
   /* eslint-disable import/prefer-default-export */
   function createClickHandler(cb) {
+    // eslint-disable-next-line consistent-return
     var handler = function handler(e) {
       var el = getClickedElement(e);
       if (!el) return {};
       e.preventDefault();
       e.stopPropagation();
       var text = getElementText(el);
+      var rectEl = el.getBoundingClientRect ? el : el.parentElement;
 
-      var _el$getBoundingClient = el.getBoundingClientRect(),
-          top = _el$getBoundingClient.top,
-          left = _el$getBoundingClient.left,
-          width = _el$getBoundingClient.width,
-          height = _el$getBoundingClient.height;
+      var _rectEl$getBoundingCl = rectEl.getBoundingClientRect(),
+          top = _rectEl$getBoundingCl.top,
+          left = _rectEl$getBoundingCl.left,
+          width = _rectEl$getBoundingCl.width,
+          height = _rectEl$getBoundingCl.height;
 
-      var style = window.getComputedStyle(el, null);
+      var style = window.getComputedStyle(rectEl, null);
       var pT = parseFloat(style.getPropertyValue('padding-top'));
       var pB = parseFloat(style.getPropertyValue('padding-bottom'));
       var pR = parseFloat(style.getPropertyValue('padding-right'));
       var pL = parseFloat(style.getPropertyValue('padding-left'));
       var sizing = style.getPropertyValue('box-sizing');
       cb({
-        tagName: el.tagName,
+        tagName: rectEl.tagName,
         text: text,
         ns: getElementNamespace(el),
         box: {
@@ -188,10 +190,26 @@
   var origin;
   var handler;
   var clickInterceptionEnabled;
-  var handleLocizeSaved;
+  var handleLocizeSaved; // let i18next;
+
+  function addLocizeSavedHandler(hnd) {
+    handleLocizeSaved = hnd;
+  }
+  function onAddedKey(lng, ns, key, value) {
+    if (source) {
+      source.postMessage({
+        message: 'added',
+        lng: lng,
+        ns: ns,
+        key: key,
+        value: value
+      }, origin);
+    }
+  }
   var locizePlugin = {
     type: '3rdParty',
     init: function init(i18n) {
+      // i18next = i18n;
       addLocizeSavedHandler(function (res) {
         res.updated.forEach(function (item) {
           var lng = item.lng,
@@ -210,60 +228,44 @@
       };
     }
   };
-  function addLocizeSavedHandler(handler) {
-    handleLocizeSaved = handler;
-  }
-  function onAddedKey(lng, ns, key, value) {
-    if (source) source.postMessage({
-      message: 'added',
-      lng: lng,
-      ns: ns,
-      key: key,
-      value: value
-    }, origin);
-  }
-
-  if (!window.locizeBoundPostMessageAPI) {
-    window.addEventListener('message', function (e) {
-      if (e.data.message === 'isLocizeEnabled') {
-        // console.warn("result: ", ev.data);
-        // parent => ev.source;
-        if (!source) {
-          source = e.source;
-          origin = e.origin;
-          handler = createClickHandler(function (payload) {
-            source.postMessage({
-              message: 'clickedElement',
-              payload: payload
-            }, origin);
-          }); // document.body.addEventListener('click', handler, true);
-          // clickInterceptionEnabled = true;
-        }
-
-        source.postMessage({
-          message: 'locizeIsEnabled',
-          enabled: true
-        }, e.origin);
-      } else if (e.data.message === 'turnOn') {
-        if (!clickInterceptionEnabled) document.body.addEventListener('click', handler, true);
-        clickInterceptionEnabled = true;
-        source.postMessage({
-          message: 'turnedOn'
-        }, origin);
-      } else if (e.data.message === 'turnOff') {
-        if (clickInterceptionEnabled) document.body.removeEventListener('click', handler, true);
-        clickInterceptionEnabled = false;
-        source.postMessage({
-          message: 'turnedOff'
-        }, origin);
-      } else if (e.data.message === 'committed') {
-        var data = e.data.payload;
-        if (window.locizeSavedHandler) window.locizeSavedHandler(data);
-        if (handleLocizeSaved) handleLocizeSaved(data);
+  window.addEventListener('message', function (e) {
+    if (e.data.message === 'isLocizeEnabled') {
+      // console.warn("result: ", ev.data);
+      // parent => ev.source;
+      if (!source) {
+        source = e.source;
+        origin = e.origin;
+        handler = createClickHandler(function (payload) {
+          source.postMessage({
+            message: 'clickedElement',
+            payload: payload
+          }, origin);
+        }); // document.body.addEventListener('click', handler, true);
+        // clickInterceptionEnabled = true;
       }
-    });
-    window.locizeBoundPostMessageAPI = true;
-  }
+
+      source.postMessage({
+        message: 'locizeIsEnabled',
+        enabled: true
+      }, e.origin);
+    } else if (e.data.message === 'turnOn') {
+      if (!clickInterceptionEnabled) window.document.body.addEventListener('click', handler, true);
+      clickInterceptionEnabled = true;
+      source.postMessage({
+        message: 'turnedOn'
+      }, origin);
+    } else if (e.data.message === 'turnOff') {
+      if (clickInterceptionEnabled) window.document.body.removeEventListener('click', handler, true);
+      clickInterceptionEnabled = false;
+      source.postMessage({
+        message: 'turnedOff'
+      }, origin);
+    } else if (e.data.message === 'committed') {
+      var data = e.data.payload;
+      if (window.locizeSavedHandler) window.locizeSavedHandler(data);
+      if (handleLocizeSaved) handleLocizeSaved(data);
+    }
+  });
 
   exports.addLocizeSavedHandler = addLocizeSavedHandler;
   exports.locizePlugin = locizePlugin;
