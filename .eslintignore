@@ -1,3 +1,5 @@
 **/dist/*
 **/node_modules/*
 **/*.min.*
+locize.js
+locize.min.js
