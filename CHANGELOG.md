@@ -1,3 +1,7 @@
+### 2.2.4
+
+- if cat not ready, postpone missing keys
+
 ### 2.2.3
 
 - check automatically if is in iframe and attach missingKeyHandler conditionally

@@ -17,11 +17,13 @@ export function addLocizeSavedHandler(hnd) {
   handleLocizeSaved = hnd;
 }
 
+let pendingMsgs = [];
 export function onAddedKey(lng, ns, key, value) {
+  const msg = { message: 'added', lng, ns, key, value }
   if (source) {
-    source.postMessage({
-      message: 'added', lng, ns, key, value
-    }, origin);
+    source.postMessage(msg, origin);
+  } else {
+    pendingMsgs.push(msg);
   }
 }
 
@@ -64,6 +66,10 @@ window.addEventListener('message', (e) => {
     }
 
     source.postMessage({ message: 'locizeIsEnabled', enabled: true }, e.origin);
+    pendingMsgs.forEach((m) => {
+      source.postMessage(m, e.origin);
+    });
+    pendingMsgs = [];
   } else if (e.data.message === 'turnOn') {
     if (!clickInterceptionEnabled) window.document.body.addEventListener('click', handler, true);
     clickInterceptionEnabled = true;
