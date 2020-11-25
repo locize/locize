@@ -1,5 +1,11 @@
 import { createClickHandler } from './clickHandler';
 
+let isInIframe = true;
+try {
+  // eslint-disable-next-line no-undef, no-restricted-globals
+  isInIframe = self !== top;
+// eslint-disable-next-line no-empty
+} catch (e) {}
 let source;
 let origin;
 let handler;
@@ -35,9 +41,11 @@ export const locizePlugin = {
       });
     });
 
-    i18n.options.missingKeyHandler = (lng, ns, k, val, isUpdate, opts) => {
-      if (!isUpdate) onAddedKey(lng, ns, k, val);
-    };
+    if (isInIframe) {
+      i18n.options.missingKeyHandler = (lng, ns, k, val, isUpdate, opts) => {
+        if (!isUpdate) onAddedKey(lng, ns, k, val);
+      };
+    }
   }
 };
 

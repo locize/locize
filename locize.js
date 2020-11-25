@@ -186,6 +186,13 @@
     return handler;
   }
 
+  var isInIframe = true;
+
+  try {
+    // eslint-disable-next-line no-undef, no-restricted-globals
+    isInIframe = self !== top; // eslint-disable-next-line no-empty
+  } catch (e) {}
+
   var source;
   var origin;
   var handler;
@@ -223,9 +230,11 @@
         });
       });
 
-      i18n.options.missingKeyHandler = function (lng, ns, k, val, isUpdate, opts) {
-        if (!isUpdate) onAddedKey(lng, ns, k, val);
-      };
+      if (isInIframe) {
+        i18n.options.missingKeyHandler = function (lng, ns, k, val, isUpdate, opts) {
+          if (!isUpdate) onAddedKey(lng, ns, k, val);
+        };
+      }
     }
   };
   window.addEventListener('message', function (e) {

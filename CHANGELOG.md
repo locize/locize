@@ -1,3 +1,7 @@
+### 2.2.3
+
+- check automatically if is in iframe and attach missingKeyHandler conditionally
+
 ### 2.2.2
 
 - select partial text for divs
