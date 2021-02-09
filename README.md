@@ -12,6 +12,10 @@ Source can be loaded via [npm](https://www.npmjs.com/package/locize), [downloade
 
 Adding the script or importing it is enough.
 
+```bash
+npm i locize
+```
+
 **Hint:** This module runs only in browser.
 
 ## Using
