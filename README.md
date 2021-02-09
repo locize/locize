@@ -38,6 +38,17 @@ import { locizePlugin } from 'locize';
 i18next.use(locizePlugin)
 ```
 
+Using react-i18next you might want to bind the editorSaved event to trigger a rerender:
+
+```js
+i18next.init({
+  // ...
+  react: {
+    bindI18n: 'languageChanged editorSaved'
+  }
+})
+```
+
 ### with locizify
 
 This plugin is already included in [locizify](https://github.com/locize/locizify) >= v4.1.0
