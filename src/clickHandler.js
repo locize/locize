@@ -1,5 +1,7 @@
 /* eslint-disable import/prefer-default-export */
-import { getClickedElement, getElementText, getElementNamespace } from './utils';
+import {
+  getClickedElement, getElementText, getElementI18nKey, getElementNamespace
+} from './utils';
 
 export function createClickHandler(cb) {
 
@@ -12,9 +14,12 @@ export function createClickHandler(cb) {
     e.stopPropagation();
 
     const text = getElementText(el);
+    const key = getElementI18nKey(el);
 
     const rectEl = el.getBoundingClientRect ? el : el.parentElement;
-    const { top, left, width, height } = rectEl.getBoundingClientRect();
+    const {
+      top, left, width, height
+    } = rectEl.getBoundingClientRect();
 
     const style = window.getComputedStyle(rectEl, null);
     const pT = parseFloat(style.getPropertyValue('padding-top'));
@@ -26,6 +31,7 @@ export function createClickHandler(cb) {
     cb({
       tagName: rectEl.tagName,
       text,
+      key,
       ns: getElementNamespace(el),
       box: {
         top,

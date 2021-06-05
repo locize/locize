@@ -99,6 +99,13 @@ function getAttribute(el, name) {
   return el && el.getAttribute && el.getAttribute(name);
 }
 
+export function getElementI18nKey(el) {
+  const key = getAttribute(el, 'data-i18n');
+  if (key) return key;
+  if (el.nodeType === window.Node.TEXT_NODE && el.parentElement) return getElementI18nKey(el.parentElement);
+  return undefined;
+}
+
 export function getElementNamespace(el) {
 
   let found;
