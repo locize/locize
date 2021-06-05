@@ -12,6 +12,10 @@ Source can be loaded via [npm](https://www.npmjs.com/package/locize), [downloade
 
 Adding the script or importing it is enough.
 
+```bash
+npm i locize
+```
+
 **Hint:** This module runs only in browser.
 
 ## Using
@@ -36,6 +40,17 @@ import 'locize';
 import { locizePlugin } from 'locize';
 
 i18next.use(locizePlugin)
+```
+
+Using react-i18next you might want to bind the editorSaved event to trigger a rerender:
+
+```js
+i18next.init({
+  // ...
+  react: {
+    bindI18n: 'languageChanged editorSaved'
+  }
+})
 ```
 
 ### with locizify
