@@ -1,3 +1,7 @@
+### 2.2.5
+
+- check if window exists
+
 ### 2.2.4
 
 - if cat not ready, postpone missing keys

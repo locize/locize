@@ -115,6 +115,12 @@
     return el && el.getAttribute && el.getAttribute(name);
   }
 
+  function getElementI18nKey(el) {
+    var key = getAttribute(el, 'data-i18n');
+    if (key) return key;
+    if (el.nodeType === window.Node.TEXT_NODE && el.parentElement) return getElementI18nKey(el.parentElement);
+    return undefined;
+  }
   function getElementNamespace(el) {
     var found;
 
@@ -155,6 +161,7 @@
       e.preventDefault();
       e.stopPropagation();
       var text = getElementText(el);
+      var key = getElementI18nKey(el);
       var rectEl = el.getBoundingClientRect ? el : el.parentElement;
 
       var _rectEl$getBoundingCl = rectEl.getBoundingClientRect(),
@@ -172,6 +179,7 @@
       cb({
         tagName: rectEl.tagName,
         text: text,
+        key: key,
         ns: getElementNamespace(el),
         box: {
           top: top,
@@ -242,48 +250,51 @@
       }
     }
   };
-  window.addEventListener('message', function (e) {
-    if (e.data.message === 'isLocizeEnabled') {
-      // console.warn("result: ", ev.data);
-      // parent => ev.source;
-      if (!source) {
-        source = e.source;
-        origin = e.origin;
-        handler = createClickHandler(function (payload) {
-          source.postMessage({
-            message: 'clickedElement',
-            payload: payload
-          }, origin);
-        }); // document.body.addEventListener('click', handler, true);
-        // clickInterceptionEnabled = true;
-      }
 
-      source.postMessage({
-        message: 'locizeIsEnabled',
-        enabled: true
-      }, e.origin);
-      pendingMsgs.forEach(function (m) {
-        source.postMessage(m, e.origin);
-      });
-      pendingMsgs = [];
-    } else if (e.data.message === 'turnOn') {
-      if (!clickInterceptionEnabled) window.document.body.addEventListener('click', handler, true);
-      clickInterceptionEnabled = true;
-      source.postMessage({
-        message: 'turnedOn'
-      }, origin);
-    } else if (e.data.message === 'turnOff') {
-      if (clickInterceptionEnabled) window.document.body.removeEventListener('click', handler, true);
-      clickInterceptionEnabled = false;
-      source.postMessage({
-        message: 'turnedOff'
-      }, origin);
-    } else if (e.data.message === 'committed') {
-      var data = e.data.payload;
-      if (window.locizeSavedHandler) window.locizeSavedHandler(data);
-      if (handleLocizeSaved) handleLocizeSaved(data);
-    }
-  });
+  if (typeof window !== 'undefined') {
+    window.addEventListener('message', function (e) {
+      if (e.data.message === 'isLocizeEnabled') {
+        // console.warn("result: ", ev.data);
+        // parent => ev.source;
+        if (!source) {
+          source = e.source;
+          origin = e.origin;
+          handler = createClickHandler(function (payload) {
+            source.postMessage({
+              message: 'clickedElement',
+              payload: payload
+            }, origin);
+          }); // document.body.addEventListener('click', handler, true);
+          // clickInterceptionEnabled = true;
+        }
+
+        source.postMessage({
+          message: 'locizeIsEnabled',
+          enabled: true
+        }, e.origin);
+        pendingMsgs.forEach(function (m) {
+          source.postMessage(m, e.origin);
+        });
+        pendingMsgs = [];
+      } else if (e.data.message === 'turnOn') {
+        if (!clickInterceptionEnabled) window.document.body.addEventListener('click', handler, true);
+        clickInterceptionEnabled = true;
+        source.postMessage({
+          message: 'turnedOn'
+        }, origin);
+      } else if (e.data.message === 'turnOff') {
+        if (clickInterceptionEnabled) window.document.body.removeEventListener('click', handler, true);
+        clickInterceptionEnabled = false;
+        source.postMessage({
+          message: 'turnedOff'
+        }, origin);
+      } else if (e.data.message === 'committed') {
+        var data = e.data.payload;
+        if (window.locizeSavedHandler) window.locizeSavedHandler(data);
+        if (handleLocizeSaved) handleLocizeSaved(data);
+      }
+    });
+  }
 
   exports.addLocizeSavedHandler = addLocizeSavedHandler;
   exports.locizePlugin = locizePlugin;
