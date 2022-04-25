@@ -1,3 +1,7 @@
+### 2.3.0
+
+- add turnOn, turnOff function for programmatical on/off
+
 ### 2.2.5
 
 - check if window exists
