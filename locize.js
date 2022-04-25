@@ -205,7 +205,8 @@
   var origin;
   var handler;
   var clickInterceptionEnabled;
-  var handleLocizeSaved; // let i18next;
+  var handleLocizeSaved;
+  var scriptTurnedOff; // used to flag turnOff by developers using the exported functions -> disable the editor function by code
 
   function addLocizeSavedHandler(hnd) {
     handleLocizeSaved = hnd;
@@ -277,12 +278,18 @@
         });
         pendingMsgs = [];
       } else if (e.data.message === 'turnOn') {
+        if (scriptTurnedOff) return source.postMessage({
+          message: 'forcedOff'
+        }, origin);
         if (!clickInterceptionEnabled) window.document.body.addEventListener('click', handler, true);
         clickInterceptionEnabled = true;
         source.postMessage({
           message: 'turnedOn'
         }, origin);
       } else if (e.data.message === 'turnOff') {
+        if (scriptTurnedOff) return source.postMessage({
+          message: 'forcedOff'
+        }, origin);
         if (clickInterceptionEnabled) window.document.body.removeEventListener('click', handler, true);
         clickInterceptionEnabled = false;
         source.postMessage({
@@ -296,9 +303,33 @@
     });
   }
 
+  var turnOn = function turnOn() {
+    scriptTurnedOff = false;
+    if (!clickInterceptionEnabled) window.document.body.addEventListener('click', handler, true);
+    clickInterceptionEnabled = true;
+    if (source) source.postMessage({
+      message: 'turnedOn'
+    }, origin);
+    return scriptTurnedOff;
+  };
+  var turnOff = function turnOff() {
+    scriptTurnedOff = true;
+    if (clickInterceptionEnabled) window.document.body.removeEventListener('click', handler, true);
+    clickInterceptionEnabled = false;
+    if (source) source.postMessage({
+      message: 'turnedOff'
+    }, origin);
+    if (source) source.postMessage({
+      message: 'forcedOff'
+    }, origin);
+    return scriptTurnedOff;
+  };
+
   exports.addLocizeSavedHandler = addLocizeSavedHandler;
   exports.locizePlugin = locizePlugin;
   exports.onAddedKey = onAddedKey;
+  exports.turnOff = turnOff;
+  exports.turnOn = turnOn;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

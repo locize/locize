@@ -4,14 +4,14 @@ let isInIframe = true;
 try {
   // eslint-disable-next-line no-undef, no-restricted-globals
   isInIframe = self !== top;
-// eslint-disable-next-line no-empty
+  // eslint-disable-next-line no-empty
 } catch (e) {}
 let source;
 let origin;
 let handler;
 let clickInterceptionEnabled;
 let handleLocizeSaved;
-// let i18next;
+let scriptTurnedOff; // used to flag turnOff by developers using the exported functions -> disable the editor function by code
 
 export function addLocizeSavedHandler(hnd) {
   handleLocizeSaved = hnd;
@@ -19,7 +19,7 @@ export function addLocizeSavedHandler(hnd) {
 
 let pendingMsgs = [];
 export function onAddedKey(lng, ns, key, value) {
-  const msg = { message: 'added', lng, ns, key, value }
+  const msg = { message: 'added', lng, ns, key, value };
   if (source) {
     source.postMessage(msg, origin);
   } else {
@@ -35,9 +35,7 @@ export const locizePlugin = {
 
     addLocizeSavedHandler((res) => {
       res.updated.forEach((item) => {
-        const {
-          lng, ns, key, data
-        } = item;
+        const { lng, ns, key, data } = item;
         i18n.addResource(lng, ns, key, data.value, { silent: true });
         i18n.emit('editorSaved');
       });
@@ -48,7 +46,7 @@ export const locizePlugin = {
         if (!isUpdate) onAddedKey(lng, ns, k, val);
       };
     }
-  }
+  },
 };
 
 if (typeof window !== 'undefined') {
@@ -66,17 +64,28 @@ if (typeof window !== 'undefined') {
         // clickInterceptionEnabled = true;
       }
 
-      source.postMessage({ message: 'locizeIsEnabled', enabled: true }, e.origin);
+      source.postMessage(
+        { message: 'locizeIsEnabled', enabled: true },
+        e.origin
+      );
       pendingMsgs.forEach((m) => {
         source.postMessage(m, e.origin);
       });
       pendingMsgs = [];
     } else if (e.data.message === 'turnOn') {
-      if (!clickInterceptionEnabled) window.document.body.addEventListener('click', handler, true);
+      if (scriptTurnedOff)
+        return source.postMessage({ message: 'forcedOff' }, origin);
+
+      if (!clickInterceptionEnabled)
+        window.document.body.addEventListener('click', handler, true);
       clickInterceptionEnabled = true;
       source.postMessage({ message: 'turnedOn' }, origin);
     } else if (e.data.message === 'turnOff') {
-      if (clickInterceptionEnabled) window.document.body.removeEventListener('click', handler, true);
+      if (scriptTurnedOff)
+        return source.postMessage({ message: 'forcedOff' }, origin);
+
+      if (clickInterceptionEnabled)
+        window.document.body.removeEventListener('click', handler, true);
       clickInterceptionEnabled = false;
       source.postMessage({ message: 'turnedOff' }, origin);
     } else if (e.data.message === 'committed') {
@@ -86,3 +95,26 @@ if (typeof window !== 'undefined') {
     }
   });
 }
+
+export const turnOn = function () {
+  scriptTurnedOff = false;
+
+  if (!clickInterceptionEnabled)
+    window.document.body.addEventListener('click', handler, true);
+  clickInterceptionEnabled = true;
+
+  if (source) source.postMessage({ message: 'turnedOn' }, origin);
+  return scriptTurnedOff;
+};
+
+export const turnOff = function () {
+  scriptTurnedOff = true;
+
+  if (clickInterceptionEnabled)
+    window.document.body.removeEventListener('click', handler, true);
+  clickInterceptionEnabled = false;
+
+  if (source) source.postMessage({ message: 'turnedOff' }, origin);
+  if (source) source.postMessage({ message: 'forcedOff' }, origin);
+  return scriptTurnedOff;
+};
