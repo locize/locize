@@ -20,6 +20,55 @@
     return _typeof(obj);
   }
 
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  function ownKeys(object, enumerableOnly) {
+    var keys = Object.keys(object);
+
+    if (Object.getOwnPropertySymbols) {
+      var symbols = Object.getOwnPropertySymbols(object);
+      if (enumerableOnly) symbols = symbols.filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+      });
+      keys.push.apply(keys, symbols);
+    }
+
+    return keys;
+  }
+
+  function _objectSpread2(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i] != null ? arguments[i] : {};
+
+      if (i % 2) {
+        ownKeys(Object(source), true).forEach(function (key) {
+          _defineProperty(target, key, source[key]);
+        });
+      } else if (Object.getOwnPropertyDescriptors) {
+        Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+      } else {
+        ownKeys(Object(source)).forEach(function (key) {
+          Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+        });
+      }
+    }
+
+    return target;
+  }
+
   function isWindow(obj) {
     return obj != null && obj === obj.window;
   }
@@ -194,6 +243,46 @@
     return handler;
   }
 
+  var baseBtn = 'font-family: "Helvetica", "Arial", sans-serif; font-size: 14px; color: #fff; border: none; font-weight: 300; height: 30px; line-height: 30px; padding: 0 15px; text-align: center; min-width: 90px; text-decoration: none; text-transform: uppercase; text-overflow: ellipsis; white-space: nowrap; outline: none; cursor: pointer; border-radius: 15px;';
+  function initUI(options) {
+    var cont = document.createElement('div');
+    var style = 'font-family: "Helvetica", "Arial", sans-serif; bottom: 20px; right: 20px; padding: 10px; background-color: #fff; border: solid 1px #1976d2; box-shadow: 0px 1px 2px 0px rgba(0,0,0,0.5); border-radius: 3px;';
+    style += ' z-index: 2147483647; position: fixed;';
+    cont.setAttribute('style', style);
+    cont.setAttribute('ignorelocizeeditor', '');
+    cont.setAttribute('translated', ''); //   if(options.locizeEditorToggle.containerClasses) {
+    //     const classes = options.locizeEditorToggle.containerClasses.length > 1 ? options.locizeEditorToggle.containerClasses.split(' ') : options.locizeEditorToggle.containerClasses;
+    //     classes.forEach(function(cssClass) {
+    //       cont.classList.add(cssClass);
+    //     });
+    //   }
+
+    var title = document.createElement('h4');
+    title.id = 'locize-title';
+    title.innerHTML = 'Translate InContext:';
+    title.setAttribute('style', 'font-family: "Helvetica", "Arial", sans-serif; font-size: 14px; margin: 0 0 5px 0; color: #1976d2; font-weight: 300;');
+    title.setAttribute('ignorelocizeeditor', '');
+    cont.appendChild(title);
+    var turnOn = document.createElement('button');
+    turnOn.innerHTML = 'Open in locize';
+    turnOn.setAttribute('style', "".concat(baseBtn, "  background-color: #1976d2;"));
+
+    turnOn.onclick = function () {
+      var i18next = options.getI18next();
+      var backendOptions = i18next && i18next.options && i18next.options.backend;
+
+      var _backendOptions$optio = _objectSpread2(_objectSpread2({}, backendOptions), options),
+          projectId = _backendOptions$optio.projectId,
+          version = _backendOptions$optio.version;
+
+      window.location = "https://www.locize.app/cat/".concat(projectId, "/v/").concat(version, "/incontext?sourceurl=").concat(encodeURI(window.location.href));
+    };
+
+    turnOn.setAttribute('ignorelocizeeditor', '');
+    cont.appendChild(turnOn);
+    document.body.appendChild(cont);
+  }
+
   var isInIframe = true;
 
   try {
@@ -227,10 +316,11 @@
       pendingMsgs.push(msg);
     }
   }
+  var i18next;
   var locizePlugin = {
     type: '3rdParty',
     init: function init(i18n) {
-      // i18next = i18n;
+      i18next = i18n;
       addLocizeSavedHandler(function (res) {
         res.updated.forEach(function (item) {
           var lng = item.lng,
@@ -251,6 +341,17 @@
       }
     }
   };
+
+  function getI18next() {
+    return i18next;
+  }
+
+  function showLocizeLink() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    if (!isInIframe) initUI(_objectSpread2(_objectSpread2({}, options), {}, {
+      getI18next: getI18next
+    }));
+  }
 
   if (typeof window !== 'undefined') {
     window.addEventListener('message', function (e) {
@@ -328,6 +429,7 @@
   exports.addLocizeSavedHandler = addLocizeSavedHandler;
   exports.locizePlugin = locizePlugin;
   exports.onAddedKey = onAddedKey;
+  exports.showLocizeLink = showLocizeLink;
   exports.turnOff = turnOff;
   exports.turnOn = turnOn;
 

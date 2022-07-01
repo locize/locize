@@ -24,7 +24,7 @@ npm i locize
 Just init like:
 
 ```js
-import "locize";
+import 'locize';
 ```
 
 ### by including the script
@@ -36,7 +36,7 @@ import "locize";
 ### with i18next
 
 ```js
-import { locizePlugin } from "locize";
+import { locizePlugin } from 'locize';
 
 i18next.use(locizePlugin);
 ```
@@ -47,7 +47,7 @@ Using react-i18next you might want to bind the editorSaved event to trigger a re
 i18next.init({
   // ...
   react: {
-    bindI18n: "languageChanged editorSaved",
+    bindI18n: 'languageChanged editorSaved',
   },
 });
 ```
@@ -59,7 +59,7 @@ This plugin is already included in [locizify](https://github.com/locize/locizify
 ### with other as module
 
 ```js
-import { addLocizeSavedHandler } from "locize";
+import { addLocizeSavedHandler } from 'locize';
 
 addLocizeSavedHandler((res) => {
   res.updated.forEach((item) => {
@@ -89,10 +89,25 @@ window.locizeSavedHandler = (res) => {
 ## turn on/off programmatically
 
 ```js
-import { turnOn, turnOff } from "locize";
+import { turnOn, turnOff } from 'locize';
 
 let isOff;
 
+// or use window.locize.turnOn
 isOff = turnOff(); // -> true
 isOff = turnOn(); // -> false
+```
+
+## show link to locize
+
+```js
+import { showLocizeLink } from 'locize';
+
+// or use window.locize.showLocizeLink
+showLocizeLink({
+  projectId: 'YOUR PROJECTID',
+  version: 'latest',
+});
+
+// when using with i18next of locizify projectId and version will be picked from backend options if available
 ```

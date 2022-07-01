@@ -1,4 +1,5 @@
 import { createClickHandler } from './clickHandler';
+import { initUI } from './ui';
 
 let isInIframe = true;
 try {
@@ -27,11 +28,12 @@ export function onAddedKey(lng, ns, key, value) {
   }
 }
 
+let i18next;
 export const locizePlugin = {
   type: '3rdParty',
 
   init(i18n) {
-    // i18next = i18n;
+    i18next = i18n;
 
     addLocizeSavedHandler((res) => {
       res.updated.forEach((item) => {
@@ -48,6 +50,14 @@ export const locizePlugin = {
     }
   },
 };
+
+function getI18next() {
+  return i18next;
+}
+
+export function showLocizeLink(options = {}) {
+  if (!isInIframe) initUI({ ...options, getI18next });
+}
 
 if (typeof window !== 'undefined') {
   window.addEventListener('message', (e) => {
