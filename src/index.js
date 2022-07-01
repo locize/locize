@@ -4,5 +4,5 @@ export {
   locizePlugin,
   turnOn,
   turnOff,
-  showLocizeLink,
+  showLocizeLink
 } from './PostMessageAPI';

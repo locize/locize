@@ -1,3 +1,7 @@
+### 2.3.1
+
+- code cosmetics and updated deps
+
 ### 2.3.0
 
 - add turnOn, turnOff function for programmatical on/off

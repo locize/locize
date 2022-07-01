@@ -20,7 +20,9 @@ export function addLocizeSavedHandler(hnd) {
 
 let pendingMsgs = [];
 export function onAddedKey(lng, ns, key, value) {
-  const msg = { message: 'added', lng, ns, key, value };
+  const msg = {
+    message: 'added', lng, ns, key, value
+  };
   if (source) {
     source.postMessage(msg, origin);
   } else {
@@ -37,7 +39,9 @@ export const locizePlugin = {
 
     addLocizeSavedHandler((res) => {
       res.updated.forEach((item) => {
-        const { lng, ns, key, data } = item;
+        const {
+          lng, ns, key, data
+        } = item;
         i18n.addResource(lng, ns, key, data.value, { silent: true });
         i18n.emit('editorSaved');
       });
@@ -48,7 +52,7 @@ export const locizePlugin = {
         if (!isUpdate) onAddedKey(lng, ns, k, val);
       };
     }
-  },
+  }
 };
 
 function getI18next() {
@@ -60,6 +64,7 @@ export function showLocizeLink(options = {}) {
 }
 
 if (typeof window !== 'undefined') {
+  // eslint-disable-next-line consistent-return
   window.addEventListener('message', (e) => {
     if (e.data.message === 'isLocizeEnabled') {
       // console.warn("result: ", ev.data);
@@ -83,19 +88,15 @@ if (typeof window !== 'undefined') {
       });
       pendingMsgs = [];
     } else if (e.data.message === 'turnOn') {
-      if (scriptTurnedOff)
-        return source.postMessage({ message: 'forcedOff' }, origin);
+      if (scriptTurnedOff) return source.postMessage({ message: 'forcedOff' }, origin);
 
-      if (!clickInterceptionEnabled)
-        window.document.body.addEventListener('click', handler, true);
+      if (!clickInterceptionEnabled) window.document.body.addEventListener('click', handler, true);
       clickInterceptionEnabled = true;
       source.postMessage({ message: 'turnedOn' }, origin);
     } else if (e.data.message === 'turnOff') {
-      if (scriptTurnedOff)
-        return source.postMessage({ message: 'forcedOff' }, origin);
+      if (scriptTurnedOff) return source.postMessage({ message: 'forcedOff' }, origin);
 
-      if (clickInterceptionEnabled)
-        window.document.body.removeEventListener('click', handler, true);
+      if (clickInterceptionEnabled) window.document.body.removeEventListener('click', handler, true);
       clickInterceptionEnabled = false;
       source.postMessage({ message: 'turnedOff' }, origin);
     } else if (e.data.message === 'committed') {
@@ -106,25 +107,23 @@ if (typeof window !== 'undefined') {
   });
 }
 
-export const turnOn = function () {
+export function turnOn() {
   scriptTurnedOff = false;
 
-  if (!clickInterceptionEnabled)
-    window.document.body.addEventListener('click', handler, true);
+  if (!clickInterceptionEnabled) window.document.body.addEventListener('click', handler, true);
   clickInterceptionEnabled = true;
 
   if (source) source.postMessage({ message: 'turnedOn' }, origin);
   return scriptTurnedOff;
-};
+}
 
-export const turnOff = function () {
+export function turnOff() {
   scriptTurnedOff = true;
 
-  if (clickInterceptionEnabled)
-    window.document.body.removeEventListener('click', handler, true);
+  if (clickInterceptionEnabled) window.document.body.removeEventListener('click', handler, true);
   clickInterceptionEnabled = false;
 
   if (source) source.postMessage({ message: 'turnedOff' }, origin);
   if (source) source.postMessage({ message: 'forcedOff' }, origin);
   return scriptTurnedOff;
-};
+}

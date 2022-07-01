@@ -1,16 +1,16 @@
-var i18next = require('i18next');
-var FsBackend = require('i18next-node-fs-backend');
-var middleware = require('i18next-express-middleware');
-var express = require('express');
-var bodyParser = require('body-parser');
-var fs = require('fs');
+// const i18next = require('i18next');
+// const FsBackend = require('i18next-node-fs-backend');
+// const middleware = require('i18next-express-middleware');
+const express = require('express');
+const bodyParser = require('body-parser');
+const fs = require('fs');
 
-var app = express();
+const app = express();
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
-app.get('/', function (req, res) {
-  res.sendFile(__dirname + '/index.html');
+app.get('/', (req, res) => {
+  res.sendFile(`${__dirname}/index.html`);
 });
 
 // app.get('/editor', function(req, res) {
@@ -23,8 +23,8 @@ app.get('/', function (req, res) {
 //   });
 // });
 
-app.get('/locize.js', function (req, res) {
-  fs.readFile(__dirname + '/../locize.js', 'utf-8', function (err, doc) {
+app.get('/locize.js', (req, res) => {
+  fs.readFile(`${__dirname}/../locize.js`, 'utf-8', (err, doc) => {
     res.send(doc);
   });
 });

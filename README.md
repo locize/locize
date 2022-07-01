@@ -1,5 +1,4 @@
 [![npm version](https://img.shields.io/npm/v/locize.svg?style=flat-square)](https://www.npmjs.com/package/locize)
-[![David](https://img.shields.io/david/locize/locize.svg?style=flat-square)](https://david-dm.org/locize/locize)
 
 # locize
 
