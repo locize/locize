@@ -472,6 +472,7 @@
   exports.addLocizeSavedHandler = addLocizeSavedHandler;
   exports.locizePlugin = locizePlugin;
   exports.onAddedKey = onAddedKey;
+  exports.setEditorLng = setEditorLng;
   exports.showLocizeLink = showLocizeLink;
   exports.turnOff = turnOff;
   exports.turnOn = turnOn;
