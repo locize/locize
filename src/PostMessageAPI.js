@@ -13,17 +13,21 @@ let handler;
 let clickInterceptionEnabled;
 let handleLocizeSaved;
 let scriptTurnedOff; // used to flag turnOff by developers using the exported functions -> disable the editor function by code
+let pendingMsgs = [];
 
 export function addLocizeSavedHandler(hnd) {
   handleLocizeSaved = hnd;
 }
 
 export function setEditorLng(lng) {
-  // console.warn('setLng', lng);
-  if (source) source.postMessage({ message: 'setLng', lng }, origin);
+  const msg = { message: 'setLng', lng };
+  if (source) {
+    source.postMessage(msg, origin);
+  } else {
+    pendingMsgs.push(msg);
+  }
 }
 
-let pendingMsgs = [];
 export function onAddedKey(lng, ns, key, value) {
   const msg = {
     message: 'added',

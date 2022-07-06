@@ -1,3 +1,7 @@
+### 2.4.1
+
+- optimize handling of setEditorLng if called to early
+
 ### 2.4.0
 
 - forward href changes
