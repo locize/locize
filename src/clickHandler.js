@@ -3,7 +3,7 @@ import {
   getClickedElement,
   getElementText,
   getElementI18nKey,
-  getElementNamespace,
+  getElementNamespace
 } from './utils';
 
 export function createClickHandler(cb, options) {
@@ -19,7 +19,9 @@ export function createClickHandler(cb, options) {
     const key = getElementI18nKey(el);
 
     const rectEl = el.getBoundingClientRect ? el : el.parentElement;
-    const { top, left, width, height } = rectEl.getBoundingClientRect();
+    const {
+      top, left, width, height
+    } = rectEl.getBoundingClientRect();
 
     const style = window.getComputedStyle(rectEl, null);
     const pT = parseFloat(style.getPropertyValue('padding-top'));
@@ -28,11 +30,10 @@ export function createClickHandler(cb, options) {
     const pL = parseFloat(style.getPropertyValue('padding-left'));
     const sizing = style.getPropertyValue('box-sizing');
 
+    // eslint-disable-next-line consistent-return
     function getFallbackNS() {
       const i18next = options.getI18next();
-
-      if (i18next && i18next.options && i18next.options.isLocizify)
-        return i18next.options.defaultNS;
+      if (i18next && i18next.options && i18next.options.isLocizify) return i18next.options.defaultNS;
     }
 
     cb({
@@ -44,9 +45,9 @@ export function createClickHandler(cb, options) {
         top,
         left,
         width: sizing === 'border-box' ? width : width - pR - pL,
-        height: sizing === 'border-box' ? height : height - pT - pB,
+        height: sizing === 'border-box' ? height : height - pT - pB
       },
-      style: style.cssText,
+      style: style.cssText
     });
   };
 

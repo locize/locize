@@ -5,5 +5,5 @@ export {
   turnOn,
   turnOff,
   showLocizeLink,
-  setEditorLng,
+  setEditorLng
 } from './PostMessageAPI';

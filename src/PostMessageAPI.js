@@ -18,6 +18,11 @@ export function addLocizeSavedHandler(hnd) {
   handleLocizeSaved = hnd;
 }
 
+export function setEditorLng(lng) {
+  // console.warn('setLng', lng);
+  if (source) source.postMessage({ message: 'setLng', lng }, origin);
+}
+
 let pendingMsgs = [];
 export function onAddedKey(lng, ns, key, value) {
   const msg = {
@@ -25,7 +30,7 @@ export function onAddedKey(lng, ns, key, value) {
     lng,
     ns,
     key,
-    value,
+    value
   };
   if (source) {
     source.postMessage(msg, origin);
@@ -43,7 +48,9 @@ export const locizePlugin = {
 
     addLocizeSavedHandler((res) => {
       res.updated.forEach((item) => {
-        const { lng, ns, key, data } = item;
+        const {
+          lng, ns, key, data
+        } = item;
         i18n.addResource(lng, ns, key, data.value, { silent: true });
         i18n.emit('editorSaved');
       });
@@ -58,7 +65,7 @@ export const locizePlugin = {
     i18next.on('languageChanged', (lng) => {
       setEditorLng(lng);
     });
-  },
+  }
 };
 
 function getI18next() {
@@ -97,19 +104,15 @@ if (typeof window !== 'undefined') {
       });
       pendingMsgs = [];
     } else if (e.data.message === 'turnOn') {
-      if (scriptTurnedOff)
-        return source.postMessage({ message: 'forcedOff' }, origin);
+      if (scriptTurnedOff) return source.postMessage({ message: 'forcedOff' }, origin);
 
-      if (!clickInterceptionEnabled)
-        window.document.body.addEventListener('click', handler, true);
+      if (!clickInterceptionEnabled) window.document.body.addEventListener('click', handler, true);
       clickInterceptionEnabled = true;
       source.postMessage({ message: 'turnedOn' }, origin);
     } else if (e.data.message === 'turnOff') {
-      if (scriptTurnedOff)
-        return source.postMessage({ message: 'forcedOff' }, origin);
+      if (scriptTurnedOff) return source.postMessage({ message: 'forcedOff' }, origin);
 
-      if (clickInterceptionEnabled)
-        window.document.body.removeEventListener('click', handler, true);
+      if (clickInterceptionEnabled) window.document.body.removeEventListener('click', handler, true);
       clickInterceptionEnabled = false;
       source.postMessage({ message: 'turnedOff' }, origin);
     } else if (e.data.message === 'committed') {
@@ -123,8 +126,7 @@ if (typeof window !== 'undefined') {
 export function turnOn() {
   scriptTurnedOff = false;
 
-  if (!clickInterceptionEnabled)
-    window.document.body.addEventListener('click', handler, true);
+  if (!clickInterceptionEnabled) window.document.body.addEventListener('click', handler, true);
   clickInterceptionEnabled = true;
 
   if (source) source.postMessage({ message: 'turnedOn' }, origin);
@@ -134,8 +136,7 @@ export function turnOn() {
 export function turnOff() {
   scriptTurnedOff = true;
 
-  if (clickInterceptionEnabled)
-    window.document.body.removeEventListener('click', handler, true);
+  if (clickInterceptionEnabled) window.document.body.removeEventListener('click', handler, true);
   clickInterceptionEnabled = false;
 
   if (source) source.postMessage({ message: 'turnedOff' }, origin);
@@ -143,30 +144,24 @@ export function turnOff() {
   return scriptTurnedOff;
 }
 
-export function setEditorLng(lng) {
-  // console.warn('setLng', lng);
-  if (source) source.postMessage({ message: 'setLng', lng }, origin);
-}
-
-var oldHref = document.location.href;
+let oldHref = window.document.location.href;
 window.addEventListener('load', () => {
-  var bodyList = document.querySelector('body');
+  const bodyList = window.document.querySelector('body');
 
-  var observer = new MutationObserver(function (mutations) {
-    mutations.forEach(function (mutation) {
-      if (oldHref != document.location.href) {
+  const observer = new window.MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (oldHref !== window.document.location.href) {
         // console.warn('url changed', oldHref, document.location.href);
-        oldHref = document.location.href;
+        oldHref = window.document.location.href;
 
-        if (source)
-          source.postMessage({ message: 'hrefChanged', href: oldHref }, origin);
+        if (source) source.postMessage({ message: 'hrefChanged', href: oldHref }, origin);
       }
     });
   });
 
-  var config = {
+  const config = {
     childList: true,
-    subtree: true,
+    subtree: true
   };
 
   observer.observe(bodyList, config);
