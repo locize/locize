@@ -2,8 +2,7 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <script src="https://unpkg.com/vue/dist/vue.js"></script>
-    <script src="https://unpkg.com/vue-i18n/dist/vue-i18n.js"></script>
+    <script src="https://unpkg.com/i18next/i18next.js"></script>
     <script src="https://unpkg.com/locizer/locizer.min.js"></script>
     <script src="/locize.js"></script>
   </head>
@@ -12,15 +11,78 @@
     <div id="app">
       <div>
         <p>lorem ipsum</p>
+
+        <div i18next-options='{"ns": "ns1"}'>
+          <p>different namespace common is used</p>
+          <p>all the way down</p>
+
+          <p data-i18n="myKey">this has even a key</p>
+        </div>
+
+        <button onclick="i18next.changeLanguage('en')">english</button>
+        <button onclick="i18next.changeLanguage('de')">german</button>
+        <button
+          onclick="history.pushState({}, 'nope', '/#test');i18next.changeLanguage('it')"
+        >
+          href
+        </button>
+
+        <div id="output"></div>
       </div>
     </div>
     <script>
-      console.warn(this.locize);
+      // console.warn(this.locize, this.i18next);
       this.locize.showLocizeLink({
         projectId: '3f71a25a-00db-4780-adcf-6a07dc96e00f',
         version: 'latest',
         // editorUrl: 'https://dev.locize.app'
       });
+
+      i18next.use(this.locize.locizePlugin);
+      i18next.init(
+        {
+          lng: 'en',
+          defaultNS: 'app',
+          debug: true,
+          isLocizify: true,
+          resources: {
+            en: {
+              app: {
+                key: 'hello world',
+              },
+            },
+            de: {
+              app: {
+                key: 'hello welt',
+              },
+            },
+            it: {
+              app: {
+                key: 'ciao mondo',
+              },
+            },
+          },
+        },
+        function (err, t) {
+          // init set content
+          updateContent();
+        }
+      );
+
+      function updateContent() {
+        document.getElementById('output').innerHTML = i18next.t('key', {
+          count: 10,
+        });
+      }
+
+      function changeLng(lng) {
+        i18next.changeLanguage(lng);
+      }
+
+      i18next.on('languageChanged', () => {
+        updateContent();
+      });
+
       // var NAMESPACE = 'translations';
       // var PROJECTID = '832e1b7a-fb77-4a10-b3cb-78b75e0b78db';
       // var APIKEY = 'cd2b28ed-a2d7-43fb-b215-5d0deade8441';

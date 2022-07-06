@@ -2,42 +2,22 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.locize = {}));
-})(this, (function (exports) { 'use strict';
-
-  function ownKeys(object, enumerableOnly) {
-    var keys = Object.keys(object);
-
-    if (Object.getOwnPropertySymbols) {
-      var symbols = Object.getOwnPropertySymbols(object);
-      enumerableOnly && (symbols = symbols.filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-      })), keys.push.apply(keys, symbols);
-    }
-
-    return keys;
-  }
-
-  function _objectSpread2(target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = null != arguments[i] ? arguments[i] : {};
-      i % 2 ? ownKeys(Object(source), !0).forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) {
-        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-      });
-    }
-
-    return target;
-  }
+}(this, (function (exports) { 'use strict';
 
   function _typeof(obj) {
     "@babel/helpers - typeof";
 
-    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
-      return typeof obj;
-    } : function (obj) {
-      return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    }, _typeof(obj);
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof = function (obj) {
+        return typeof obj;
+      };
+    } else {
+      _typeof = function (obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof(obj);
   }
 
   function _defineProperty(obj, key, value) {
@@ -53,6 +33,40 @@
     }
 
     return obj;
+  }
+
+  function ownKeys(object, enumerableOnly) {
+    var keys = Object.keys(object);
+
+    if (Object.getOwnPropertySymbols) {
+      var symbols = Object.getOwnPropertySymbols(object);
+      if (enumerableOnly) symbols = symbols.filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+      });
+      keys.push.apply(keys, symbols);
+    }
+
+    return keys;
+  }
+
+  function _objectSpread2(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i] != null ? arguments[i] : {};
+
+      if (i % 2) {
+        ownKeys(Object(source), true).forEach(function (key) {
+          _defineProperty(target, key, source[key]);
+        });
+      } else if (Object.getOwnPropertyDescriptors) {
+        Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+      } else {
+        ownKeys(Object(source)).forEach(function (key) {
+          Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+        });
+      }
+    }
+
+    return target;
   }
 
   function isWindow(obj) {
@@ -72,7 +86,7 @@
     var docElem = doc && doc.documentElement;
     if (!docElem) return box;
 
-    if (_typeof(elem.getBoundingClientRect) !== ("undefined" )) {
+    if (_typeof(elem.getBoundingClientRect) !== ( "undefined" )) {
       box = elem.getBoundingClientRect();
     }
 
@@ -129,7 +143,7 @@
 
         var _nOffset = offset(_n);
 
-        if (_nOffset.left > left) {
+        if ( _nOffset.left > left) {
           break;
         }
 
@@ -188,7 +202,7 @@
   }
 
   /* eslint-disable import/prefer-default-export */
-  function createClickHandler(cb) {
+  function createClickHandler(cb, options) {
     // eslint-disable-next-line consistent-return
     var handler = function handler(e) {
       var el = getClickedElement(e);
@@ -211,11 +225,17 @@
       var pR = parseFloat(style.getPropertyValue('padding-right'));
       var pL = parseFloat(style.getPropertyValue('padding-left'));
       var sizing = style.getPropertyValue('box-sizing');
+
+      function getFallbackNS() {
+        var i18next = options.getI18next();
+        if (i18next && i18next.options && i18next.options.isLocizify) return i18next.options.defaultNS;
+      }
+
       cb({
         tagName: rectEl.tagName,
         text: text,
         key: key,
-        ns: getElementNamespace(el),
+        ns: getElementNamespace(el) || getFallbackNS(),
         box: {
           top: top,
           left: left,
@@ -327,6 +347,10 @@
           if (!isUpdate) onAddedKey(lng, ns, k, val);
         };
       }
+
+      i18next.on('languageChanged', function (lng) {
+        setEditorLng(lng);
+      });
     }
   };
 
@@ -355,6 +379,8 @@
               message: 'clickedElement',
               payload: payload
             }, origin);
+          }, {
+            getI18next: getI18next
           }); // document.body.addEventListener('click', handler, true);
           // clickInterceptionEnabled = true;
         }
@@ -414,6 +440,34 @@
     }, origin);
     return scriptTurnedOff;
   }
+  function setEditorLng(lng) {
+    // console.warn('setLng', lng);
+    if (source) source.postMessage({
+      message: 'setLng',
+      lng: lng
+    }, origin);
+  }
+  var oldHref = document.location.href;
+  window.addEventListener('load', function () {
+    var bodyList = document.querySelector('body');
+    var observer = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        if (oldHref != document.location.href) {
+          // console.warn('url changed', oldHref, document.location.href);
+          oldHref = document.location.href;
+          if (source) source.postMessage({
+            message: 'hrefChanged',
+            href: oldHref
+          }, origin);
+        }
+      });
+    });
+    var config = {
+      childList: true,
+      subtree: true
+    };
+    observer.observe(bodyList, config);
+  });
 
   exports.addLocizeSavedHandler = addLocizeSavedHandler;
   exports.locizePlugin = locizePlugin;
@@ -424,4 +478,4 @@
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-}));
+})));

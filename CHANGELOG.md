@@ -1,3 +1,9 @@
+### 2.4.0
+
+- forward href changes
+- forward lng change (if using i18nextPlugin)
+- fallback ns detected to defaultNS if locizify
+
 ### 2.3.1
 
 - code cosmetics and updated deps
