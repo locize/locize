@@ -1,4 +1,4 @@
-### 2.4.1
+### 2.4.2
 
 - optimize handling of setEditorLng if called to early
 
