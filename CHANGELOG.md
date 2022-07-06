@@ -1,3 +1,7 @@
+### 2.4.3
+
+- send href changed on load
+
 ### 2.4.2
 
 - optimize handling of setEditorLng if called to early

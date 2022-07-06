@@ -28,6 +28,15 @@ export function setEditorLng(lng) {
   }
 }
 
+function sendHrefChanged(href) {
+  const msg = { message: 'hrefChanged', href };
+  if (source) {
+    source.postMessage(msg, origin);
+  } else {
+    pendingMsgs.push(msg);
+  }
+}
+
 export function onAddedKey(lng, ns, key, value) {
   const msg = {
     message: 'added',
@@ -150,6 +159,8 @@ export function turnOff() {
 
 let oldHref = window.document.location.href;
 window.addEventListener('load', () => {
+  sendHrefChanged(window.document.location.href);
+
   const bodyList = window.document.querySelector('body');
 
   const observer = new window.MutationObserver((mutations) => {
@@ -158,7 +169,7 @@ window.addEventListener('load', () => {
         // console.warn('url changed', oldHref, document.location.href);
         oldHref = window.document.location.href;
 
-        if (source) source.postMessage({ message: 'hrefChanged', href: oldHref }, origin);
+        sendHrefChanged(oldHref);
       }
     });
   });
