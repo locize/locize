@@ -157,27 +157,29 @@ export function turnOff() {
   return scriptTurnedOff;
 }
 
-let oldHref = window.document.location.href;
-window.addEventListener('load', () => {
-  sendHrefChanged(window.document.location.href);
+if (typeof window !== 'undefined') {
+  let oldHref = window.document.location.href;
+  window.addEventListener('load', () => {
+    sendHrefChanged(window.document.location.href);
 
-  const bodyList = window.document.querySelector('body');
+    const bodyList = window.document.querySelector('body');
 
-  const observer = new window.MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (oldHref !== window.document.location.href) {
-        // console.warn('url changed', oldHref, document.location.href);
-        oldHref = window.document.location.href;
+    const observer = new window.MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (oldHref !== window.document.location.href) {
+          // console.warn('url changed', oldHref, document.location.href);
+          oldHref = window.document.location.href;
 
-        sendHrefChanged(oldHref);
-      }
+          sendHrefChanged(oldHref);
+        }
+      });
     });
+
+    const config = {
+      childList: true,
+      subtree: true
+    };
+
+    observer.observe(bodyList, config);
   });
-
-  const config = {
-    childList: true,
-    subtree: true
-  };
-
-  observer.observe(bodyList, config);
-});
+}

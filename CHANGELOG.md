@@ -1,3 +1,7 @@
+### 2.4.4
+
+- check for window
+
 ### 2.4.3
 
 - send href changed on load

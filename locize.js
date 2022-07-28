@@ -452,25 +452,28 @@
     }, origin);
     return scriptTurnedOff;
   }
-  var oldHref = window.document.location.href;
-  window.addEventListener('load', function () {
-    sendHrefChanged(window.document.location.href);
-    var bodyList = window.document.querySelector('body');
-    var observer = new window.MutationObserver(function (mutations) {
-      mutations.forEach(function (mutation) {
-        if (oldHref !== window.document.location.href) {
-          // console.warn('url changed', oldHref, document.location.href);
-          oldHref = window.document.location.href;
-          sendHrefChanged(oldHref);
-        }
+
+  if (typeof window !== 'undefined') {
+    var oldHref = window.document.location.href;
+    window.addEventListener('load', function () {
+      sendHrefChanged(window.document.location.href);
+      var bodyList = window.document.querySelector('body');
+      var observer = new window.MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          if (oldHref !== window.document.location.href) {
+            // console.warn('url changed', oldHref, document.location.href);
+            oldHref = window.document.location.href;
+            sendHrefChanged(oldHref);
+          }
+        });
       });
+      var config = {
+        childList: true,
+        subtree: true
+      };
+      observer.observe(bodyList, config);
     });
-    var config = {
-      childList: true,
-      subtree: true
-    };
-    observer.observe(bodyList, config);
-  });
+  }
 
   exports.addLocizeSavedHandler = addLocizeSavedHandler;
   exports.locizePlugin = locizePlugin;
