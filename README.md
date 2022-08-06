@@ -58,7 +58,7 @@ This plugin is already included in [locizify](https://github.com/locize/locizify
 ### with other as module
 
 ```js
-import { addLocizeSavedHandler } from 'locize';
+import { addLocizeSavedHandler, setEditorLng } from 'locize';
 
 addLocizeSavedHandler((res) => {
   res.updated.forEach((item) => {
@@ -67,6 +67,9 @@ addLocizeSavedHandler((res) => {
     // and maybe rerender your UI
   });
 });
+
+// switch lng in locize editor
+setEditorLng(lng);
 ```
 
 ### with other in vanilla javascript
