@@ -1,3 +1,7 @@
+### 2.4.5
+
+- only handle messages containing data.message
+
 ### 2.4.4
 
 - check for window

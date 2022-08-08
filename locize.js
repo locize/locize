@@ -380,6 +380,8 @@
   if (typeof window !== 'undefined') {
     // eslint-disable-next-line consistent-return
     window.addEventListener('message', function (e) {
+      if (!e.data || !e.data.message) return;
+
       if (e.data.message === 'isLocizeEnabled') {
         // console.warn("result: ", ev.data);
         // parent => ev.source;
