@@ -6,6 +6,7 @@ coverage/
 .eslintignore
 .eslintrc
 .gitignore
+.ts.eslintrc
 bower.json
 gulpfile.js
 karma.conf.js

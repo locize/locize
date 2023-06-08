@@ -1,3 +1,7 @@
+### 2.4.6
+
+- add basic types
+
 ### 2.4.5
 
 - only handle messages containing data.message

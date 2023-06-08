@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "lib": [ "es2015" ],
+    "module": "commonjs",
+    "noEmit": true,
+    "strict": true,
+    "paths": { "locize": ["./index.d.ts"] }
+  },
+  "include": [
+    "/test/types/*.test-d.ts",
+    "/*.d.ts"
+  ]
+}

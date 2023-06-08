@@ -1,5 +1,5 @@
-/* eslint no-var: 0 */
-var main = require('./dist/cjs/i18nextLocalStorageBackend.js').default;
+// eslint-disable-next-line import/extensions, no-var
+var main = require('./src/index.js');
 
 module.exports = main;
 module.exports.default = main;

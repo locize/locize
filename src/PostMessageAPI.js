@@ -43,7 +43,7 @@ export function onAddedKey(lng, ns, key, value) {
     lng,
     ns,
     key,
-    value,
+    value
   };
   if (source) {
     source.postMessage(msg, origin);
@@ -61,7 +61,9 @@ export const locizePlugin = {
 
     addLocizeSavedHandler((res) => {
       res.updated.forEach((item) => {
-        const { lng, ns, key, data } = item;
+        const {
+          lng, ns, key, data
+        } = item;
         i18n.addResource(lng, ns, key, data.value, { silent: true });
         i18n.emit('editorSaved');
       });
@@ -76,7 +78,7 @@ export const locizePlugin = {
     i18next.on('languageChanged', (lng) => {
       setEditorLng(lng);
     });
-  },
+  }
 };
 
 function getI18next() {
@@ -117,19 +119,17 @@ if (typeof window !== 'undefined') {
       });
       pendingMsgs = [];
     } else if (e.data.message === 'turnOn') {
-      if (scriptTurnedOff)
-        return source.postMessage({ message: 'forcedOff' }, origin);
+      // eslint-disable-next-line consistent-return
+      if (scriptTurnedOff) return source.postMessage({ message: 'forcedOff' }, origin);
 
-      if (!clickInterceptionEnabled)
-        window.document.body.addEventListener('click', handler, true);
+      if (!clickInterceptionEnabled) window.document.body.addEventListener('click', handler, true);
       clickInterceptionEnabled = true;
       source.postMessage({ message: 'turnedOn' }, origin);
     } else if (e.data.message === 'turnOff') {
-      if (scriptTurnedOff)
-        return source.postMessage({ message: 'forcedOff' }, origin);
+      // eslint-disable-next-line consistent-return
+      if (scriptTurnedOff) return source.postMessage({ message: 'forcedOff' }, origin);
 
-      if (clickInterceptionEnabled)
-        window.document.body.removeEventListener('click', handler, true);
+      if (clickInterceptionEnabled) window.document.body.removeEventListener('click', handler, true);
       clickInterceptionEnabled = false;
       source.postMessage({ message: 'turnedOff' }, origin);
     } else if (e.data.message === 'committed') {
@@ -143,8 +143,7 @@ if (typeof window !== 'undefined') {
 export function turnOn() {
   scriptTurnedOff = false;
 
-  if (!clickInterceptionEnabled)
-    window.document.body.addEventListener('click', handler, true);
+  if (!clickInterceptionEnabled) window.document.body.addEventListener('click', handler, true);
   clickInterceptionEnabled = true;
 
   if (source) source.postMessage({ message: 'turnedOn' }, origin);
@@ -154,8 +153,7 @@ export function turnOn() {
 export function turnOff() {
   scriptTurnedOff = true;
 
-  if (clickInterceptionEnabled)
-    window.document.body.removeEventListener('click', handler, true);
+  if (clickInterceptionEnabled) window.document.body.removeEventListener('click', handler, true);
   clickInterceptionEnabled = false;
 
   if (source) source.postMessage({ message: 'turnedOff' }, origin);
@@ -183,7 +181,7 @@ if (typeof window !== 'undefined') {
 
     const config = {
       childList: true,
-      subtree: true,
+      subtree: true
     };
 
     observer.observe(bodyList, config);
