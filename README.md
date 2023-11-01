@@ -111,5 +111,5 @@ showLocizeLink({
   version: 'latest',
 });
 
-// when using with i18next of locizify projectId and version will be picked from backend options if available
+// when using with i18next or locizify projectId and version will be picked from backend options if available
 ```
