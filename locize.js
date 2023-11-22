@@ -348,7 +348,7 @@
         action = _e$data.action,
         message = _e$data.message,
         payload = _e$data.payload;
-      if (message) {
+      if (message && handlers[message]) {
         handlers[message].forEach(function (fc) {
           fc(payload, e);
         });
