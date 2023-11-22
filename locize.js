@@ -493,6 +493,7 @@
   function handler$6(payload) {
     api.initialized = true;
     clearInterval(api.initInterval);
+    delete api.initInterval;
     api.sendCurrentParsedContent();
     api.sendCurrentTargetLanguage();
   }
@@ -2444,7 +2445,9 @@
         }
         triggerMutation = true;
         var includedAlready = targetEles.reduce(function (mem, element) {
-          if (mem || element.contains(mutation.target) || !mutation.target.parentElement) return true;
+          if (mem || element.contains(mutation.target) || !mutation.target.parentElement) {
+            return true;
+          }
           return false;
         }, false);
         if (!includedAlready) {
