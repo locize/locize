@@ -68,9 +68,14 @@ export const locizePlugin = {
         return 'dev'
       },
       getLocizeDetails: () => {
-        const backendName = i18n.services.backendConnector.backend
-          ? i18n.services.backendConnector.backend.constructor.name
-          : 'options.resources'
+        let backendName
+        if (i18n.services.backendConnector.backend && i18n.services.backendConnector.backend.options && i18n.services.backendConnector.backend.options.loadPath && i18n.services.backendConnector.backend.options.loadPath.indexOf('.locize.') > 0) {
+          backendName = 'I18NextLocizeBackend'
+        } else {
+          backendName = i18n.services.backendConnector.backend
+            ? i18n.services.backendConnector.backend.constructor.name
+            : 'options.resources'
+        }
 
         const opts = {
           backendName,

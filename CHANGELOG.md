@@ -1,3 +1,7 @@
+### 3.0.2
+
+- optimize detection for i18next backend
+
 ### 3.0.1
 
 - fix for use cases where body may be invisible first
