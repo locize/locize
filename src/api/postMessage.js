@@ -75,11 +75,15 @@ export const api = {
   requestInitialize: payload => {
     sendMessage('requestInitialize', payload)
 
+    if (api.initInterval) return
     api.initInterval = setInterval(() => {
       repeat = repeat - 1
       api.requestInitialize(payload)
 
-      if (repeat < 0 && api.initInterval) clearInterval(api.initInterval)
+      if (repeat < 0 && api.initInterval) {
+        clearInterval(api.initInterval)
+        delete api.initInterval
+      }
     }, 1000)
   },
 
