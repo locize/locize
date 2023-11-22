@@ -25,7 +25,8 @@ export function setEditorLng (lng) {
 
 let pendingMsgs = []
 export function sendMessage (action, payload) {
-  if (!api.source) api.source = document.getElementById('i18next-editor-iframe')?.contentWindow
+  if (!api.source)
+    api.source = document.getElementById('i18next-editor-iframe')?.contentWindow
   if (!api.origin) api.origin = getIframeUrl()
 
   if (!api.source || !api.source.postMessage) {
@@ -43,7 +44,13 @@ export function sendMessage (action, payload) {
     )
   } else {
     api.source.postMessage(
-      { sender: 'i18next-editor', senderAPIVersion: 'v1', action, message: action, payload }, // message for legacy
+      {
+        sender: 'i18next-editor',
+        senderAPIVersion: 'v1',
+        action,
+        message: action,
+        payload
+      }, // message for legacy
       api.origin
     )
   }
@@ -96,7 +103,9 @@ export const api = {
   },
 
   sendCurrentTargetLanguage: lng => {
-    sendMessage('sendCurrentTargetLanguage', { targetLng: lng || api.i18n.getLng() })
+    sendMessage('sendCurrentTargetLanguage', {
+      targetLng: lng || api.i18n.getLng()
+    })
   },
 
   addHandler: (action, fc) => {
@@ -112,7 +121,9 @@ export const api = {
   turnOn: () => {
     if (api.scriptTurnedOff) return sendMessage('forcedOff')
 
-    if (!api.clickInterceptionEnabled) { window.document.body.addEventListener('click', api.clickHandler, true) }
+    if (!api.clickInterceptionEnabled) {
+      window.document.body.addEventListener('click', api.clickHandler, true)
+    }
     api.clickInterceptionEnabled = true
     sendMessage('turnedOn')
   },
@@ -120,7 +131,9 @@ export const api = {
   turnOff: () => {
     if (api.scriptTurnedOff) return sendMessage('forcedOff')
 
-    if (api.clickInterceptionEnabled) { window.document.body.removeEventListener('click', api.clickHandler, true) }
+    if (api.clickInterceptionEnabled) {
+      window.document.body.removeEventListener('click', api.clickHandler, true)
+    }
     api.clickInterceptionEnabled = false
     sendMessage('turnedOff')
   },
@@ -141,7 +154,7 @@ if (typeof window !== 'undefined') {
   window.addEventListener('message', e => {
     const { sender, /* senderAPIVersion, */ action, message, payload } = e.data
 
-    if (message) {
+    if (message && handlers[message]) {
       handlers[message].forEach(fc => {
         fc(payload, e)
       })

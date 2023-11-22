@@ -8,7 +8,9 @@
     <h1 id="maintitle" data-i18n="title">Test on text node</h1>
 
     <div>
-      <p data-i18n="[title]test.title;[html]introduction">Test on another node</p>
+      <p data-i18n="[title]test.title;[html]introduction">
+        Test on another node
+      </p>
     </div>
     <h4 id="subtitle" data-i18n="title">Test on text node</h4>
     <hr />
@@ -49,40 +51,40 @@
     <script>
       process = {
         env: {
-          locizeIncontext: 'development',
-        },
-      };
+          locizeIncontext: 'development'
+        }
+      }
     </script>
     <script>
       // just simulating some interactivity adding, removing content
       setTimeout(function () {
-        var ele = document.body;
+        var ele = document.body
 
-        var btn = document.createElement('BUTTON');
-        var t = document.createTextNode(i18next.t('common:button.clickMe'));
-        btn.appendChild(t);
+        var btn = document.createElement('BUTTON')
+        var t = document.createTextNode(i18next.t('common:button.clickMe'))
+        btn.appendChild(t)
 
-        console.log('appendingFromOutside');
-        ele.appendChild(btn);
-      }, 5000);
-
-      setTimeout(function () {
-        var ele = document.getElementById('appendToInner');
-
-        var btn = document.createElement('BUTTON');
-        var t = document.createTextNode(i18next.t('common:button.clickMeInner'));
-        btn.appendChild(t);
-
-        console.log('appendingFromOutsideToInner');
-        ele.appendChild(btn);
-      }, 5000);
+        console.log('appendingFromOutside')
+        ele.appendChild(btn)
+      }, 5000)
 
       setTimeout(function () {
-        var ele = document.getElementById('removeFromInner');
+        var ele = document.getElementById('appendToInner')
 
-        console.log('removeFromInner');
-        ele.innerHTML = '';
-      }, 8000);
+        var btn = document.createElement('BUTTON')
+        var t = document.createTextNode(i18next.t('common:button.clickMeInner'))
+        btn.appendChild(t)
+
+        console.log('appendingFromOutsideToInner')
+        ele.appendChild(btn)
+      }, 5000)
+
+      setTimeout(function () {
+        var ele = document.getElementById('removeFromInner')
+
+        console.log('removeFromInner')
+        ele.innerHTML = ''
+      }, 8000)
     </script>
 
     <!-- <script
@@ -92,7 +94,7 @@ version="latest"
 type="module"
 > -->
     <script id="locize" type="module">
-      import { locizePlugin } from '/../../src/locizePlugin.js';
+      import { locizePlugin } from '/../../src/locizePlugin.js'
 
       i18next.use(locizePlugin).init(
         {
@@ -105,8 +107,8 @@ type="module"
           resources: {
             de: {
               translation: {
-                title: 'Willkommen beim Test für den i18next incontext editor',
-              },
+                title: 'Willkommen beim Test für den i18next incontext editor'
+              }
             },
             en: {
               translation: {
@@ -117,24 +119,24 @@ type="module"
                 test: {
                   title: 'Title attribute',
                   placeholder: 'Placeholder attribute',
-                  alt: 'Alt attribute',
-                },
+                  alt: 'Alt attribute'
+                }
               },
               common: {
                 button: {
                   hoverMe: 'Hover this link',
                   clickMe: 'Click this button',
-                  clickMeInner: 'Click another button',
-                },
-              },
-            },
-          },
+                  clickMeInner: 'Click another button'
+                }
+              }
+            }
+          }
         },
         function (err, t) {
-          var localize = locI18next.init(i18next);
-          localize('#main');
-        },
-      );
+          var localize = locI18next.init(i18next)
+          localize('#main')
+        }
+      )
     </script>
   </body>
 </html>
