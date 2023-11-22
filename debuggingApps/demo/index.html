@@ -48,6 +48,9 @@
 
     <div>dynamically added:</div>
     <div id="appendToInner"></div>
+    <div>
+      <button id="updateBtn" data-locize-editor-ignore="true">initial</button>
+    </div>
     <script>
       process = {
         env: {
@@ -85,6 +88,13 @@
         console.log('removeFromInner')
         ele.innerHTML = ''
       }, 8000)
+
+      let i = 1
+      setInterval(function () {
+        var ele = document.getElementById('updateBtn')
+        ele.innerText = i
+        i = i + 1
+      }, 1000)
     </script>
 
     <!-- <script

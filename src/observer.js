@@ -1,6 +1,17 @@
 import { debounce } from './utils.js'
 import { validAttributes } from './vars.js'
 
+function ignoreMutation (ele) {
+  const ret =
+    ele.dataset &&
+    (ele.dataset.i18nextEditorElement === 'true' ||
+      ele.dataset.locizeEditorIgnore === 'true')
+
+  if (!ret && ele.parentElement) return ignoreMutation(ele.parentElement)
+
+  return ret
+}
+
 export function createObserver (ele, handle) {
   // enable some skip for internal mutations
   let internalChange
@@ -33,21 +44,28 @@ export function createObserver (ele, handle) {
     // store most outer element for mutation
     mutations.forEach(function (mutation) {
       // ignore, eg. we're not interested in style changes
-      if (mutation.type === 'attributes' && !validAttributes.includes(mutation.attributeName)) { return }
+      if (
+        mutation.type === 'attributes' &&
+        !validAttributes.includes(mutation.attributeName)
+      ) {
+        return
+      }
 
       // ignore mutation done by our elements
       if (mutation.type === 'childList') {
         let notOurs = 0
 
-        mutation.addedNodes.forEach(n => {
-          if (n.dataset && n.dataset.i18nextEditorElement === 'true') return
-          notOurs = notOurs + 1
-        }, 0)
+        if (!ignoreMutation(mutation.target)) {
+          mutation.addedNodes.forEach(n => {
+            if (ignoreMutation(n)) return
+            notOurs = notOurs + 1
+          }, 0)
 
-        mutation.removedNodes.forEach(n => {
-          if (n.dataset && n.dataset.i18nextEditorElement === 'true') return
-          notOurs = notOurs + 1
-        }, 0)
+          mutation.removedNodes.forEach(n => {
+            if (ignoreMutation(n)) return
+            notOurs = notOurs + 1
+          }, 0)
+        }
 
         if (notOurs === 0) return
       }
@@ -57,14 +75,21 @@ export function createObserver (ele, handle) {
 
       // test if mutated element is already part of another mutation
       const includedAlready = targetEles.reduce((mem, element) => {
-        if (mem || element.contains(mutation.target) || !mutation.target.parentElement) return true
+        if (
+          mem ||
+          element.contains(mutation.target) ||
+          !mutation.target.parentElement
+        )
+          return true
         return false
       }, false)
 
       // if not remove elements contained in this mutation element
       // and add it
       if (!includedAlready) {
-        targetEles = targetEles.filter(element => !mutation.target.contains(element))
+        targetEles = targetEles.filter(
+          element => !mutation.target.contains(element)
+        )
         targetEles.push(mutation.target)
       }
 

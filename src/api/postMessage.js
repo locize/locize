@@ -36,7 +36,7 @@ export function sendMessage (action, payload) {
     return
   }
 
-  // console.warn('out ok - ', api.source, api.origin, action, payload);
+  // console.warn('out ok - ', api.source, api.origin, action, payload)
 
   if (api.legacy) {
     api.source.postMessage(
