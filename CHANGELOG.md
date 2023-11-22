@@ -1,3 +1,7 @@
+### 3.0.1
+
+- fix for use cases where body may be invisible first
+
 ### 3.0.0
 
 - This module can now be used for both type of incontext editors - as iframe (old) or with iframe (new).

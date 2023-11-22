@@ -54,7 +54,7 @@ export const locizePlugin = {
         if (typeof fallback === 'string') return fallback
         if (Array.isArray(fallback)) return fallback[fallback.length - 1]
 
-        if (fallback.default) {
+        if (fallback && fallback.default) {
           if (typeof fallback.default === 'string') return fallback
           if (Array.isArray(fallback.default)) return fallback.default[fallback.default.length - 1]
         }

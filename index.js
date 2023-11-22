@@ -1,5 +1,5 @@
-// eslint-disable-next-line import/extensions, no-var
-var main = require('./src/index.js');
+import main from './src/index.js'
 
-module.exports = main;
-module.exports.default = main;
+export * from './src/index.js'
+
+export default main

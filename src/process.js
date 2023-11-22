@@ -34,22 +34,29 @@ export function start (implementation = {}) {
   implementation?.bindLanguageChange(lng => {
     api.sendCurrentTargetLanguage(implementation.getLng())
   })
-  const observer = createObserver(document.body, eles => {
-    eles.forEach(ele => {
-      data = parseTree(ele)
-    })
-    api.sendCurrentParsedContent()
-  })
-  observer.start()
 
-  startMouseTracking(observer)
-
-  // append popup
-  document.body.append(
-    Popup(getIframeUrl(), () => {
-      api.requestInitialize(config)
+  function continueToStart () {
+    const observer = createObserver(document.body, eles => {
+      eles.forEach(ele => {
+        data = parseTree(ele)
+      })
+      api.sendCurrentParsedContent()
     })
-  )
-  initDragElement()
-  initResizeElement()
+    observer.start()
+
+    startMouseTracking(observer)
+
+    // append popup
+    document.body.append(
+      Popup(getIframeUrl(), () => {
+        api.requestInitialize(config)
+      })
+    )
+    initDragElement()
+    initResizeElement()
+  }
+
+  if (document.body) return continueToStart()
+
+  window.addEventListener('load', () => continueToStart())
 }
