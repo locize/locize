@@ -120,8 +120,14 @@ function Minimize (popupEle, onMinimize) {
   image.style.cursor = 'pointer'
 
   image.onclick = () => {
-    popupEle.style.setProperty('--i18next-editor-popup-position-top', popupEle.style.top)
-    popupEle.style.setProperty('--i18next-editor-popup-position-left', popupEle.style.left)
+    popupEle.style.setProperty(
+      '--i18next-editor-popup-position-top',
+      popupEle.style.top
+    )
+    popupEle.style.setProperty(
+      '--i18next-editor-popup-position-left',
+      popupEle.style.left
+    )
 
     popupEle.style.animation = 'i18next-editor-animate-bottom 2s forwards'
 
@@ -197,7 +203,7 @@ export function Popup (url, cb) {
   iframe.style = `
     z-index: 100;
     width: 100%;
-    height: calc(100% - 32px);
+    height: calc(100% - 28px);
     border: none;
     background: #fff;
   `
