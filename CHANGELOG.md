@@ -1,3 +1,7 @@
+### 3.0.4
+
+- style: adapt hight
+
 ### 3.0.3
 
 - ignore element flag
