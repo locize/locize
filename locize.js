@@ -2395,6 +2395,11 @@
     return found;
   }
 
+  function ignoreMutation(ele) {
+    var ret = ele.dataset && (ele.dataset.i18nextEditorElement === 'true' || ele.dataset.locizeEditorIgnore === 'true');
+    if (!ret && ele.parentElement) return ignoreMutation(ele.parentElement);
+    return ret;
+  }
   function createObserver(ele, handle) {
     var internalChange;
     var lastToggleTimeout;
@@ -2421,14 +2426,16 @@
         }
         if (mutation.type === 'childList') {
           var notOurs = 0;
-          mutation.addedNodes.forEach(function (n) {
-            if (n.dataset && n.dataset.i18nextEditorElement === 'true') return;
-            notOurs = notOurs + 1;
-          }, 0);
-          mutation.removedNodes.forEach(function (n) {
-            if (n.dataset && n.dataset.i18nextEditorElement === 'true') return;
-            notOurs = notOurs + 1;
-          }, 0);
+          if (!ignoreMutation(mutation.target)) {
+            mutation.addedNodes.forEach(function (n) {
+              if (ignoreMutation(n)) return;
+              notOurs = notOurs + 1;
+            }, 0);
+            mutation.removedNodes.forEach(function (n) {
+              if (ignoreMutation(n)) return;
+              notOurs = notOurs + 1;
+            }, 0);
+          }
           if (notOurs === 0) return;
         }
         triggerMutation = true;
