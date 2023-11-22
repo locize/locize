@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://unpkg.com/i18next/i18next.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/loc-i18next@0.1.5/dist/umd/loc-i18next.min.js"></script>
+  </head>
+  <body id="main">
+    <h1 id="maintitle" data-i18n="title">Test on text node</h1>
+
+    <div>
+      <p data-i18n="[title]test.title;[html]introduction">Test on another node</p>
+    </div>
+    <h4 id="subtitle" data-i18n="title">Test on text node</h4>
+    <hr />
+    <div>
+      Some more tests on attributes:
+      <h4>title:</h4>
+      <a
+        href="/docs/ecosystem/#postprocessors"
+        title="Works on title"
+        data-i18n="[title]test.title;common:button.hoverMe"
+      >
+        hover me
+      </a>
+      <h4>placeholder:</h4>
+      <input
+        type="text"
+        placeholder="translated placeholder"
+        data-i18n="[placeholder]test.placeholder"
+      />
+    </div>
+    <div>
+      <h4>image - alt tag:</h4>
+      <img
+        src="https://locize.com/img/locize_white.svg"
+        alt="big a"
+        style="width: 200px; background-color: #ccc"
+        data-i18n="[alt]test.alt"
+      />
+    </div>
+    <hr />
+    <div>dynamically removed:</div>
+    <div id="removeFromInner">
+      <p data-i18n="removed">Test on removed node</p>
+    </div>
+
+    <div>dynamically added:</div>
+    <div id="appendToInner"></div>
+    <script>
+      process = {
+        env: {
+          locizeIncontext: 'development',
+        },
+      };
+    </script>
+    <script>
+      // just simulating some interactivity adding, removing content
+      setTimeout(function () {
+        var ele = document.body;
+
+        var btn = document.createElement('BUTTON');
+        var t = document.createTextNode(i18next.t('common:button.clickMe'));
+        btn.appendChild(t);
+
+        console.log('appendingFromOutside');
+        ele.appendChild(btn);
+      }, 5000);
+
+      setTimeout(function () {
+        var ele = document.getElementById('appendToInner');
+
+        var btn = document.createElement('BUTTON');
+        var t = document.createTextNode(i18next.t('common:button.clickMeInner'));
+        btn.appendChild(t);
+
+        console.log('appendingFromOutsideToInner');
+        ele.appendChild(btn);
+      }, 5000);
+
+      setTimeout(function () {
+        var ele = document.getElementById('removeFromInner');
+
+        console.log('removeFromInner');
+        ele.innerHTML = '';
+      }, 8000);
+    </script>
+
+    <!-- <script
+id="locize"
+projectid="5e9ed7da-51ab-4b15-888b-27903f06be09"
+version="latest"
+type="module"
+> -->
+    <script id="locize" type="module">
+      import { locizePlugin } from '/../../src/locizePlugin.js';
+
+      i18next.use(locizePlugin).init(
+        {
+          lng: 'de',
+          fallbackLng: 'en',
+          debug: true,
+          ns: ['translation', 'common'],
+          defaultNS: 'translation',
+          saveMissing: true,
+          resources: {
+            de: {
+              translation: {
+                title: 'Willkommen beim Test für den i18next incontext editor',
+              },
+            },
+            en: {
+              translation: {
+                title: 'Welcome to test the i18next incontext editor',
+                introduction:
+                  'This page will create some <strong>basic content</strong> to test parsing DOM to find text nodes and pass them to the <i>editor.</i>',
+                removed: 'will get removed',
+                test: {
+                  title: 'Title attribute',
+                  placeholder: 'Placeholder attribute',
+                  alt: 'Alt attribute',
+                },
+              },
+              common: {
+                button: {
+                  hoverMe: 'Hover this link',
+                  clickMe: 'Click this button',
+                  clickMeInner: 'Click another button',
+                },
+              },
+            },
+          },
+        },
+        function (err, t) {
+          var localize = locI18next.init(i18next);
+          localize('#main');
+        },
+      );
+    </script>
+  </body>
+</html>

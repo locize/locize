@@ -58,15 +58,18 @@ This plugin is already included in [locizify](https://github.com/locize/locizify
 ### with other as module
 
 ```js
-import { addLocizeSavedHandler, setEditorLng } from 'locize';
+import { addLocizeSavedHandler, startStandalone, setEditorLng } from 'locize';
 
-addLocizeSavedHandler((res) => {
-  res.updated.forEach((item) => {
+addLocizeSavedHandler(res => {
+  res.updated.forEach(item => {
     const { lng, ns, key, data } = item;
     // load the translations somewhere...
     // and maybe rerender your UI
   });
 });
+
+// start
+startStandalone();
 
 // switch lng in locize editor
 setEditorLng(lng);
@@ -79,13 +82,15 @@ setEditorLng(lng);
 ```
 
 ```js
-window.locizeSavedHandler = (res) => {
-  res.updated.forEach((item) => {
+window.locizeSavedHandler = res => {
+  res.updated.forEach(item => {
     const { lng, ns, key, data } = item;
     // load the translations somewhere...
     // and maybe rerender your UI
   });
 };
+
+window.locizeStartStandalone();
 ```
 
 ## turn on/off programmatically
@@ -98,18 +103,4 @@ let isOff;
 // or use window.locize.turnOn
 isOff = turnOff(); // -> true
 isOff = turnOn(); // -> false
-```
-
-## show link to locize
-
-```js
-import { showLocizeLink } from 'locize';
-
-// or use window.locize.showLocizeLink
-showLocizeLink({
-  projectId: 'YOUR PROJECTID',
-  version: 'latest',
-});
-
-// when using with i18next or locizify projectId and version will be picked from backend options if available
 ```

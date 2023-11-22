@@ -1,11 +1,10 @@
 {
   "name": "locize",
-  "version": "2.4.6",
-  "description": "locize incontext editor binding",
-  "main": "./dist/cjs/locize.js",
-  "module": "./dist/esm/locize.js",
-  "types": "./index.d.ts",
+  "version": "3.0.0",
+  "description": "This package adds the incontext editor to your i18next setup.",
   "keywords": [
+    "i18next",
+    "i18next-plugin",
     "locize",
     "i18next-service",
     "translation",
@@ -17,43 +16,77 @@
     "type": "git",
     "url": "git://github.com/locize/locize.git"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "@babel/core": "^7.22.1",
-    "@babel/plugin-transform-runtime": "^7.22.4",
-    "@babel/preset-env": "^7.22.4",
-    "@types/mocha": "^10.0.1",
-    "@typescript-eslint/eslint-plugin": "^5.59.6",
-    "@typescript-eslint/parser": "^5.59.6",
-    "babel-eslint": "^10.1.0",
-    "cpy-cli": "^4.2.0",
-    "escope": "^4.0.0",
-    "eslint": "7.13.0",
-    "eslint-config-airbnb": "18.2.1",
-    "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-jsx-a11y": "^6.7.1",
-    "eslint-plugin-react": "^7.32.2",
-    "rimraf": "5.0.1",
-    "rollup": "^2.75.7",
-    "rollup-plugin-babel": "^4.4.0",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-terser": "^7.0.2",
-    "tsd": "^0.28.1",
-    "typescript": "^5.0.4"
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/umd/locize.js",
+  "types": "./index.d.mts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": {
+        "require": "./dist/cjs/index.d.ts",
+        "import": "./dist/esm/index.d.mts"
+      },
+      "module": "./dist/esm/index.js",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/esm/index.js"
+    },
+    "./cjs": {
+      "types": "./dist/cjs/index.d.ts",
+      "default": "./dist/cjs/index.js"
+    },
+    "./esm": {
+      "types": "./dist/esm/index.d.mts",
+      "default": "./dist/esm/index.js"
+    },
+    "./src": {
+      "default": "./src/index.js"
+    }
   },
   "scripts": {
+    "start": "web-dev-server --watch  --open /debuggingApps/demo/ --node-resolve",
+    "start:react": "cd debuggingApps/demo_react && npm run start",
+    "start:old": "cd debuggingApps/old && npm run start",
     "lint:javascript": "eslint ./src/*",
-    "lint:typescript": "eslint -c .ts.eslintrc *.d.ts test/types/**/*.test-d.ts",
+    "lint:typescript": "eslint -c .ts.eslintrc *.d.ts *.d.mts test/types/**/*.test-d.ts",
     "lint": "npm run lint:javascript && npm run lint:typescript",
     "test": "npm run lint",
     "test:typescript": "tsd",
     "test:all": "npm run test && npm run test:typescript",
-    "build": "rimraf dist && rollup -c && cpy \"./dist/umd/*.js\" ./",
+    "build": "rimraf dist && rollup -c && cpy \"./dist/umd/*.js\" ./ && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json && cp index.d.ts dist/cjs/index.d.ts && cp index.d.ts dist/esm/index.d.ts && cp index.d.mts dist/esm/index.d.mts",
     "preversion": "npm run build && git push",
     "postversion": "git push && git push --tags"
   },
-  "author": "Jan Mühlemann <jan.muehlemann@gmail.com> (https://github.com/jamuhl)",
   "license": "MIT",
+  "dependencies": {
+    "@babel/runtime": "^7.23.4",
+    "@floating-ui/dom": "^1.5.3",
+    "i18next-subliminal": "^1.0.0"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-runtime": "7.23.4",
+    "@babel/preset-env": "7.23.3",
+    "@typescript-eslint/eslint-plugin": "6.12.0",
+    "@web/dev-server": "^0.4.1",
+    "babel-plugin-add-module-exports": "1.0.4",
+    "cpy-cli": "^5.0.0",
+    "eslint": "^8.54.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-n": "^16.3.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-require-path-exists": "^1.1.9",
+    "eslint-plugin-standard": "^5.0.0",
+    "rimraf": "5.0.5",
+    "rollup-plugin-babel": "4.4.0",
+    "rollup-plugin-commonjs": "10.1.0",
+    "rollup-plugin-node-resolve": "5.2.0",
+    "rollup-plugin-terser": "7.0.2",
+    "tsd": "^0.29.0",
+    "typescript": "^5.3.2"
+  },
   "tsd": {
     "directory": "test/types"
   }

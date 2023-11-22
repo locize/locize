@@ -4,11 +4,11 @@
     "lib": [ "es2015" ],
     "module": "commonjs",
     "noEmit": true,
-    "strict": true,
-    "paths": { "locize": ["./index.d.ts"] }
+    "strict": true
   },
   "include": [
-    "/test/types/*.test-d.ts",
-    "/*.d.ts"
+    "test/types/*.test-d.ts",
+    "*.d.ts",
+    "*.d.mts"
   ]
 }

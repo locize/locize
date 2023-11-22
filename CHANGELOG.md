@@ -1,3 +1,8 @@
+### 3.0.0
+
+- This module can now be used for both type of incontext editors - as iframe (old) or with iframe (new).
+- showLocizeLink has been removed, since conflicting with new incontext editor
+
 ### 2.4.6
 
 - add basic types

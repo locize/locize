@@ -1,21 +1,29 @@
-/* eslint-disable semi */
-// eslint-disable-next-line import/no-unresolved
-import { expectType } from 'tsd';
-// eslint-disable-next-line import/no-unresolved
+import { expectType } from 'tsd'
+import i18next from 'i18next'
 import {
   turnOn,
   turnOff,
   locizePlugin,
   LocizePlugin,
   setEditorLng,
-  showLocizeLink,
-  addLocizeSavedHandler
-} from '../../index';
+  addLocizeSavedHandler,
+  wrap,
+  unwrap,
+  containsHiddenMeta,
+  PostProcessor,
+  startStandalone
+} from '../../index'
 
-expectType<void>(turnOn());
-expectType<void>(turnOff());
-expectType<LocizePlugin>(locizePlugin);
-expectType<void>(setEditorLng('en'));
-expectType<void>(showLocizeLink());
-expectType<void>(showLocizeLink({ projectId: 'asdf', version: 'asdf' }));
-expectType<void>(addLocizeSavedHandler((data) => {}));
+expectType<void>(turnOn())
+expectType<void>(turnOff())
+expectType<LocizePlugin>(locizePlugin)
+expectType<void>(setEditorLng('en'))
+expectType<void>(addLocizeSavedHandler((data) => {}))
+
+expectType<string>(wrap('text', { key: 'some.key' }))
+expectType<string>(unwrap('text'))
+expectType<boolean>(containsHiddenMeta('text'))
+
+i18next.use(PostProcessor).init()
+
+expectType<void>(startStandalone())

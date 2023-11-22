@@ -1,41 +1,34 @@
 /* eslint-disable import/prefer-default-export */
-import {
-  getClickedElement,
-  getElementText,
-  getElementI18nKey,
-  getElementNamespace
-} from './utils';
+import { getClickedElement, getElementText, getElementI18nKey, getElementNamespace } from './utils.js'
 
-export function createClickHandler(cb, options) {
+export function createClickHandler (cb, options = {}) {
   // eslint-disable-next-line consistent-return
-  const handler = (e) => {
-    const el = getClickedElement(e);
-    if (!el) return {};
+  const handler = e => {
+    const el = getClickedElement(e)
+    if (!el) return {}
 
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
 
-    const text = getElementText(el);
-    const key = getElementI18nKey(el);
+    const text = getElementText(el)
+    const key = getElementI18nKey(el)
 
-    const rectEl = el.getBoundingClientRect ? el : el.parentElement;
-    const {
-      top, left, width, height
-    } = rectEl.getBoundingClientRect();
+    const rectEl = el.getBoundingClientRect ? el : el.parentElement
+    const { top, left, width, height } = rectEl.getBoundingClientRect()
 
-    const style = window.getComputedStyle(rectEl, null);
-    const pT = parseFloat(style.getPropertyValue('padding-top'));
-    const pB = parseFloat(style.getPropertyValue('padding-bottom'));
-    const pR = parseFloat(style.getPropertyValue('padding-right'));
-    const pL = parseFloat(style.getPropertyValue('padding-left'));
-    const sizing = style.getPropertyValue('box-sizing');
+    const style = window.getComputedStyle(rectEl, null)
+    const pT = parseFloat(style.getPropertyValue('padding-top'))
+    const pB = parseFloat(style.getPropertyValue('padding-bottom'))
+    const pR = parseFloat(style.getPropertyValue('padding-right'))
+    const pL = parseFloat(style.getPropertyValue('padding-left'))
+    const sizing = style.getPropertyValue('box-sizing')
 
     // eslint-disable-next-line consistent-return
-    function getFallbackNS() {
-      const i18next = options.getI18next();
-      if (i18next && i18next.options && i18next.options.isLocizify) return i18next.options.defaultNS;
+    function getFallbackNS () {
+      if (options.isLocizify) return options.defaultNS
     }
 
+    // eslint-disable-next-line n/no-callback-literal
     cb({
       tagName: rectEl.tagName,
       text,
@@ -48,8 +41,8 @@ export function createClickHandler(cb, options) {
         height: sizing === 'border-box' ? height : height - pT - pB
       },
       style: style.cssText
-    });
-  };
+    })
+  }
 
-  return handler;
+  return handler
 }

@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
 // });
 
 app.get('/locize.js', (req, res) => {
-  fs.readFile(`${__dirname}/../locize.js`, 'utf-8', (err, doc) => {
+  fs.readFile(`${__dirname}/../../locize.js`, 'utf-8', (err, doc) => {
     res.send(doc);
   });
 });
@@ -40,3 +40,4 @@ app.get('/locize.js', (req, res) => {
 // });
 
 app.listen(8080);
+console.log('http://localhost:8080')

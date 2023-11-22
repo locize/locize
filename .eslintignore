@@ -3,3 +3,7 @@
 **/*.min.*
 locize.js
 locize.min.js
+/dist
+# /types
+/examples
+debuggingApps

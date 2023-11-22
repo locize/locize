@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head> </head>
+  <body>
+    <div id="root"></div>
+    <input id="editor" type="text" style="height: 100px; width: 90%" />
+    <pre id="output"></pre>
+  </body>
+  <script>
+    const output = document.getElementById('output')
+    const editor = document.getElementById('editor')
+    let source
+    let origin
+
+    let selected
+
+    function sendMessage(action, payload) {
+      source.postMessage(
+        {
+          sender: 'i18next-editor-frame',
+          senderAPIVersion: 'v1',
+          action,
+          payload
+        },
+        origin
+      )
+    }
+
+    editor.addEventListener('keyup', e => {
+      if (selected) {
+        sendMessage('editingKey', { meta: selected, value: e.target.value })
+      }
+    })
+
+    window.addEventListener('message', e => {
+      source = e.source
+      origin = e.origin
+
+      // test output and confirm
+      console.warn(e.data)
+      // sendMessage('confirmReceived', e.data)
+
+      // handler
+      const { sender, senderAPIVersion, action, payload } = e.data || {}
+      if (sender === 'i18next-editor') {
+        if (action === 'selectingKey') {
+          editor.value = payload.i18nSourceText
+          selected = e.data.payload
+        }
+      }
+    })
+  </script>
+</html>
