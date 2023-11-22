@@ -25,8 +25,9 @@ export function setEditorLng (lng) {
 
 let pendingMsgs = []
 export function sendMessage (action, payload) {
-  if (!api.source)
+  if (!api.source) {
     api.source = document.getElementById('i18next-editor-iframe')?.contentWindow
+  }
   if (!api.origin) api.origin = getIframeUrl()
 
   if (!api.source || !api.source.postMessage) {

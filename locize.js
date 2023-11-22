@@ -239,8 +239,10 @@
   }
   var pendingMsgs = [];
   function sendMessage(action, payload) {
-    var _document$getElementB;
-    if (!api.source) api.source = (_document$getElementB = document.getElementById('i18next-editor-iframe')) === null || _document$getElementB === void 0 ? void 0 : _document$getElementB.contentWindow;
+    if (!api.source) {
+      var _document$getElementB;
+      api.source = (_document$getElementB = document.getElementById('i18next-editor-iframe')) === null || _document$getElementB === void 0 ? void 0 : _document$getElementB.contentWindow;
+    }
     if (!api.origin) api.origin = getIframeUrl();
     if (!api.source || !api.source.postMessage) {
       pendingMsgs.push({
