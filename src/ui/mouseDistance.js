@@ -2,7 +2,11 @@ import { store } from '../store.js'
 import { uninstrumentedStore } from '../uninstrumentedStore.js'
 import { isInViewport, mouseDistanceFromElement } from './utils.js'
 import { debounce } from '../utils.js'
-import { highlight, highlightUninstrumented, resetHighlight } from './highlightNode.js'
+import {
+  highlight,
+  highlightUninstrumented,
+  resetHighlight
+} from './highlightNode.js'
 
 const debouncedUpdateDistance = debounce(function (e, observer) {
   Object.values(store.data).forEach(item => {
@@ -14,7 +18,9 @@ const debouncedUpdateDistance = debounce(function (e, observer) {
       highlight(item, item.node, item.keys)
     } else if (distance > 5) {
       // check if we are over the ribbonbox
-      const boxDistance = item.ribbonBox ? mouseDistanceFromElement(e, item.ribbonBox) : 1000
+      const boxDistance = item.ribbonBox
+        ? mouseDistanceFromElement(e, item.ribbonBox)
+        : 1000
       if (boxDistance > 10) resetHighlight(item, item.node, item.keys)
     }
   })

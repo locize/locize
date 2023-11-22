@@ -1,13 +1,19 @@
 /* eslint-disable prefer-const, one-var */
 
-export function isInViewport (element) {
-  const rect = element.getBoundingClientRect()
-  return (
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-  )
+export function isInViewport (el) {
+  // Special bonus for those using jQuery
+  // if (typeof jQuery !== 'undefined' && el instanceof jQuery) el = el[0]
+
+  var rect = el.getBoundingClientRect()
+  // DOMRect { x: 8, y: 8, width: 100, height: 100, top: 8, right: 108, bottom: 108, left: 8 }
+  var windowHeight = window.innerHeight || document.documentElement.clientHeight
+  var windowWidth = window.innerWidth || document.documentElement.clientWidth
+
+  // http://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
+  var vertInView = rect.top <= windowHeight && rect.top + rect.height >= 0
+  var horInView = rect.left <= windowWidth && rect.left + rect.width >= 0
+
+  return vertInView && horInView
 }
 
 export function mouseDistanceFromElement (mouseEvent, element) {
@@ -16,9 +22,9 @@ export function mouseDistanceFromElement (mouseEvent, element) {
     mY = mouseEvent.pageY,
     from = { x: mX, y: mY },
     off = $n.getBoundingClientRect(),
-    ny1 = off.top + document.body.scrollTop, // top
+    ny1 = off.top + document.documentElement.scrollTop, // top
     ny2 = ny1 + $n.offsetHeight, // bottom
-    nx1 = off.left + document.body.scrollLeft, // left
+    nx1 = off.left + document.documentElement.scrollLeft, // left
     nx2 = nx1 + $n.offsetWidth, // right
     maxX1 = Math.max(mX, nx1),
     minX2 = Math.min(mX, nx2),
