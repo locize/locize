@@ -1,3 +1,7 @@
+### 3.0.3
+
+- ignore element flag
+
 ### 3.0.2
 
 - optimize detection for i18next backend
