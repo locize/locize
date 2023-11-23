@@ -137,9 +137,11 @@ function Minimize (popupEle, onMinimize) {
   return image
 }
 
+export const popupId = 'i18next-editor-popup'
+
 export function Popup (url, cb) {
   const popup = document.createElement('div')
-  popup.setAttribute('id', 'i18next-editor-popup')
+  popup.setAttribute('id', popupId)
   popup.classList.add('i18next-editor-popup')
   popup.style = `
   z-index: 9;

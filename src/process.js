@@ -2,7 +2,7 @@ import { parseTree, setImplementation } from './parser.js'
 import { createObserver } from './observer.js'
 import { startMouseTracking } from './ui/mouseDistance.js'
 import { initDragElement, initResizeElement } from './ui/popup.js'
-import { Popup } from './ui/elements/popup.js'
+import { Popup, popupId } from './ui/elements/popup.js'
 import { getIframeUrl } from './vars.js'
 import { api } from './api/index.js'
 
@@ -47,13 +47,15 @@ export function start (implementation = {}) {
     startMouseTracking(observer)
 
     // append popup
-    document.body.append(
-      Popup(getIframeUrl(), () => {
-        api.requestInitialize(config)
-      })
-    )
-    initDragElement()
-    initResizeElement()
+    if (!document.getElementById(popupId)) {
+      document.body.append(
+        Popup(getIframeUrl(), () => {
+          api.requestInitialize(config)
+        })
+      )
+      initDragElement()
+      initResizeElement()
+    }
   }
 
   if (document.body) return continueToStart()

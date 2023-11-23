@@ -1,10 +1,11 @@
 import { api } from './postMessage.js'
+import { popupId } from '../ui/elements/popup.js'
 
 function handler (payload) {
   const { containerStyle } = payload
 
   if (containerStyle) {
-    const popup = document.getElementById('i18next-editor-popup')
+    const popup = document.getElementById(popupId)
 
     if (containerStyle.height) {
       const diff = `calc(${containerStyle.height} - ${popup.style.height})`
