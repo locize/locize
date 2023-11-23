@@ -56,7 +56,7 @@
     <div>dynamically added:</div>
     <div id="appendToInner"></div>
     <div>
-      <button id="updateBtn" data-locize-editor-ignore="true">initial</button>
+      <button id="updateBtn" data-locize-editor-ignore="false">initial</button>
     </div>
     <script>
       process = {
@@ -101,7 +101,7 @@
         var ele = document.getElementById('updateBtn')
         ele.innerText = i
         i = i + 1
-      }, 1000)
+      }, 500)
     </script>
 
     <!-- <script

@@ -1,7 +1,32 @@
 import { debounce } from './utils.js'
 import { validAttributes } from './vars.js'
 
+const mutationTriggeringElements = {}
+
 function ignoreMutation (ele) {
+  if (ele.uniqueID) {
+    const info = mutationTriggeringElements[ele.uniqueID]
+
+    if (
+      info &&
+      info.triggered > 10 &&
+      info.lastTriggerDate + 500 < Date.now()
+    ) {
+      if (!info.warned && console) {
+        console.warn(
+          `locize ::: ignoring element change - an element is rerendering too often in short interval`,
+          '\n',
+          'consider adding the "data-locize-editor-ignore:" attribute to the element:',
+          ele
+        )
+
+        info.warned = true
+      }
+
+      return true
+    }
+  }
+
   const ret =
     ele.dataset &&
     (ele.dataset.i18nextEditorElement === 'true' ||
@@ -51,6 +76,15 @@ export function createObserver (ele, handle) {
         return
       }
 
+      // cleanup mutation triggers after some time of non triggering
+      Object.keys(mutationTriggeringElements).forEach(k => {
+        const info = mutationTriggeringElements[k]
+
+        if (info.lastTriggerDate + 60000 < Date.now()) {
+          delete mutationTriggeringElements[k]
+        }
+      })
+
       // ignore mutation done by our elements
       if (mutation.type === 'childList') {
         let notOurs = 0
@@ -72,6 +106,18 @@ export function createObserver (ele, handle) {
 
       // eventual text relevant mutation
       triggerMutation = true
+
+      // add to mutationTriggers to check for spamming elements
+      if (mutation.target && mutation.target.uniqueID) {
+        const info = mutationTriggeringElements[mutation.target.uniqueID] || {
+          triggered: 0
+        }
+
+        info.triggered = info.triggered + 1
+        info.lastTriggerDate = Date.now()
+
+        mutationTriggeringElements[mutation.target.uniqueID] = info
+      }
 
       // test if mutated element is already part of another mutation
       const includedAlready = targetEles.reduce((mem, element) => {
