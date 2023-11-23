@@ -1,6 +1,6 @@
 ### 3.1.0
 
-- additional plugin interface that shows incontext only if passing ?incontext=true
+- additional plugin interface that shows incontext only if passing `?incontext=true``
 
 ### 3.0.5
 

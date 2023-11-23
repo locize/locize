@@ -2410,7 +2410,18 @@
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
   }
 
+  var mutationTriggeringElements = {};
   function ignoreMutation(ele) {
+    if (ele.uniqueID) {
+      var info = mutationTriggeringElements[ele.uniqueID];
+      if (info && info.triggered > 10 && info.lastTriggerDate + 500 < Date.now()) {
+        if (!info.warned && console) {
+          console.warn('locize ::: ignoring element change - an element is rerendering too often in short interval', '\n', 'consider adding the "data-locize-editor-ignore:" attribute to the element:', ele);
+          info.warned = true;
+        }
+        return true;
+      }
+    }
     var ret = ele.dataset && (ele.dataset.i18nextEditorElement === 'true' || ele.dataset.locizeEditorIgnore === 'true');
     if (!ret && ele.parentElement) return ignoreMutation(ele.parentElement);
     return ret;
@@ -2439,6 +2450,12 @@
         if (mutation.type === 'attributes' && !validAttributes.includes(mutation.attributeName)) {
           return;
         }
+        Object.keys(mutationTriggeringElements).forEach(function (k) {
+          var info = mutationTriggeringElements[k];
+          if (info.lastTriggerDate + 60000 < Date.now()) {
+            delete mutationTriggeringElements[k];
+          }
+        });
         if (mutation.type === 'childList') {
           var notOurs = 0;
           if (!ignoreMutation(mutation.target)) {
@@ -2454,6 +2471,14 @@
           if (notOurs === 0) return;
         }
         triggerMutation = true;
+        if (mutation.target && mutation.target.uniqueID) {
+          var info = mutationTriggeringElements[mutation.target.uniqueID] || {
+            triggered: 0
+          };
+          info.triggered = info.triggered + 1;
+          info.lastTriggerDate = Date.now();
+          mutationTriggeringElements[mutation.target.uniqueID] = info;
+        }
         var includedAlready = targetEles.reduce(function (mem, element) {
           if (mem || element.contains(mutation.target) || !mutation.target.parentElement) {
             return true;

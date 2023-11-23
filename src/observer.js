@@ -14,7 +14,7 @@ function ignoreMutation (ele) {
     ) {
       if (!info.warned && console) {
         console.warn(
-          `locize ::: ignoring element change - an element is rerendering too often in short interval`,
+          'locize ::: ignoring element change - an element is rerendering too often in short interval',
           '\n',
           'consider adding the "data-locize-editor-ignore:" attribute to the element:',
           ele
