@@ -22,13 +22,13 @@ For i18next based solutions (i18next, react-i18next, locizify, ...) there are tw
 
 #### a) Iframe on your page
 
-The solution is best in class and uses i18next-subliminal to add information about key and namespace as hidden text to the output of the `i18next.t` calls. Beside that it scans your website based on mutation observer to look out for those texts.
+The solution is best in class and uses [i18next-subliminal](https://github.com/i18next/i18next-subliminal) to add information about key and namespace as hidden text to the output of the `i18next.t` calls. Beside that it scans your website based on mutation observer to look out for those texts.
 
 You can both click text elements on your website or keys in the locize iframe to edit content. Results will always be exact matches based on the namespace and key.
 
-**Hint** You can bind the ifame to a specific project by setting `ì18next.options.editor = { projectId, version }` or `ì18next.options.backend = { projectId, verstion }` (backend info might already exist when using i18next-locize-backend)
+**Hint:** You can bind the ifame to a specific project by setting `ì18next.options.editor = { projectId, version }` or `ì18next.options.backend = { projectId, verstion }` (backend info might already exist when using i18next-locize-backend)
 
-**Caveats** You might have elements that rerender too often in short time. This might will give you a warning output in console that that element change was ignored for passing to the iframe. Consider adding the `data-locize-editor-ignore: true` attribute to the element to ignore it completely.
+**Caveats:** You might have elements that rerender too often in short time. This might will give you a warning output in console that that element change was ignored for passing to the iframe. Consider adding the `data-locize-editor-ignore: true` attribute to the element to ignore it completely.
 
 #### b) Opening it on https://locize.app
 
@@ -49,10 +49,18 @@ This plugin is already included in [locizify](https://github.com/locize/locizify
 
 ## with i18next
 
+### this will show the locize incontext editor as a popup in your website
 ```js
-import { locizePlugin } from 'locize'
+import { locizePlugin } from 'locize';
 
-i18next.use(locizePlugin)
+i18next.use(locizePlugin);
+```
+
+### this will show the locize incontext editor as a popup in your website only if the url contains the incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
+```js
+import { locizeEditorPlugin } from 'locize';
+
+i18next.use(locizeEditorPlugin());
 ```
 
 Using react-i18next you might want to bind the editorSaved event to trigger a rerender:

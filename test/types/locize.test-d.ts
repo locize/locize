@@ -4,6 +4,7 @@ import {
   turnOn,
   turnOff,
   locizePlugin,
+  locizeEditorPlugin,
   LocizePlugin,
   setEditorLng,
   addLocizeSavedHandler,
@@ -17,6 +18,7 @@ import {
 expectType<void>(turnOn())
 expectType<void>(turnOff())
 expectType<LocizePlugin>(locizePlugin)
+expectType<LocizePlugin>(locizeEditorPlugin())
 expectType<void>(setEditorLng('en'))
 expectType<void>(addLocizeSavedHandler((data) => {}))
 

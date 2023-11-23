@@ -1,3 +1,7 @@
+### 3.1.0
+
+- additional plugin interface that shows incontext only if passing ?incontext=true
+
 ### 3.0.5
 
 - fix scrollTop
