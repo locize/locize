@@ -125,8 +125,9 @@ export function createObserver (ele, handle) {
           mem ||
           element.contains(mutation.target) ||
           !mutation.target.parentElement
-        )
+        ) {
           return true
+        }
         return false
       }, false)
 

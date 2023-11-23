@@ -281,10 +281,14 @@
     },
     requestInitialize: function requestInitialize(payload) {
       sendMessage('requestInitialize', payload);
+      if (api.initInterval) return;
       api.initInterval = setInterval(function () {
         repeat = repeat - 1;
         api.requestInitialize(payload);
-        if (repeat < 0 && api.initInterval) clearInterval(api.initInterval);
+        if (repeat < 0 && api.initInterval) {
+          clearInterval(api.initInterval);
+          delete api.initInterval;
+        }
       }, 1000);
     },
     selectKey: function selectKey(meta) {
@@ -489,6 +493,7 @@
   function handler$6(payload) {
     api.initialized = true;
     clearInterval(api.initInterval);
+    delete api.initInterval;
     api.sendCurrentParsedContent();
     api.sendCurrentTargetLanguage();
   }
@@ -2440,7 +2445,9 @@
         }
         triggerMutation = true;
         var includedAlready = targetEles.reduce(function (mem, element) {
-          if (mem || element.contains(mutation.target) || !mutation.target.parentElement) return true;
+          if (mem || element.contains(mutation.target) || !mutation.target.parentElement) {
+            return true;
+          }
           return false;
         }, false);
         if (!includedAlready) {
@@ -2468,9 +2475,13 @@
     };
   }
 
-  function isInViewport(element) {
-    var rect = element.getBoundingClientRect();
-    return rect.top >= 0 && rect.left >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+  function isInViewport(el) {
+    var rect = el.getBoundingClientRect();
+    var windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    var windowWidth = window.innerWidth || document.documentElement.clientWidth;
+    var vertInView = rect.top <= windowHeight && rect.top + rect.height >= 0;
+    var horInView = rect.left <= windowWidth && rect.left + rect.width >= 0;
+    return vertInView && horInView;
   }
   function mouseDistanceFromElement(mouseEvent, element) {
     var $n = element,
@@ -2481,9 +2492,9 @@
         y: mY
       },
       off = $n.getBoundingClientRect(),
-      ny1 = off.top + document.body.scrollTop,
+      ny1 = off.top + document.documentElement.scrollTop,
       ny2 = ny1 + $n.offsetHeight,
-      nx1 = off.left + document.body.scrollLeft,
+      nx1 = off.left + document.documentElement.scrollLeft,
       nx2 = nx1 + $n.offsetWidth,
       maxX1 = Math.max(mX, nx1),
       minX2 = Math.min(mX, nx2),

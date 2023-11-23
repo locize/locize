@@ -1,3 +1,7 @@
+### 3.0.5
+
+- fix scrollTop
+
 ### 3.0.4
 
 - style: adapt hight
