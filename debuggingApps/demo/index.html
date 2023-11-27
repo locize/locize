@@ -111,12 +111,12 @@ version="latest"
 type="module"
 > -->
     <script id="locize" type="module">
-      // import { locizeEditorPlugin } from '/../../src/locizePlugin.js'
-      import { locizePlugin } from '/../../src/locizePlugin.js'
+      import { locizeEditorPlugin } from '/../../src/locizePlugin.js'
+      // import { locizePlugin } from '/../../src/locizePlugin.js'
 
       i18next
-        // .use(locizeEditorPlugin())
-        .use(locizePlugin)
+        .use(locizeEditorPlugin({ show: true }))
+        // .use(locizePlugin)
         .init(
         {
           lng: 'de',

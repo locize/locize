@@ -101,29 +101,6 @@ function getImplementation (i18n) {
 }
 
 let i18next
-export const locizePlugin = {
-  type: '3rdParty',
-
-  init (i18n) {
-    const { options } = i18n
-
-    // store for later
-    i18next = i18n
-
-    // add postProcessor and needed options now
-    if (!isInIframe) configurePostProcessor(i18next, options)
-
-    const impl = getImplementation(i18n)
-
-    // start process and expose some implementation functions
-    if (!isInIframe) {
-      start(impl)
-    } else {
-      startLegacy(impl)
-    }
-  }
-}
-
 export const locizeEditorPlugin = (opt = {}) => {
   opt.qsProp = opt.qsProp || 'incontext'
 
@@ -136,7 +113,7 @@ export const locizeEditorPlugin = (opt = {}) => {
       // store for later
       i18next = i18n
 
-      const showInContext = getQsParameterByName(opt.qsProp) === 'true'
+      const showInContext = opt.show || getQsParameterByName(opt.qsProp) === 'true'
 
       // add postProcessor and needed options now
       if (!isInIframe && showInContext) configurePostProcessor(i18next, options)
@@ -152,6 +129,7 @@ export const locizeEditorPlugin = (opt = {}) => {
     }
   }
 }
+export const locizePlugin = locizeEditorPlugin()
 
 export { unwrap }
 

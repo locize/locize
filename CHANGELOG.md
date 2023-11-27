@@ -1,10 +1,14 @@
+### 3.2.0
+
+- using the locizePlugin export should only show the incontext editor if passing `?incontext=true`
+
 ### 3.1.1
 
 - prevent to append popup multiple times
 
 ### 3.1.0
 
-- additional plugin interface that shows incontext only if passing `?incontext=true``
+- additional plugin interface that shows incontext only if passing `?incontext=true`
 
 ### 3.0.5
 

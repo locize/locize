@@ -49,18 +49,18 @@ This plugin is already included in [locizify](https://github.com/locize/locizify
 
 ## with i18next
 
-### this will show the locize incontext editor as a popup in your website
-```js
-import { locizePlugin } from 'locize';
-
-i18next.use(locizePlugin);
-```
-
 ### this will show the locize incontext editor as a popup in your website only if the url contains the incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
 ```js
-import { locizeEditorPlugin } from 'locize';
+import { locizePlugin } from 'locize'
 
-i18next.use(locizeEditorPlugin());
+i18next.use(locizePlugin)
+```
+
+### this will show the locize incontext editor as a popup in your website
+```js
+import { locizeEditorPlugin } from 'locize'
+
+i18next.use(locizeEditorPlugin({ show: true }))
 ```
 
 Using react-i18next you might want to bind the editorSaved event to trigger a rerender:

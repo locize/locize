@@ -9,15 +9,15 @@ export interface LocizePlugin {
 }
 
 /**
- * Returns an i18next plugin that will show the incontext editor.
+ * Returns an i18next plugin that will show the incontext editor only if your url contains the query paramenter ?incontext=true.
  */
 export const locizePlugin: LocizePlugin
 
 /**
- * Returns an i18next plugin that will only show the incontext editor if the qsProp in your url is set to true.
- * @param opt defaults to: { qsProp: 'incontext' }
+ * Returns an i18next plugin that will only show the incontext editor if the qsProp in your url is set to true or if you pass { show: true }.
+ * @param opt defaults to: { qsProp: 'incontext', show: false }
  */
-export function locizeEditorPlugin(opt?: { qsProp?: string }): LocizePlugin
+export function locizeEditorPlugin(opt?: { qsProp?: string, show?: boolean }): LocizePlugin
 
 /**
  * Turn on programmatically.

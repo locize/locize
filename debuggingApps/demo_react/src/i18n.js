@@ -3,8 +3,8 @@ import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import Backend from 'i18next-locize-backend'
 
-import { locizePlugin } from 'locize'
-// import { locizeEditorPlugin } from 'locize'
+// import { locizePlugin } from 'locize'
+import { locizeEditorPlugin } from 'locize'
 
 // OPTIONAL IF YOU LIKE TO SEE ALL (LOGIN TO TRANSLATION MANAGEMENT EDITOR)
 // 1) signup at https://locize.com/register and login
@@ -22,8 +22,8 @@ const locizeOptions = {
 }
 
 i18n
-  .use(locizePlugin)
-  // .use(locizeEditorPlugin())
+  // .use(locizePlugin)
+  .use(locizeEditorPlugin({ show: true }))
   // i18next-locize-backend
   // loads translations from your project, saves new keys to it (saveMissing: true)
   // https://github.com/locize/i18next-locize-backend

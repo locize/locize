@@ -2984,20 +2984,6 @@
     return impl;
   }
   var i18next;
-  var locizePlugin = {
-    type: '3rdParty',
-    init: function init(i18n) {
-      var options = i18n.options;
-      i18next = i18n;
-      if (!isInIframe) configurePostProcessor(i18next, options);
-      var impl = getImplementation(i18n);
-      if (!isInIframe) {
-        start(impl);
-      } else {
-        startLegacy(impl);
-      }
-    }
-  };
   var locizeEditorPlugin = function locizeEditorPlugin() {
     var opt = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     opt.qsProp = opt.qsProp || 'incontext';
@@ -3006,7 +2992,7 @@
       init: function init(i18n) {
         var options = i18n.options;
         i18next = i18n;
-        var showInContext = getQsParameterByName(opt.qsProp) === 'true';
+        var showInContext = opt.show || getQsParameterByName(opt.qsProp) === 'true';
         if (!isInIframe && showInContext) configurePostProcessor(i18next, options);
         var impl = getImplementation(i18n);
         if (!isInIframe && showInContext) {
@@ -3017,6 +3003,7 @@
       }
     };
   };
+  var locizePlugin = locizeEditorPlugin();
 
   function startStandalone() {
     startLegacy({
