@@ -1,3 +1,7 @@
+### 3.2.1
+
+- prefer to get resolvedLanguage for getLng if available
+
 ### 3.2.0
 
 - using the locizePlugin export should only show the incontext editor if passing `?incontext=true`

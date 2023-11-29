@@ -38,7 +38,7 @@ function getImplementation (i18n) {
       })
     },
     getLng: () => {
-      return i18n.languages[0]
+      return i18n.resolvedLanguage || i18n.languages[0]
     },
     getSourceLng: () => {
       const fallback = i18n.options.fallbackLng
