@@ -123,7 +123,7 @@ export const locizeEditorPlugin = (opt = {}) => {
       // start process and expose some implementation functions
       if (!isInIframe && showInContext) {
         start(impl)
-      } else {
+      } else if (isInIframe) {
         startLegacy(impl)
       }
     }

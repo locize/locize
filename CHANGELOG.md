@@ -1,3 +1,7 @@
+### 3.2.2
+
+- fix startLegacy (should only run if in iframe)
+
 ### 3.2.1
 
 - prefer to get resolvedLanguage for getLng if available
