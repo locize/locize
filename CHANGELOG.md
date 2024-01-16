@@ -1,3 +1,7 @@
+### 3.2.3
+
+- fix startStandalone: added missing functions for implementation
+
 ### 3.2.2
 
 - fix startLegacy (should only run if in iframe)

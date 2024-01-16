@@ -12,8 +12,11 @@ export function startStandalone () {
     triggerRerender: () => {},
     getResourceBundle: () => {
       return {}
-    }
+    },
+    bindMissingKeyHandler: () => {},
+    bindLanguageChange: () => {}
   })
 }
 
-if (typeof window !== 'undefined') window.locizeStartStandalone = startStandalone
+if (typeof window !== 'undefined')
+  window.locizeStartStandalone = startStandalone
