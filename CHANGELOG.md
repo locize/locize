@@ -1,3 +1,7 @@
+### 3.2.4
+
+- fix startStandalone: added handler for committed message
+
 ### 3.2.3
 
 - fix startStandalone: added missing functions for implementation

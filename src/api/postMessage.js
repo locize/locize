@@ -1,6 +1,14 @@
 import { getIframeUrl } from '../vars.js'
 import { store } from '../store.js'
 
+const legacyEventMapping = {
+  committed: 'commitKeys'
+}
+function getMappedLegacyEvent (msg) {
+  if (legacyEventMapping[msg]) return legacyEventMapping[msg]
+  return msg
+}
+
 export function addLocizeSavedHandler (handler) {
   api.locizeSavedHandler = handler
 }
@@ -159,10 +167,13 @@ if (typeof window !== 'undefined') {
   window.addEventListener('message', e => {
     const { sender, /* senderAPIVersion, */ action, message, payload } = e.data
 
-    if (message && handlers[message]) {
-      handlers[message].forEach(fc => {
-        fc(payload, e)
-      })
+    if (message) {
+      const usedEventName = getMappedLegacyEvent(message)
+      if (handlers[usedEventName]) {
+        handlers[usedEventName].forEach(fc => {
+          fc(payload, e)
+        })
+      }
     } else if (sender === 'i18next-editor-frame' && handlers[action]) {
       // console.warn('ok in', action, payload);
       handlers[action].forEach(fc => {
