@@ -1,4 +1,4 @@
-### 3.2.4
+### 3.2.5
 
 - fix startStandalone: added handler for committed message
 

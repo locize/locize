@@ -221,6 +221,13 @@
 
   function ownKeys$7(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
   function _objectSpread$7(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$7(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$7(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+  var legacyEventMapping = {
+    committed: 'commitKeys'
+  };
+  function getMappedLegacyEvent(msg) {
+    if (legacyEventMapping[msg]) return legacyEventMapping[msg];
+    return msg;
+  }
   function addLocizeSavedHandler(handler) {
     api.locizeSavedHandler = handler;
   }
@@ -354,10 +361,13 @@
         action = _e$data.action,
         message = _e$data.message,
         payload = _e$data.payload;
-      if (message && handlers[message]) {
-        handlers[message].forEach(function (fc) {
-          fc(payload, e);
-        });
+      if (message) {
+        var usedEventName = getMappedLegacyEvent(message);
+        if (handlers[usedEventName]) {
+          handlers[usedEventName].forEach(function (fc) {
+            fc(payload, e);
+          });
+        }
       } else if (sender === 'i18next-editor-frame' && handlers[action]) {
         handlers[action].forEach(function (fc) {
           fc(payload);
