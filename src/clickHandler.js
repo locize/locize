@@ -37,7 +37,7 @@ export function createClickHandler (cb, options = {}) {
       if (meta && meta.invisibleMeta && meta.invisibleMeta.key)
         key = meta.invisibleMeta.key
       if (meta && meta.invisibleMeta && meta.invisibleMeta.ns)
-        key = meta.invisibleMeta.ns
+        ns = meta.invisibleMeta.ns
     }
 
     const rectEl = el.getBoundingClientRect ? el : el.parentElement
