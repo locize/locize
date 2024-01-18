@@ -2816,8 +2816,17 @@
       if (!el) return {};
       e.preventDefault();
       e.stopPropagation();
+      function getFallbackNS() {
+        if (options.isLocizify) return options.defaultNS;
+      }
       var text = getElementText(el);
       var key = getElementI18nKey(el);
+      var ns = getElementNamespace(el) || getFallbackNS();
+      if (containsHiddenMeta(text)) {
+        var meta = unwrap(text);
+        if (meta && meta.invisibleMeta && meta.invisibleMeta.key) key = meta.invisibleMeta.key;
+        if (meta && meta.invisibleMeta && meta.invisibleMeta.ns) ns = meta.invisibleMeta.ns;
+      }
       var rectEl = el.getBoundingClientRect ? el : el.parentElement;
       var _rectEl$getBoundingCl = rectEl.getBoundingClientRect(),
         top = _rectEl$getBoundingCl.top,
@@ -2830,14 +2839,11 @@
       var pR = parseFloat(style.getPropertyValue('padding-right'));
       var pL = parseFloat(style.getPropertyValue('padding-left'));
       var sizing = style.getPropertyValue('box-sizing');
-      function getFallbackNS() {
-        if (options.isLocizify) return options.defaultNS;
-      }
       cb({
         tagName: rectEl.tagName,
         text: text,
         key: key,
-        ns: getElementNamespace(el) || getFallbackNS(),
+        ns: ns,
         box: {
           top: top,
           left: left,
