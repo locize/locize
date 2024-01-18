@@ -1,3 +1,7 @@
+### 3.3.0
+
+- support i18next-subliminal in clickHandler used in locize iframe
+
 ### 3.2.5
 
 - fix startStandalone: added handler for committed message

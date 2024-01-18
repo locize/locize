@@ -1,5 +1,16 @@
+import {
+  unwrap,
+  containsHiddenMeta,
+  containsHiddenStartMarker
+} from 'i18next-subliminal'
+
 /* eslint-disable import/prefer-default-export */
-import { getClickedElement, getElementText, getElementI18nKey, getElementNamespace } from './utils.js'
+import {
+  getClickedElement,
+  getElementText,
+  getElementI18nKey,
+  getElementNamespace
+} from './utils.js'
 
 export function createClickHandler (cb, options = {}) {
   // eslint-disable-next-line consistent-return
@@ -10,8 +21,24 @@ export function createClickHandler (cb, options = {}) {
     e.preventDefault()
     e.stopPropagation()
 
+    // eslint-disable-next-line consistent-return
+    function getFallbackNS () {
+      if (options.isLocizify) return options.defaultNS
+    }
+
     const text = getElementText(el)
-    const key = getElementI18nKey(el)
+    let key = getElementI18nKey(el)
+    let ns = getElementNamespace(el) || getFallbackNS()
+
+    // use subliminal info if available
+    if (containsHiddenMeta(text)) {
+      const meta = unwrap(text)
+
+      if (meta && meta.invisibleMeta && meta.invisibleMeta.key)
+        key = meta.invisibleMeta.key
+      if (meta && meta.invisibleMeta && meta.invisibleMeta.ns)
+        key = meta.invisibleMeta.ns
+    }
 
     const rectEl = el.getBoundingClientRect ? el : el.parentElement
     const { top, left, width, height } = rectEl.getBoundingClientRect()
@@ -23,17 +50,12 @@ export function createClickHandler (cb, options = {}) {
     const pL = parseFloat(style.getPropertyValue('padding-left'))
     const sizing = style.getPropertyValue('box-sizing')
 
-    // eslint-disable-next-line consistent-return
-    function getFallbackNS () {
-      if (options.isLocizify) return options.defaultNS
-    }
-
     // eslint-disable-next-line n/no-callback-literal
     cb({
       tagName: rectEl.tagName,
       text,
       key,
-      ns: getElementNamespace(el) || getFallbackNS(),
+      ns,
       box: {
         top,
         left,
