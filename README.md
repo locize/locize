@@ -32,7 +32,7 @@ You can both click text elements on your website or keys in the locize iframe to
 
 #### b) Opening it on https://locize.app
 
-Details for setting this up can be found [here](https://docs.locize.com/different-views/incontext)
+Details for setting this up can be found [here](https://www.locize.com/docs/incontext)
 
 The solution extracts the text on the clicked element and passes it for a fuzzy search to the parent frame. As the search is fuzzy there is no guarantee for exact results.
 
