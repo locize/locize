@@ -156,6 +156,7 @@ export function createObserver (ele, handle) {
         subtree: true
       }
     ) => {
+      handle([ele]) // handle initial content - might be we're not using i18next that triggers mutations on translation (think of static content)
       observer.observe(ele, observerConfig)
     },
     skipNext () {

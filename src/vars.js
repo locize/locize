@@ -1,7 +1,9 @@
 export const validAttributes = ['placeholder', 'title', 'alt']
+export const ignoreElements = ['SCRIPT']
 export const colors = {
-  highlight: '#26a69a',
-  warning: '#e67a00'
+  highlight: '#1976d2',
+  warning: '#e67a00',
+  gray: '#ccc'
 }
 
 export const getIframeUrl = () => {
@@ -13,6 +15,6 @@ export const getIframeUrl = () => {
   return env === 'development'
     ? 'http://localhost:3003/'
     : env === 'staging'
-      ? 'https://incontext-dev.locize.app'
-      : 'https://incontext.locize.app'
+    ? 'https://incontext-dev.locize.app'
+    : 'https://incontext.locize.app'
 }

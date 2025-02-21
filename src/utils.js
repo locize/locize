@@ -56,7 +56,12 @@ export function getClickedElement (e) {
     e.srcElement.nodeType === 1 &&
     (e.srcElement.nodeName === 'BUTTON' || e.srcElement.nodeName === 'INPUT')
   ) {
-    if (e.srcElement.getAttribute && e.srcElement.getAttribute('ignorelocizeeditor') === '') { return null }
+    if (
+      e.srcElement.getAttribute &&
+      e.srcElement.getAttribute('ignorelocizeeditor') === ''
+    ) {
+      return null
+    }
     return e.srcElement
   }
 
@@ -67,7 +72,8 @@ export function getClickedElement (e) {
     el = e.originalEvent.explicitOriginalTarget
   } else {
     const parent = e.srcElement
-    if (parent.getAttribute && parent.getAttribute('ignorelocizeeditor') === '') return null
+    if (parent.getAttribute && parent.getAttribute('ignorelocizeeditor') === '')
+      return null
 
     const left = e.pageX
     const top = e.pageY
@@ -87,11 +93,13 @@ export function getClickedElement (e) {
       if (n.nodeType === 1 && nOffset.bottom < top) topStartsAt = i + 1
 
       // if node is below top click set end index to this node
-      if (!topBreaksAt && nOffset.top + (n.clientHeight || 0) > top) topBreaksAt = i
+      if (!topBreaksAt && nOffset.top + (n.clientHeight || 0) > top)
+        topBreaksAt = i
     }
 
     // check we are inside children lenght
-    if (topStartsAt + 1 > parent.childNodes.length) topStartsAt = parent.childNodes.length - 1
+    if (topStartsAt + 1 > parent.childNodes.length)
+      topStartsAt = parent.childNodes.length - 1
     if (!topBreaksAt) topBreaksAt = parent.childNodes.length
     // console.warn('bound', topStartsAt, topBreaksAt)
 
@@ -125,8 +133,67 @@ function getAttribute (el, name) {
 export function getElementI18nKey (el) {
   const key = getAttribute(el, 'data-i18n')
   if (key) return key
-  if (el.nodeType === window.Node.TEXT_NODE && el.parentElement) { return getElementI18nKey(el.parentElement) }
+  if (el.nodeType === window.Node.TEXT_NODE && el.parentElement) {
+    return getElementI18nKey(el.parentElement)
+  }
   return undefined
+}
+
+function parseAttrFromKey (key) {
+  let attr = 'text'
+
+  if (key.indexOf('[') == 0) {
+    var parts = key.split(']')
+    key = parts[1]
+    attr = parts[0].substr(1, parts[0].length - 1)
+  }
+
+  const newKey =
+    key.indexOf(';') == key.length - 1 ? key.substr(0, key.length - 2) : key
+
+  return [newKey, attr]
+}
+
+export function getI18nMetaFromNode (el, hasNamespacePrependToKey = true) {
+  const key = getElementI18nKey(el)
+  const ns = getElementNamespace(el)
+
+  const allKeys = {}
+
+  if (key && key.indexOf(';') >= 0) {
+    let keys = key.split(';')
+    for (let ix = 0, l_ix = keys.length; ix < l_ix; ix++) {
+      if (keys[ix] != '') {
+        const [usedKey, attr] = parseAttrFromKey(keys[ix])
+
+        allKeys[attr] = usedKey
+      }
+    }
+  } else if (key) {
+    const [usedKey, attr] = parseAttrFromKey(key)
+
+    allKeys[attr] = usedKey
+  }
+
+  if (Object.keys(allKeys).length < 1) return null
+
+  const res = Object.keys(allKeys).reduce((mem, attr) => {
+    let key = allKeys[attr]
+    let usedNS = ns
+    let usedKey = key
+
+    if (hasNamespacePrependToKey && key.indexOf(':') > -1) {
+      const parts = key.split(':')
+      usedKey = parts[1]
+      usedNS = parts[0]
+    }
+
+    mem[attr] = { key: usedKey, ns: usedNS }
+
+    return mem
+  }, {})
+
+  return res
 }
 
 export function getElementNamespace (el) {

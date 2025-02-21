@@ -17,7 +17,9 @@ export function setValueOnNode (meta, value) {
   // check if we have an item and that item has same textType
   if (!item || !item.keys[meta.textType]) return
 
-  const txtWithHiddenMeta = wrap(value, item.subliminal)
+  const txtWithHiddenMeta = item.subliminal
+    ? wrap(value, item.subliminal)
+    : value
 
   if (meta.textType === 'text') {
     item.node.textContent = txtWithHiddenMeta
@@ -65,7 +67,8 @@ export function setValueOnNode (meta, value) {
 
       // remove old stuff (startMarker to endHiddenMeta)
       children.forEach(replaceable => {
-        if (item.node.contains(replaceable.child)) item.node.removeChild(replaceable.child)
+        if (item.node.contains(replaceable.child))
+          item.node.removeChild(replaceable.child)
       })
     }
   }

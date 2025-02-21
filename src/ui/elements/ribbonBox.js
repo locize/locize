@@ -6,14 +6,14 @@ import { RibbonLogo, EditIcon } from './icons.js'
 
 if (sheet) {
   sheet.insertRule(
-    '.i18next-editor-button:hover { background-color: rgba(38, 166, 154, 1) !important; }'
+    '.i18next-editor-button:hover { background-color: rgba(21, 65, 154, 1) !important; }'
   )
 }
 export function RibbonButton (text, attrTitle, onClick) {
   const btn = document.createElement('button')
 
   btn.style =
-    'font-family: Arial; position: relative; backdrop-filter: blur(3px); cursor: pointer; padding: 2px 10px 2px 20px; font-size: 15px; font-weight: 300; text-transform: uppercase; color: #fff; background-color: rgba(38, 166, 154, 0.8); border: none; border-radius: 12px'
+    'font-family: Arial; position: relative; backdrop-filter: blur(3px); cursor: pointer; padding: 2px 10px 2px 20px; font-size: 15px; font-weight: 300; text-transform: uppercase; color: #fff; background-color: rgba(25, 118, 210, 0.8); border: none; border-radius: 12px; z-index: 99999;'
   btn.classList.add('i18next-editor-button')
   btn.setAttribute('data-i18next-editor-element', 'true')
   btn.setAttribute('title', attrTitle)
@@ -53,8 +53,8 @@ export function RibbonBox (keys = {}) {
     `
   box.appendChild(arrow)
 
-  const logo = RibbonLogo()
-  box.appendChild(logo)
+  // const logo = RibbonLogo()
+  // box.appendChild(logo)
 
   const btnbox = document.createElement('div')
   btnbox.style =
@@ -63,9 +63,13 @@ export function RibbonBox (keys = {}) {
   Object.keys(keys).forEach(k => {
     const data = keys[k]
 
-    const btn = RibbonButton(k.replace('attr:', ''), `${data.ns}:${data.key}`, () => {
-      api.selectKey(data)
-    })
+    const btn = RibbonButton(
+      k.replace('attr:', ''),
+      `${data.ns}:${data.key}`,
+      () => {
+        api.selectKey(data)
+      }
+    )
     btn.style.marginBottom = '2px'
     btnbox.appendChild(btn)
   })

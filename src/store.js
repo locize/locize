@@ -22,6 +22,8 @@ function save (id, subliminal, type, meta, node, children) {
     }
   }
 
+  if (subliminal) data[id].subliminal = subliminal
+
   data[id].keys = {
     ...data[id].keys,
     [`${type}`]: meta

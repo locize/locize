@@ -11,11 +11,12 @@ let data = []
 
 export function start (implementation = {}) {
   if (typeof document === 'undefined') return
+
   // get locize id, version
   const scriptEle = document.getElementById('locize')
 
-  let config = {};
-  ['projectId', 'version'].forEach(attr => {
+  let config = {}
+  ;['projectId', 'version'].forEach(attr => {
     if (!scriptEle) return
     let value =
       scriptEle.getAttribute(attr.toLowerCase()) ||

@@ -1,5 +1,6 @@
 import { getIframeUrl } from '../vars.js'
 import { store } from '../store.js'
+import { uninstrumentedStore } from '../uninstrumentedStore.js'
 
 const legacyEventMapping = {
   committed: 'commitKeys'
@@ -44,7 +45,7 @@ export function sendMessage (action, payload) {
     return
   }
 
-  // console.warn('out ok - ', api.source, api.origin, action, payload)
+  console.warn('out ok - ', api.source, api.origin, action, payload)
 
   if (api.legacy) {
     api.source.postMessage(
@@ -59,7 +60,7 @@ export function sendMessage (action, payload) {
         action,
         message: action,
         payload
-      }, // message for legacy
+      },
       api.origin
     )
   }
@@ -106,6 +107,13 @@ export const api = {
   sendCurrentParsedContent: () => {
     sendMessage('sendCurrentParsedContent', {
       content: Object.values(store.data).map(item => {
+        return {
+          id: item.id,
+          // subliminal: item.subliminal,
+          keys: item.keys
+        }
+      }),
+      uninstrumented: Object.values(uninstrumentedStore.data).map(item => {
         return {
           id: item.id,
           // subliminal: item.subliminal,

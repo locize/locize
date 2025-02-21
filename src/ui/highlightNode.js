@@ -1,6 +1,8 @@
 import { colors } from '../vars.js'
 import { RibbonBox } from './elements/ribbonBox.js'
+import { HighlightBox } from './elements/highlightBox.js'
 import { computePosition, flip, shift, offset, arrow } from '@floating-ui/dom'
+import { getOptimizedBoundingRectEle } from './utils.js'
 
 const eleToOutline = [
   'DIV',
@@ -18,7 +20,12 @@ const eleToOutline = [
   'DL',
   'PRE'
 ]
-const overriddenStyles = ['outline', 'border-radius', 'outline-offset', 'filter']
+const overriddenStyles = [
+  'outline',
+  'border-radius',
+  'outline-offset',
+  'filter'
+]
 const originalStyles = {}
 const selected = {}
 
@@ -27,6 +34,7 @@ export function highlight (item, node, keys) {
 
   if (selected[id]) return
 
+  /*
   if (!originalStyles[id]) {
     originalStyles[id] = overriddenStyles.reduce((mem, s) => {
       mem[s] = node.style[s]
@@ -46,33 +54,22 @@ export function highlight (item, node, keys) {
     node.style.filter = 'brightness(110%)'
     // node.style.filter = `brightness(110%) drop-shadow(0px 0px 2px ${colors.highlight} )`
   }
+    */
+
+  // get a bounding rect on main element or optimized inner text
+  const rectEle = getOptimizedBoundingRectEle(node)
+
+  if (!item.highlightBox) {
+    const box = HighlightBox(rectEle, colors.highlight)
+    document.body.appendChild(box)
+    item.highlightBox = box
+  }
 
   if (!item.ribbonBox) {
     const { box: actions, arrow: arrowEle } = RibbonBox(keys)
     document.body.appendChild(actions)
 
-    let refEle = node
-    // const arrowLen = arrowEle.offsetWidth
-
-    // better placement for element only containing text
-    // note: for html we would have to calculate based on children...
-    if (node.childNodes.length === 1) {
-      const childNode = node.childNodes[0]
-
-      if (childNode && childNode.nodeName === '#text') {
-        const range = document.createRange()
-        range.selectNode(childNode)
-        const rect = range.getBoundingClientRect()
-
-        refEle = {
-          getBoundingClientRect () {
-            return rect
-          }
-        }
-      }
-    }
-
-    computePosition(refEle, actions, {
+    computePosition(rectEle, actions, {
       placement: 'right',
       middleware: [
         flip({ fallbackPlacements: ['left', 'bottom'] }),
@@ -111,7 +108,12 @@ export function highlight (item, node, keys) {
           right: '',
           bottom: '',
           [staticSide]: `${side === 'bottom' ? -18 : -25}px`,
-          transform: side === 'bottom' ? 'rotate(90deg)' : side === 'left' ? 'rotate(180deg)' : ''
+          transform:
+            side === 'bottom'
+              ? 'rotate(90deg)'
+              : side === 'left'
+              ? 'rotate(180deg)'
+              : ''
         })
       }
     })
@@ -126,49 +128,65 @@ export function highlightUninstrumented (item, node, keys) {
 
   if (selected[id]) return
 
-  if (!originalStyles[id]) {
-    originalStyles[id] = overriddenStyles.reduce((mem, s) => {
-      mem[s] = node.style[s]
-      return mem
-    }, {})
-  }
+  // if (!originalStyles[id]) {
+  //   originalStyles[id] = overriddenStyles.reduce((mem, s) => {
+  //     mem[s] = node.style[s]
+  //     return mem
+  //   }, {})
+  // }
 
-  if (eleToOutline.includes(node.nodeName)) {
-    node.style.outline = `${colors.warning} solid 1px`
-    node.style.setProperty('border-radius', '1px')
-    node.style.setProperty('outline-offset', '2px')
-    node.style.filter = 'brightness(110%)'
-  } else {
-    node.style.outline = `${colors.warning} solid 1px`
-    node.style.setProperty('border-radius', '1px')
-    node.style.setProperty('outline-offset', '1px')
-    node.style.filter = 'brightness(110%)'
-    // node.style.filter = `brightness(110%) drop-shadow(0px 0px 2px ${colors.highlight} )`
+  // if (eleToOutline.includes(node.nodeName)) {
+  //   node.style.outline = `${colors.warning} solid 1px`
+  //   node.style.setProperty('border-radius', '1px')
+  //   node.style.setProperty('outline-offset', '2px')
+  //   node.style.filter = 'brightness(110%)'
+  // } else {
+  //   node.style.outline = `${colors.warning} solid 1px`
+  //   node.style.setProperty('border-radius', '1px')
+  //   node.style.setProperty('outline-offset', '1px')
+  //   node.style.filter = 'brightness(110%)'
+  //   // node.style.filter = `brightness(110%) drop-shadow(0px 0px 2px ${colors.highlight} )`
+  // }
+
+  const rectEle = getOptimizedBoundingRectEle(node)
+
+  if (!item.highlightBox) {
+    const box = HighlightBox(rectEle, colors.warning)
+    document.body.appendChild(box)
+    item.highlightBox = box
   }
 }
 
 export function selectedHighlight (item, node, keys) {
   const { id } = item
 
-  if (!originalStyles[id]) {
-    originalStyles[id] = overriddenStyles.reduce((mem, s) => {
-      mem[s] = node.style[s]
-      return mem
-    }, {})
-  }
+  // if (!originalStyles[id]) {
+  //   originalStyles[id] = overriddenStyles.reduce((mem, s) => {
+  //     mem[s] = node.style[s]
+  //     return mem
+  //   }, {})
+  // }
 
-  if (eleToOutline.includes(node.nodeName)) {
-    node.style.outline = `${colors.highlight} solid 1px`
-    node.style.setProperty('border-radius', '1px')
-    node.style.setProperty('outline-offset', '2px')
-    // node.style.filter = 'brightness(110%)';
-    node.style.filter = `brightness(110%) drop-shadow(0px 0px 2px ${colors.highlight} )`
-  } else {
-    node.style.outline = `${colors.highlight} solid 1px`
-    node.style.setProperty('border-radius', '1px')
-    node.style.setProperty('outline-offset', '1px')
-    // node.style.filter = 'brightness(110%)';
-    node.style.filter = `brightness(110%) drop-shadow(0px 0px 2px ${colors.highlight} )`
+  // if (eleToOutline.includes(node.nodeName)) {
+  //   // node.style.outline = `${colors.highlight} solid 1px`
+  //   // node.style.setProperty('border-radius', '1px')
+  //   // node.style.setProperty('outline-offset', '2px')
+  //   // node.style.filter = 'brightness(110%)';
+  //   node.style.filter = `brightness(110%) drop-shadow(0px 0px 2px ${colors.highlight} )`
+  // } else {
+  //   // node.style.outline = `${colors.highlight} solid 1px`
+  //   // node.style.setProperty('border-radius', '1px')
+  //   // node.style.setProperty('outline-offset', '1px')
+  //   // node.style.filter = 'brightness(110%)';
+  //   node.style.filter = `brightness(110%) drop-shadow(0px 0px 2px ${colors.highlight} )`
+  // }
+
+  const rectEle = getOptimizedBoundingRectEle(node)
+
+  if (!item.highlightBox) {
+    const box = HighlightBox(rectEle, colors.highlight, colors.gray)
+    document.body.appendChild(box)
+    item.highlightBox = box
   }
 
   // hide ribbons
@@ -186,11 +204,17 @@ export function resetHighlight (item, node, keys, ignoreSelected = true) {
 
   if (ignoreSelected && selected[id]) return
 
-  if (originalStyles[id]) {
-    overriddenStyles.forEach(s => {
-      node.style.setProperty(s, originalStyles[id][s])
-    })
-    delete originalStyles[id]
+  // if (originalStyles[id]) {
+  //   overriddenStyles.forEach(s => {
+  //     node.style.setProperty(s, originalStyles[id][s])
+  //   })
+  //   delete originalStyles[id]
+  // }
+
+  if (item.highlightBox) {
+    document.body.removeChild(item.highlightBox)
+
+    delete item.highlightBox
   }
 
   if (item.ribbonBox) {

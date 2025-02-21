@@ -95,7 +95,7 @@ function Ribbon (popupEle, onMaximize) {
   background-color:  rgba(249, 249, 249, 0.2);
   backdrop-filter: blur(3px);
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-  border-radius: 50%
+  border-radius: 50%;
   `
 
   ribbon.onclick = () => {
@@ -205,7 +205,7 @@ export function Popup (url, cb) {
   iframe.style = `
     z-index: 100;
     width: 100%;
-    height: calc(100% - 28px);
+    height: calc(100% - 32px);
     border: none;
     background: #fff;
   `

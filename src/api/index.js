@@ -8,6 +8,7 @@ import './handleSelectedKeys.js'
 import './handleIsLocizeEnabled.js'
 import './handleTurnOn.js'
 import './handleTurnOff.js'
+import './handleSendMatchedUninstrumented.js'
 
 export {
   api,

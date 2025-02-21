@@ -6,7 +6,8 @@ export function isInViewport (el) {
 
   const rect = el.getBoundingClientRect()
   // DOMRect { x: 8, y: 8, width: 100, height: 100, top: 8, right: 108, bottom: 108, left: 8 }
-  const windowHeight = window.innerHeight || document.documentElement.clientHeight
+  const windowHeight =
+    window.innerHeight || document.documentElement.clientHeight
   const windowWidth = window.innerWidth || document.documentElement.clientWidth
 
   // http://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
@@ -40,4 +41,30 @@ export function mouseDistanceFromElement (mouseEvent, element) {
     distY = to.y - from.y,
     hypot = (distX ** 2 + distY ** 2) ** (1 / 2)
   return Math.floor(hypot) // this will output 0 when next to your element.
+}
+
+export function getOptimizedBoundingRectEle (node) {
+  // get a bounding rect on main element or optimized inner text
+  let refEle = node
+  // const arrowLen = arrowEle.offsetWidth
+
+  // better placement for element only containing text
+  // note: for html we would have to calculate based on children...
+  if (node.childNodes.length === 1) {
+    const childNode = node.childNodes[0]
+
+    if (childNode && childNode.nodeName === '#text') {
+      const range = document.createRange()
+      range.selectNode(childNode)
+      const rect = range.getBoundingClientRect()
+
+      refEle = {
+        getBoundingClientRect () {
+          return rect
+        }
+      }
+    }
+  }
+
+  return refEle
 }

@@ -11,7 +11,7 @@ function clean () {
   })
 }
 
-function save (id, type, node) {
+function save (id, type, node, txt) {
   if (!id || !type || !node) return
 
   if (!data[id]) {
@@ -23,8 +23,13 @@ function save (id, type, node) {
 
   data[id].keys = {
     ...data[id].keys,
-    [`${type}`]: 'uninstrumented'
+    [`${type}`]: { value: txt, eleUniqueID: id, textType: type }
   }
+}
+
+function remove (id, node) {
+  resetHighlight(id, node)
+  delete data[id]
 }
 
 function get (id) {
@@ -33,6 +38,7 @@ function get (id) {
 
 export const uninstrumentedStore = {
   save,
+  remove,
   clean,
   get,
   data

@@ -1,7 +1,12 @@
-import { unwrap, containsHiddenMeta, containsHiddenStartMarker } from 'i18next-subliminal'
+import {
+  unwrap,
+  containsHiddenMeta,
+  containsHiddenStartMarker
+} from 'i18next-subliminal'
 import { store } from './store.js'
 import { uninstrumentedStore } from './uninstrumentedStore.js'
-import { validAttributes } from './vars.js'
+import { validAttributes, ignoreElements } from './vars.js'
+import { getI18nMetaFromNode } from './utils'
 
 import './shims/uniqueID.js'
 
@@ -23,19 +28,24 @@ function walk (node, func) {
     let i = 0;
     i < children.length;
     i++ // Children are siblings to each other
-  ) { walk(children[i], func) }
+  ) {
+    walk(children[i], func)
+  }
 }
 
-function extractMeta (id, type, meta, children) {
+function extractHiddenMeta (id, type, meta, children) {
   const { invisibleMeta, text } = meta
   if (!invisibleMeta || !invisibleMeta.key || !invisibleMeta.ns) return
 
-  if (!currentSourceLng) currentSourceLng = i18n?.getSourceLng()
+  if (!currentSourceLng) currentSourceLng = i18n.getSourceLng()
 
   return {
     eleUniqueID: id,
     textType: type,
-    children: children ? children.map(c => c.childIndex).join(',') : null,
+    children:
+      children && children.map
+        ? children.map(c => c.childIndex).join(',')
+        : null,
     qualifiedKey: `${invisibleMeta.ns}:${invisibleMeta.key}`,
     ...invisibleMeta,
     extractedText: text,
@@ -44,11 +54,54 @@ function extractMeta (id, type, meta, children) {
     i18nRawText: {
       [`${invisibleMeta.lng}`]:
         invisibleMeta.source === 'translation' && i18n
-          ? i18n.getResource(invisibleMeta.lng, invisibleMeta.ns, invisibleMeta.key)
+          ? i18n?.getResource(
+              invisibleMeta.lng,
+              invisibleMeta.ns,
+              invisibleMeta.key
+            )
           : null,
       [`${currentSourceLng}`]:
         invisibleMeta.source === 'translation' && i18n
-          ? i18n.getResource(currentSourceLng, invisibleMeta.ns, invisibleMeta.key)
+          ? i18n?.getResource(
+              currentSourceLng,
+              invisibleMeta.ns,
+              invisibleMeta.key
+            )
+          : null
+    }
+  }
+}
+
+export function extractNodeMeta (id, type, nodeMeta = {}, text, children) {
+  const meta = nodeMeta[type]
+  if (!meta) return
+
+  if (!currentSourceLng) currentSourceLng = i18n.getSourceLng()
+  const i18nTargetLng = i18n.getLng()
+
+  console.warn('lng', i18nTargetLng)
+
+  return {
+    eleUniqueID: id,
+    textType: type,
+    children:
+      children && children.map
+        ? children.map(c => c.childIndex).join(',')
+        : null,
+    qualifiedKey: meta.key && meta.ns ? `${meta.ns}:${meta.key}` : null,
+    key: meta.key,
+    ns: meta.ns,
+    extractedText: text,
+    i18nTargetLng,
+    i18nSourceLng: currentSourceLng,
+    i18nRawText: {
+      [`${i18nTargetLng}`]:
+        i18n && meta.ns && meta.key
+          ? i18n?.getResource(i18nTargetLng, meta.ns, meta.key) || text
+          : text,
+      [`${currentSourceLng}`]:
+        i18n && meta.ns && meta.key
+          ? i18n?.getResource(currentSourceLng, meta.ns, meta.key)
           : null
     }
   }
@@ -59,9 +112,14 @@ function containsOnlySpaces (str) {
 }
 
 function handleNode (node) {
+  if (ignoreElements.indexOf(node.nodeName) > -1) return
+
+  const nodeI18nMeta = getI18nMetaFromNode(node)
+
   // test for inner text - but ignore text for elements merged to html containing translation
   if (node.childNodes && !ignoreMergedEleUniqueIds.includes(node.uniqueID)) {
     let merge = []
+
     node.childNodes.forEach((child, i) => {
       if (merge.length && child.nodeName !== '#text') {
         ignoreMergedEleUniqueIds.push(child.uniqueID)
@@ -87,11 +145,12 @@ function handleNode (node) {
       if (hasHiddenStartMarker && hasHiddenMeta) {
         const meta = unwrap(txt)
 
+        uninstrumentedStore.remove(node.uniqueID, node) // might be instrumented later and already in uninstrumentedStore - so remove it there first
         store.save(
           node.uniqueID,
           meta.invisibleMeta,
           'text',
-          extractMeta(node.uniqueID, 'text', meta),
+          extractHiddenMeta(node.uniqueID, 'text', meta),
           node
         )
       } else if (hasHiddenStartMarker) {
@@ -107,11 +166,12 @@ function handleNode (node) {
           }, '')
         )
 
+        uninstrumentedStore.remove(node.uniqueID, node, txt) // might be instrumented later and already in uninstrumentedStore - so remove it there first
         store.save(
           node.uniqueID,
           meta.invisibleMeta,
           'html',
-          extractMeta(node.uniqueID, 'html', meta, merge),
+          extractHiddenMeta(node.uniqueID, 'html', meta, merge),
           node,
           merge
         )
@@ -119,7 +179,24 @@ function handleNode (node) {
         // reset
         merge = []
       } else if (txt) {
-        uninstrumentedStore.save(node.uniqueID, 'text', node)
+        console.warn(
+          'nodeI18nMeta',
+          txt,
+          nodeI18nMeta,
+          hasHiddenMeta,
+          hasHiddenStartMarker
+        )
+        if (nodeI18nMeta && nodeI18nMeta['text']) {
+          store.save(
+            node.uniqueID,
+            null,
+            'text',
+            extractNodeMeta(node.uniqueID, 'text', nodeI18nMeta, txt),
+            node
+          )
+        } else {
+          uninstrumentedStore.save(node.uniqueID, 'text', node, txt)
+        }
       }
     })
   }
@@ -132,17 +209,30 @@ function handleNode (node) {
     if (containsHiddenMeta(txt)) {
       const meta = unwrap(txt)
 
+      uninstrumentedStore.remove(node.uniqueID, node) // might be instrumented later and already in uninstrumentedStore - so remove it there first
       store.save(
         node.uniqueID,
         meta.invisibleMeta,
         `attr:${attr}`,
-        extractMeta(node.uniqueID, `attr:${attr}`, meta),
+        extractHiddenMeta(node.uniqueID, `attr:${attr}`, meta),
         node
       )
     } else if (txt) {
-      uninstrumentedStore.save(node.uniqueID, `attr:${attr}`, node)
+      if (nodeI18nMeta && nodeI18nMeta[attr]) {
+        store.save(
+          node.uniqueID,
+          null,
+          attr,
+          extractNodeMeta(node.uniqueID, attr, nodeI18nMeta, txt, node),
+          node
+        )
+      } else {
+        uninstrumentedStore.save(node.uniqueID, `attr:${attr}`, node)
+      }
     }
   })
+
+  // console.warn('store', store)
 
   // TODO: how to handle react Trans things?!?
 }
