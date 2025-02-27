@@ -79,7 +79,7 @@ export function extractNodeMeta (id, type, nodeMeta = {}, text, children) {
   if (!currentSourceLng) currentSourceLng = i18n.getSourceLng()
   const i18nTargetLng = i18n.getLng()
 
-  console.warn('lng', i18nTargetLng)
+  // console.warn('lng', i18nTargetLng)
 
   return {
     eleUniqueID: id,
@@ -88,9 +88,12 @@ export function extractNodeMeta (id, type, nodeMeta = {}, text, children) {
       children && children.map
         ? children.map(c => c.childIndex).join(',')
         : null,
-    qualifiedKey: meta.key && meta.ns ? `${meta.ns}:${meta.key}` : null,
+    qualifiedKey:
+      meta.key && (meta.ns || i18n?.getDefaultNS())
+        ? `${meta.ns || i18n?.getDefaultNS()}:${meta.key}`
+        : null,
     key: meta.key,
-    ns: meta.ns,
+    ns: meta.ns || i18n?.getDefaultNS(),
     extractedText: text,
     i18nTargetLng,
     i18nSourceLng: currentSourceLng,
@@ -179,13 +182,13 @@ function handleNode (node) {
         // reset
         merge = []
       } else if (txt) {
-        console.warn(
-          'nodeI18nMeta',
-          txt,
-          nodeI18nMeta,
-          hasHiddenMeta,
-          hasHiddenStartMarker
-        )
+        // console.warn(
+        //   'nodeI18nMeta',
+        //   txt,
+        //   nodeI18nMeta,
+        //   hasHiddenMeta,
+        //   hasHiddenStartMarker
+        // )
         if (nodeI18nMeta && nodeI18nMeta['text']) {
           store.save(
             node.uniqueID,

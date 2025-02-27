@@ -7,6 +7,8 @@ function handler (payload) {
   if (containerStyle) {
     const popup = document.getElementById(popupId)
 
+    if (!popup) return
+
     if (containerStyle.height) {
       const diff = `calc(${containerStyle.height} - ${popup.style.height})`
 

@@ -37,6 +37,9 @@ function getImplementation (i18n) {
         cb(i18n.getResourceBundle(lng, ns))
       })
     },
+    getDefaultNS: () => {
+      return i18n.options.defaultNS
+    },
     getLng: () => {
       return (
         i18n.resolvedLanguage ||
@@ -114,7 +117,7 @@ function getImplementation (i18n) {
       }
 
       if (!i18n.options.backend && !i18n.options.editor) return opts
-      const pickFrom = i18n.options.backend || i18n.options.editor
+      const pickFrom = i18n.options.editor || i18n.options.backend
       return {
         ...opts,
         projectId: pickFrom.projectId,
@@ -161,7 +164,8 @@ export const locizeEditorPlugin = (opt = {}) => {
       if (!isInIframe && showInContext) {
         start(impl)
       } else if (isInIframe) {
-        startLegacy(impl)
+        // startLegacy(impl)
+        start(impl, false) // we no longer show the legacy process but use the new way without popup opening
       }
     }
   }

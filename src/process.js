@@ -9,7 +9,7 @@ import { api } from './api/index.js'
 // eslint-disable-next-line no-unused-vars
 let data = []
 
-export function start (implementation = {}) {
+export function start (implementation = {}, showPopup = true) {
   if (typeof document === 'undefined') return
 
   // get locize id, version
@@ -28,6 +28,7 @@ export function start (implementation = {}) {
   config = { ...implementation.getLocizeDetails(), ...config }
 
   // init stuff
+  api.config = config
   api.init(implementation)
   setImplementation(implementation)
 
@@ -48,7 +49,7 @@ export function start (implementation = {}) {
     startMouseTracking(observer)
 
     // append popup
-    if (!document.getElementById(popupId)) {
+    if (showPopup && !document.getElementById(popupId)) {
       document.body.append(
         Popup(getIframeUrl(), () => {
           api.requestInitialize(config)
@@ -56,6 +57,32 @@ export function start (implementation = {}) {
       )
       initDragElement()
       initResizeElement()
+    }
+
+    // propagate url changes
+    if (typeof window !== 'undefined') {
+      let oldHref = window.document.location.href
+      api.sendHrefchanged(oldHref)
+
+      const bodyList = window.document.querySelector('body')
+
+      const observer = new window.MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+          if (oldHref !== window.document.location.href) {
+            // console.warn('url changed', oldHref, document.location.href);
+            oldHref = window.document.location.href
+
+            api.sendHrefchanged(oldHref)
+          }
+        })
+      })
+
+      const config = {
+        childList: true,
+        subtree: true
+      }
+
+      observer.observe(bodyList, config)
     }
   }
 

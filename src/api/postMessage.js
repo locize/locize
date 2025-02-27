@@ -33,13 +33,18 @@ export function setEditorLng (lng) {
 }
 
 let pendingMsgs = []
+const allowedActionsBeforeInit = ['locizeIsEnabled', 'requestInitialize']
 export function sendMessage (action, payload) {
   if (!api.source) {
     api.source = document.getElementById('i18next-editor-iframe')?.contentWindow
   }
   if (!api.origin) api.origin = getIframeUrl()
 
-  if (!api.source || !api.source.postMessage) {
+  if (
+    !api.source ||
+    !api.source.postMessage ||
+    (!api.initialized && allowedActionsBeforeInit.indexOf(action) < 0)
+  ) {
     // console.warn('out nok queuing - ', api.source, api.origin, action, payload);
     pendingMsgs.push({ action, payload })
     return
@@ -56,7 +61,7 @@ export function sendMessage (action, payload) {
     api.source.postMessage(
       {
         sender: 'i18next-editor',
-        senderAPIVersion: 'v1',
+        senderAPIVersion: 'v2',
         action,
         message: action,
         payload
@@ -93,7 +98,7 @@ export const api = {
         clearInterval(api.initInterval)
         delete api.initInterval
       }
-    }, 1000)
+    }, 2000)
   },
 
   selectKey: meta => {
@@ -129,14 +134,18 @@ export const api = {
     })
   },
 
+  sendHrefchanged: href => {
+    sendMessage('hrefChanged', { href })
+  },
+
   addHandler: (action, fc) => {
     if (!handlers[action]) handlers[action] = []
     handlers[action].push(fc)
   },
 
   // legacy
-  sendLocizeIsEnabled: () => {
-    sendMessage('locizeIsEnabled', { enabled: true })
+  sendLocizeIsEnabled: payload => {
+    sendMessage('locizeIsEnabled', { ...payload, enabled: true })
   },
 
   turnOn: () => {
@@ -174,6 +183,7 @@ export const api = {
 if (typeof window !== 'undefined') {
   window.addEventListener('message', e => {
     const { sender, /* senderAPIVersion, */ action, message, payload } = e.data
+    console.warn(sender, action, message, payload)
 
     if (message) {
       const usedEventName = getMappedLegacyEvent(message)
@@ -185,7 +195,7 @@ if (typeof window !== 'undefined') {
     } else if (sender === 'i18next-editor-frame' && handlers[action]) {
       // console.warn('ok in', action, payload);
       handlers[action].forEach(fc => {
-        fc(payload)
+        fc(payload, e)
       })
     }
   })
