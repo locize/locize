@@ -25,7 +25,8 @@ export function initDragElement () {
   }
 
   function dragMouseDown (e) {
-    if (!overlay) overlay = document.getElementById('i18next-editor-popup-overlay')
+    if (!overlay)
+      overlay = document.getElementById('i18next-editor-popup-overlay')
     if (overlay) overlay.style.display = 'block'
     stopMouseTracking()
 
@@ -61,13 +62,24 @@ export function initDragElement () {
     startMouseTracking()
     if (overlay) overlay.style.display = 'none'
 
+    const ele = document.getElementById('i18next-editor-popup')
+    localStorage.setItem(
+      'locize_popup_pos',
+      JSON.stringify({
+        top: parseInt(document.defaultView.getComputedStyle(ele).top, 10),
+        left: parseInt(document.defaultView.getComputedStyle(ele).left, 10)
+      })
+    )
+
     /* stop moving when mouse button is released: */
     document.onmouseup = null
     document.onmousemove = null
   }
 
   function getHeader (element) {
-    const headerItems = element.getElementsByClassName('i18next-editor-popup-header')
+    const headerItems = element.getElementsByClassName(
+      'i18next-editor-popup-header'
+    )
 
     if (headerItems.length === 1) {
       return headerItems[0]
@@ -107,15 +119,22 @@ export function initResizeElement () {
 
   function initDrag (e) {
     stopMouseTracking()
-    if (!overlay) overlay = document.getElementById('i18next-editor-popup-overlay')
+    if (!overlay)
+      overlay = document.getElementById('i18next-editor-popup-overlay')
     if (overlay) overlay.style.display = 'block'
 
     element = this.parentPopup
 
     startX = e.clientX
     startY = e.clientY
-    startWidth = parseInt(document.defaultView.getComputedStyle(element).width, 10)
-    startHeight = parseInt(document.defaultView.getComputedStyle(element).height, 10)
+    startWidth = parseInt(
+      document.defaultView.getComputedStyle(element).width,
+      10
+    )
+    startHeight = parseInt(
+      document.defaultView.getComputedStyle(element).height,
+      10
+    )
     document.documentElement.addEventListener('mousemove', doDrag, false)
     document.documentElement.addEventListener('mouseup', stopDrag, false)
   }
@@ -128,6 +147,15 @@ export function initResizeElement () {
   function stopDrag () {
     startMouseTracking()
     if (overlay) overlay.style.display = 'none'
+
+    const ele = document.getElementById('i18next-editor-popup')
+    localStorage.setItem(
+      'locize_popup_size',
+      JSON.stringify({
+        width: parseInt(document.defaultView.getComputedStyle(ele).width, 10),
+        height: parseInt(document.defaultView.getComputedStyle(ele).height, 10)
+      })
+    )
 
     document.documentElement.removeEventListener('mousemove', doDrag, false)
     document.documentElement.removeEventListener('mouseup', stopDrag, false)

@@ -2,6 +2,7 @@ import { api } from './postMessage.js'
 import { store } from '../store.js'
 
 import { setValueOnNode } from './handleEditKey.js'
+import { recalcSelectedHighlight } from '../ui/highlightNode.js'
 
 function handler (payload) {
   const { updated } = payload
@@ -17,6 +18,14 @@ function handler (payload) {
     }
 
     api.i18n.setResource(lng, ns, key, data.value)
+
+    // recalculate the highlight for selected nodes as those might have new sizes
+    if (metas) {
+      Object.values(metas).forEach(m => {
+        const sItem = store.get(m.eleUniqueID)
+        recalcSelectedHighlight(sItem, sItem.node, sItem.keys)
+      })
+    }
   })
 
   // reset all html - needed for react (gets confused on mutated children, eg. in Trans)

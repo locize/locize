@@ -1,23 +1,4 @@
-import { PostProcessor, unwrap } from 'i18next-subliminal'
-import { start } from './process.js'
-
-import * as implementations from './implementations'
-
-function configurePostProcessor (i18next, options) {
-  i18next.use(PostProcessor)
-
-  if (typeof options.postProcess === 'string') {
-    options.postProcess = [options.postProcess, 'subliminal']
-  } else if (Array.isArray(options.postProcess)) {
-    options.postProcess.push('subliminal')
-  } else {
-    options.postProcess = 'subliminal'
-  }
-
-  options.postProcessPassResolved = true
-}
-
-function getImplementation (i18n) {
+export function getImplementation (i18n) {
   const impl = {
     getResource: (lng, ns, key) => {
       return i18n.getResource && i18n.getResource(lng, ns, key)
@@ -130,32 +111,4 @@ function getImplementation (i18n) {
     }
   }
   return impl
-}
-
-let i18next
-export const locizeEditorPlugin = (opt = {}) => {
-  opt.qsProp = opt.qsProp || 'incontext'
-
-  return {
-    type: '3rdParty',
-
-    init (i18n) {
-      const { options } = i18n
-
-      // store for later
-      i18next = i18n
-
-      const impl = implementations.i18next.getImplementation(i18n)
-
-      configurePostProcessor(i18next, options)
-      start(impl, opt) // we no longer show the legacy process but use the new way without popup opening
-    }
-  }
-}
-export const locizePlugin = locizeEditorPlugin()
-
-export { unwrap }
-
-export function getI18next () {
-  return i18next
 }

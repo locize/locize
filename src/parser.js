@@ -20,10 +20,22 @@ export function setImplementation (impl) {
 
 function walk (node, func) {
   if (node.dataset && node.dataset.i18nextEditorElement === 'true') return
+
+  // parse node
   func(node)
 
-  const children = node.childNodes
+  // check if it is is any store - if so remove parent from uninstrumented
+  // this avoids situations where a div has inner text (not instrumented) and some children that are instrumented showing a big box around all
+  const instr = store.get(node.uniqueID)
+  const uninstr = uninstrumentedStore.get(node.uniqueID)
 
+  if (instr || uninstr) {
+    const id = node.parentElement?.uniqueID
+    uninstrumentedStore.remove(id, node.parentElement)
+  }
+
+  // parse children
+  const children = node.childNodes
   for (
     let i = 0;
     i < children.length;
@@ -114,10 +126,41 @@ function containsOnlySpaces (str) {
   return /^\s*$/.test(str)
 }
 
+function storeIfQualifiedKey (
+  id,
+  subliminal,
+  type,
+  nodeI18nMeta,
+  node,
+  children,
+  txt
+) {
+  // if we got some key, ns from locize and stored that - reuse it on this run
+  const stored = store.get(id)
+  const storedMeta = (stored && stored.keys[`${type}`]) || {}
+  const typeMeta = nodeI18nMeta[`${type}`] || {}
+
+  if (!typeMeta.key && storedMeta.key) typeMeta.key = storedMeta.key
+  if (!typeMeta.ns && storedMeta.ns) typeMeta.ns = storedMeta.ns
+  nodeI18nMeta[`${type}`] = typeMeta
+
+  // extract metas
+  const meta = extractNodeMeta(id, type, nodeI18nMeta, txt, children)
+
+  // if we can 100% identify that ns:key store - else uninstrumented
+  if (meta.qualifiedKey) {
+    store.save(id, null, type, meta, node, children)
+    uninstrumentedStore.removeKey(i, type, node)
+  } else {
+    uninstrumentedStore.save(id, type, node, txt)
+  }
+}
+
 function handleNode (node) {
   if (ignoreElements.indexOf(node.nodeName) > -1) return
 
   const nodeI18nMeta = getI18nMetaFromNode(node)
+  let usedSubliminalForText = false
 
   // test for inner text - but ignore text for elements merged to html containing translation
   if (node.childNodes && !ignoreMergedEleUniqueIds.includes(node.uniqueID)) {
@@ -128,13 +171,15 @@ function handleNode (node) {
         ignoreMergedEleUniqueIds.push(child.uniqueID)
         merge.push({ childIndex: i, child })
       }
-      if (child.nodeName !== '#text') return
 
+      if (child.nodeName !== '#text') return
       const txt = child.textContent
       if (containsOnlySpaces(txt)) return
 
       const hasHiddenMeta = containsHiddenMeta(txt)
       const hasHiddenStartMarker = containsHiddenStartMarker(txt)
+
+      if (hasHiddenMeta) usedSubliminalForText = true
 
       // console.warn(
       //   'child',
@@ -142,8 +187,8 @@ function handleNode (node) {
       //   child.nodeName,
       //   child.innerText,
       //   hasHiddenStartMarker,
-      //   hasHiddenMeta,
-      // );
+      //   hasHiddenMeta
+      // )
 
       if (hasHiddenStartMarker && hasHiddenMeta) {
         const meta = unwrap(txt)
@@ -169,7 +214,7 @@ function handleNode (node) {
           }, '')
         )
 
-        uninstrumentedStore.remove(node.uniqueID, node, txt) // might be instrumented later and already in uninstrumentedStore - so remove it there first
+        uninstrumentedStore.removeKey(node.uniqueID, 'html', node, txt) // might be instrumented later and already in uninstrumentedStore - so remove it there first
         store.save(
           node.uniqueID,
           meta.invisibleMeta,
@@ -181,27 +226,75 @@ function handleNode (node) {
 
         // reset
         merge = []
-      } else if (txt) {
-        // console.warn(
-        //   'nodeI18nMeta',
-        //   txt,
-        //   nodeI18nMeta,
-        //   hasHiddenMeta,
-        //   hasHiddenStartMarker
-        // )
-        if (nodeI18nMeta && nodeI18nMeta['text']) {
-          store.save(
-            node.uniqueID,
-            null,
-            'text',
-            extractNodeMeta(node.uniqueID, 'text', nodeI18nMeta, txt),
-            node
-          )
-        } else {
-          uninstrumentedStore.save(node.uniqueID, 'text', node, txt)
-        }
       }
     })
+
+    // no subliminal in text
+    if (!usedSubliminalForText) {
+      node.childNodes.forEach((child, i) => {
+        if (merge.length && child.nodeName !== '#text') {
+          ignoreMergedEleUniqueIds.push(child.uniqueID)
+          // merge.push({ childIndex: i, child }) // will be pushed regular below with txt
+        }
+
+        // if (child.nodeName !== '#text') return
+        const txt = child.textContent
+        // if (containsOnlySpaces(txt)) return
+
+        // merge and add data-i18n=[html]key
+        if (
+          nodeI18nMeta &&
+          nodeI18nMeta['html'] &&
+          i < node.childNodes.length - 1
+        ) {
+          merge.push({ childIndex: i, child, text: txt })
+        } else if (
+          nodeI18nMeta &&
+          nodeI18nMeta['html'] &&
+          i === node.childNodes.length - 1
+        ) {
+          merge.push({ childIndex: i, child, text: txt })
+
+          storeIfQualifiedKey(
+            node.uniqueID,
+            null,
+            'html',
+            nodeI18nMeta,
+            node,
+            merge,
+            node.innerHTML
+          )
+
+          // reset
+          merge = []
+        } else if (txt) {
+          // console.warn(
+          //   'nodeI18nMeta',
+          //   txt,
+          //   nodeI18nMeta,
+          //   hasHiddenMeta,
+          //   hasHiddenStartMarker
+          // )
+
+          // add data-i18n=key (inner text)
+          if (nodeI18nMeta && nodeI18nMeta['text']) {
+            storeIfQualifiedKey(
+              node.uniqueID,
+              null,
+              'text',
+              nodeI18nMeta,
+              node,
+              undefined,
+              txt
+            )
+          } else if (child.nodeName === '#text' && !containsOnlySpaces(txt)) {
+            // if no metas at all and is a text node that is not just some spaces (html indent)
+            // add to uninstrumented for a lookup (locize search)
+            uninstrumentedStore.save(node.uniqueID, 'text', node, txt)
+          }
+        }
+      })
+    }
   }
 
   // test attibutes
@@ -212,25 +305,27 @@ function handleNode (node) {
     if (containsHiddenMeta(txt)) {
       const meta = unwrap(txt)
 
-      uninstrumentedStore.remove(node.uniqueID, node) // might be instrumented later and already in uninstrumentedStore - so remove it there first
+      uninstrumentedStore.removeKey(node.uniqueID, attr, node) // might be instrumented later and already in uninstrumentedStore - so remove it there first
       store.save(
         node.uniqueID,
         meta.invisibleMeta,
-        `attr:${attr}`,
-        extractHiddenMeta(node.uniqueID, `attr:${attr}`, meta),
+        attr,
+        extractHiddenMeta(node.uniqueID, `${attr}`, meta),
         node
       )
     } else if (txt) {
       if (nodeI18nMeta && nodeI18nMeta[attr]) {
-        store.save(
+        storeIfQualifiedKey(
           node.uniqueID,
           null,
           attr,
-          extractNodeMeta(node.uniqueID, attr, nodeI18nMeta, txt, node),
-          node
+          nodeI18nMeta,
+          node,
+          undefined,
+          txt
         )
       } else {
-        uninstrumentedStore.save(node.uniqueID, `attr:${attr}`, node)
+        uninstrumentedStore.save(node.uniqueID, attr, node, txt)
       }
     }
   })

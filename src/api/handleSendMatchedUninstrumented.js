@@ -25,7 +25,7 @@ function handler (payload) {
         { [`${item.textType}`]: { ns: item.ns, key: item.key } },
         item.value
       ),
-      uni.node
+      uni?.node
     )
 
     // remove uninstrumented

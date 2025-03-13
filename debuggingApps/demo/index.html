@@ -12,7 +12,7 @@
   <body>
     <div id="main">
       <h1 id="maintitle" data-i18n="title">Test on text node</h1>
-      <!-- 
+
       <div>
         <p data-i18n="[title]test.title;[html]introduction">
           Test on another node
@@ -64,7 +64,7 @@
         <button id="updateBtn" data-locize-editor-ignore="false">
           initial
         </button>
-      </div> -->
+      </div>
     </div>
     <div id="non-loc-i18next">
       <h4>Some instrumented stuff</h4>
@@ -139,6 +139,7 @@ type="module"
 > -->
     <script id="locize" type="module">
       import { locizeEditorPlugin } from '/../../src/locizePlugin.js'
+      import { startStandalone } from '/../../src/startStandalone.js'
       // import { locizePlugin } from '/../../src/locizePlugin.js'
 
       i18next
@@ -155,6 +156,10 @@ type="module"
             preload: ['de', 'it'],
             supportedLngs: ['en', 'de', 'it', 'fr', 'pt', 'en-US'],
             saveMissing: true,
+            editor: {
+              projectId: '800bae87-7232-40dc-8c1c-0144e6361736',
+              version: 'latest'
+            },
             resources: {
               de: {
                 translation: {
@@ -189,6 +194,12 @@ type="module"
           function (err, t) {
             var localize = locI18next.init(i18next)
             localize('#main')
+
+            // startStandalone({
+            //   show: true,
+            //   projectId: '800bae87-7232-40dc-8c1c-0144e6361736',
+            //   version: 'latest'
+            // })
           }
         )
     </script>

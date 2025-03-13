@@ -1,7 +1,17 @@
 import { locizePlugin, locizeEditorPlugin } from './locizePlugin.js'
-import { startStandalone } from './startStandalone.js'
-import { addLocizeSavedHandler, turnOn, turnOff, setEditorLng } from './api/index.js'
-import { wrap, unwrap, containsHiddenMeta, PostProcessor } from 'i18next-subliminal'
+import { startStandalone } from './_startStandalone.js'
+import {
+  addLocizeSavedHandler,
+  turnOn,
+  turnOff,
+  setEditorLng
+} from './api/index.js'
+import {
+  wrap,
+  unwrap,
+  containsHiddenMeta,
+  PostProcessor
+} from 'i18next-subliminal'
 
 export {
   wrap,
@@ -25,8 +35,8 @@ export default {
   addLocizeSavedHandler,
   locizePlugin,
   locizeEditorPlugin,
-  turnOn,
-  turnOff,
+  // turnOn,
+  // turnOff,
   setEditorLng,
   startStandalone
 }

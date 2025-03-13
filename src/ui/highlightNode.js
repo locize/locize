@@ -32,7 +32,8 @@ const selected = {}
 export function highlight (item, node, keys) {
   const { id } = item
 
-  if (selected[id]) return
+  // uncomment below if we do not won't the ribbon box to show on selected
+  // if (selected[id]) return
 
   /*
   if (!originalStyles[id]) {
@@ -190,13 +191,19 @@ export function selectedHighlight (item, node, keys) {
   }
 
   // hide ribbons
-  if (item.ribbonBox) {
-    document.body.removeChild(item.ribbonBox)
+  // if (item.ribbonBox) {
+  //   document.body.removeChild(item.ribbonBox)
 
-    delete item.ribbonBox
-  }
+  //   delete item.ribbonBox
+  // }
 
   selected[id] = true
+}
+
+export function recalcSelectedHighlight (item, node, keys) {
+  if (!selected[item.id]) return
+  resetHighlight(item, node, keys, false)
+  selectedHighlight(item, node, keys)
 }
 
 export function resetHighlight (item, node, keys, ignoreSelected = true) {

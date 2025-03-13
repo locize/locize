@@ -9,7 +9,7 @@ export function HighlightBox (ele, borderColor, shadowColor) {
   }px; width: ${
     rect.width + 4
   }px; border: 1px solid ${borderColor}; border-radius: 2px; ${
-    shadowColor ? `box-shadow: 0 0 40px 0 ${shadowColor};` : ''
+    shadowColor ? `box-shadow: 0 0 20px 0 ${shadowColor};` : ''
   }`
   box.setAttribute('data-i18next-editor-element', 'true')
 

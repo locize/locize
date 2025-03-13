@@ -9,6 +9,16 @@ function handler (payload) {
 
     if (!popup) return
 
+    let storedPos = localStorage.getItem('locize_popup_pos')
+    if (storedPos) storedPos = JSON.parse(storedPos)
+    let storedSize = localStorage.getItem('locize_popup_size')
+    if (storedSize) storedSize = JSON.parse(storedSize)
+
+    if (storedSize.height && storedSize.width) {
+      containerStyle.height = storedSize.height + 'px'
+      containerStyle.width = storedSize.width + 'px'
+    }
+
     if (containerStyle.height) {
       const diff = `calc(${containerStyle.height} - ${popup.style.height})`
 
@@ -22,6 +32,19 @@ function handler (payload) {
       popup.style.setProperty('left', `calc(${popup.style.left} - ${diff})`)
       popup.style.setProperty('width', containerStyle.width)
     }
+
+    if (
+      storedPos.top &&
+      storedPos.top <
+        window.innerHeight - containerStyle.height.replace('px', '')
+    )
+      popup.style.setProperty('top', storedPos.top + 'px')
+    if (
+      storedPos.left &&
+      storedPos.left <
+        window.innerWidth - containerStyle.width.replace('px', '')
+    )
+      popup.style.setProperty('left', storedPos.left + 'px')
   }
 }
 

@@ -7,7 +7,8 @@ function handler (payload, e) {
   api.source = e.source
   api.origin = e.origin
 
-  if (!payload || payload.version !== 'v2') api.legacy = true
+  // no longer supported
+  // if (!payload || payload.version !== 'v2') api.legacy = true
 
   // done
   api.sendLocizeIsEnabled(payload)

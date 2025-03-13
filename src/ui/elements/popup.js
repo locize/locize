@@ -155,8 +155,8 @@ export function Popup (url, cb) {
   min-width: 300px;
   --i18next-editor-popup-width: 400px;
   width: var(--i18next-editor-popup-width);
-  max-height: 600px;
-  max-width: 800px;
+  max-height: 800px;
+  max-width: 1000px;
 
   position: fixed;
   --i18next-editor-popup-position-top: calc(100vh - var(--i18next-editor-popup-height) - 10px);

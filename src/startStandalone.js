@@ -1,21 +1,8 @@
-import { startLegacy } from './processLegacy.js'
+import { start } from './process.js'
 
-export function startStandalone () {
-  startLegacy({
-    getLocizeDetails: () => {
-      return {}
-    },
-    getLng: () => {
-      return undefined
-    },
-    setResource: () => {},
-    triggerRerender: () => {},
-    getResourceBundle: () => {
-      return {}
-    },
-    bindMissingKeyHandler: () => {},
-    bindLanguageChange: () => {}
-  })
+export function startStandalone (options) {
+  const { implementation, ...rest } = options
+  start(implementation, rest)
 }
 
 if (typeof window !== 'undefined')

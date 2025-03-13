@@ -1,6 +1,7 @@
 import { getIframeUrl } from '../vars.js'
 import { store } from '../store.js'
 import { uninstrumentedStore } from '../uninstrumentedStore.js'
+import { debounce } from '../utils.js'
 
 const legacyEventMapping = {
   committed: 'commitKeys'
@@ -50,7 +51,7 @@ export function sendMessage (action, payload) {
     return
   }
 
-  console.warn('out ok - ', api.source, api.origin, action, payload)
+  // console.warn('out ok - ', api.source, api.origin, action, payload)
 
   if (api.legacy) {
     api.source.postMessage(
@@ -75,6 +76,25 @@ export function sendMessage (action, payload) {
   pendingMsgs = [] // reset before recursive call
   todo.forEach(({ action, payload }) => {
     sendMessage(action, payload)
+  })
+}
+
+const sendCurrentParsedContentDebounced = () => {
+  sendMessage('sendCurrentParsedContent', {
+    content: Object.values(store.data).map(item => {
+      return {
+        id: item.id,
+        // subliminal: item.subliminal,
+        keys: item.keys
+      }
+    }),
+    uninstrumented: Object.values(uninstrumentedStore.data).map(item => {
+      return {
+        id: item.id,
+        // subliminal: item.subliminal,
+        keys: item.keys
+      }
+    })
   })
 }
 
@@ -109,24 +129,7 @@ export const api = {
     sendMessage('confirmResourceBundle', payload)
   },
 
-  sendCurrentParsedContent: () => {
-    sendMessage('sendCurrentParsedContent', {
-      content: Object.values(store.data).map(item => {
-        return {
-          id: item.id,
-          // subliminal: item.subliminal,
-          keys: item.keys
-        }
-      }),
-      uninstrumented: Object.values(uninstrumentedStore.data).map(item => {
-        return {
-          id: item.id,
-          // subliminal: item.subliminal,
-          keys: item.keys
-        }
-      })
-    })
-  },
+  sendCurrentParsedContent: debounce(sendCurrentParsedContentDebounced, 500),
 
   sendCurrentTargetLanguage: lng => {
     sendMessage('sendCurrentTargetLanguage', {
@@ -148,25 +151,25 @@ export const api = {
     sendMessage('locizeIsEnabled', { ...payload, enabled: true })
   },
 
-  turnOn: () => {
-    if (api.scriptTurnedOff) return sendMessage('forcedOff')
+  // turnOn: () => {
+  //   if (api.scriptTurnedOff) return sendMessage('forcedOff')
 
-    if (!api.clickInterceptionEnabled) {
-      window.document.body.addEventListener('click', api.clickHandler, true)
-    }
-    api.clickInterceptionEnabled = true
-    sendMessage('turnedOn')
-  },
+  //   if (!api.clickInterceptionEnabled) {
+  //     window.document.body.addEventListener('click', api.clickHandler, true)
+  //   }
+  //   api.clickInterceptionEnabled = true
+  //   sendMessage('turnedOn')
+  // },
 
-  turnOff: () => {
-    if (api.scriptTurnedOff) return sendMessage('forcedOff')
+  // turnOff: () => {
+  //   if (api.scriptTurnedOff) return sendMessage('forcedOff')
 
-    if (api.clickInterceptionEnabled) {
-      window.document.body.removeEventListener('click', api.clickHandler, true)
-    }
-    api.clickInterceptionEnabled = false
-    sendMessage('turnedOff')
-  },
+  //   if (api.clickInterceptionEnabled) {
+  //     window.document.body.removeEventListener('click', api.clickHandler, true)
+  //   }
+  //   api.clickInterceptionEnabled = false
+  //   sendMessage('turnedOff')
+  // },
 
   onAddedKey: (lng, ns, key, value) => {
     const msg = {
@@ -183,7 +186,7 @@ export const api = {
 if (typeof window !== 'undefined') {
   window.addEventListener('message', e => {
     const { sender, /* senderAPIVersion, */ action, message, payload } = e.data
-    console.warn(sender, action, message, payload)
+    // console.warn(sender, action, message, payload)
 
     if (message) {
       const usedEventName = getMappedLegacyEvent(message)

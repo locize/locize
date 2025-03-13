@@ -32,6 +32,15 @@ function remove (id, node) {
   delete data[id]
 }
 
+function removeKey (id, key, node) {
+  const item = get(id)
+  if (!item) return
+
+  delete item.keys[`${key}`]
+
+  if (!Object.keys(item.keys).length) remove(id, node)
+}
+
 function get (id) {
   return data[id]
 }
@@ -39,6 +48,7 @@ function get (id) {
 export const uninstrumentedStore = {
   save,
   remove,
+  removeKey,
   clean,
   get,
   data

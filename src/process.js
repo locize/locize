@@ -5,12 +5,28 @@ import { initDragElement, initResizeElement } from './ui/popup.js'
 import { Popup, popupId } from './ui/elements/popup.js'
 import { getIframeUrl } from './vars.js'
 import { api } from './api/index.js'
+import { getQsParameterByName } from './utils.js'
+import * as implementations from './implementations'
+
+const dummyImplementation = implementations.dummy.getImplementation()
+
+let isInIframe = typeof window !== 'undefined'
+try {
+  // eslint-disable-next-line no-undef, no-restricted-globals
+  isInIframe = self !== top
+  // eslint-disable-next-line no-empty
+} catch (e) {}
 
 // eslint-disable-next-line no-unused-vars
 let data = []
 
-export function start (implementation = {}, showPopup = true) {
+export function start (
+  implementation = dummyImplementation,
+  opt = { show: false, qsProp: 'incontext' }
+) {
   if (typeof document === 'undefined') return
+
+  const showInContext = opt.show || getQsParameterByName(opt.qsProp) === 'true'
 
   // get locize id, version
   const scriptEle = document.getElementById('locize')
@@ -25,7 +41,7 @@ export function start (implementation = {}, showPopup = true) {
     if (value === 'false') value = false
     if (value !== undefined && value !== null) config[attr] = value
   })
-  config = { ...implementation.getLocizeDetails(), ...config }
+  config = { ...implementation.getLocizeDetails(), ...config, ...opt }
 
   // init stuff
   api.config = config
@@ -38,6 +54,9 @@ export function start (implementation = {}, showPopup = true) {
   })
 
   function continueToStart () {
+    // don't show if not in iframe and no qs
+    if (!isInIframe && !showInContext) return
+
     const observer = createObserver(document.body, eles => {
       eles.forEach(ele => {
         data = parseTree(ele)
@@ -49,7 +68,7 @@ export function start (implementation = {}, showPopup = true) {
     startMouseTracking(observer)
 
     // append popup
-    if (showPopup && !document.getElementById(popupId)) {
+    if (!isInIframe && !document.getElementById(popupId)) {
       document.body.append(
         Popup(getIframeUrl(), () => {
           api.requestInitialize(config)
