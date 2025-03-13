@@ -1,7 +1,7 @@
 import { PostProcessor, unwrap } from 'i18next-subliminal'
 import { start } from './process.js'
 
-import * as implementations from './implementations'
+import * as implementations from './implementations/index.js'
 
 function configurePostProcessor (i18next, options) {
   i18next.use(PostProcessor)

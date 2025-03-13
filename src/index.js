@@ -21,8 +21,8 @@ export {
   locizePlugin,
   locizeEditorPlugin,
   addLocizeSavedHandler,
-  turnOn,
-  turnOff,
+  // turnOn,
+  // turnOff,
   setEditorLng,
   startStandalone
 }

@@ -6,7 +6,7 @@ import { Popup, popupId } from './ui/elements/popup.js'
 import { getIframeUrl } from './vars.js'
 import { api } from './api/index.js'
 import { getQsParameterByName } from './utils.js'
-import * as implementations from './implementations'
+import * as implementations from './implementations/index.js'
 
 const dummyImplementation = implementations.dummy.getImplementation()
 

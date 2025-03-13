@@ -15,19 +15,19 @@ export function addLocizeSavedHandler (handler) {
   api.locizeSavedHandler = handler
 }
 
-export function turnOn () {
-  api.scriptTurnedOff = false // unlock
+// export function turnOn () {
+//   api.scriptTurnedOff = false // unlock
 
-  api.turnOn()
-  return api.scriptTurnedOff
-}
+//   api.turnOn()
+//   return api.scriptTurnedOff
+// }
 
-export function turnOff () {
-  api.turnOff()
+// export function turnOff () {
+//   api.turnOff()
 
-  api.scriptTurnedOff = true // lock
-  return api.scriptTurnedOff
-}
+//   api.scriptTurnedOff = true // lock
+//   return api.scriptTurnedOff
+// }
 
 export function setEditorLng (lng) {
   api.sendCurrentTargetLanguage(lng)

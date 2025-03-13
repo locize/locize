@@ -14,7 +14,7 @@ function handler (payload) {
     let storedSize = localStorage.getItem('locize_popup_size')
     if (storedSize) storedSize = JSON.parse(storedSize)
 
-    if (storedSize.height && storedSize.width) {
+    if (storedSize && storedSize.height && storedSize.width) {
       containerStyle.height = storedSize.height + 'px'
       containerStyle.width = storedSize.width + 'px'
     }
@@ -34,12 +34,14 @@ function handler (payload) {
     }
 
     if (
+      storedPos &&
       storedPos.top &&
       storedPos.top <
         window.innerHeight - containerStyle.height.replace('px', '')
     )
       popup.style.setProperty('top', storedPos.top + 'px')
     if (
+      storedPos &&
       storedPos.left &&
       storedPos.left <
         window.innerWidth - containerStyle.width.replace('px', '')
