@@ -1,6 +1,6 @@
 {
   "name": "locize",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "description": "This package adds the incontext editor to your i18next setup.",
   "keywords": [
     "i18next",
