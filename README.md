@@ -150,7 +150,7 @@ startStandalone({
 
 ### vanilla javascript
 
-Only relevant when your website is shown inside the locize incontext solution on https://locize.app.
+Only relevant when your website is shown inside the locize incontext solution via incontext view (https://www.locize.com/docs/incontext).
 
 ```html
 <script src="https://unpkg.com/locize/locize.min.js" />
