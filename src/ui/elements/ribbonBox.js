@@ -2,7 +2,7 @@ import { colors } from '../../vars.js'
 import { sheet } from '../stylesheet.js'
 import { api } from '../../api/index.js'
 
-import { RibbonLogo, EditIcon } from './icons.js'
+import { EditIcon } from './icons.js'
 
 if (sheet) {
   sheet.insertRule(

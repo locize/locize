@@ -15,20 +15,6 @@ export function addLocizeSavedHandler (handler) {
   api.locizeSavedHandler = handler
 }
 
-// export function turnOn () {
-//   api.scriptTurnedOff = false // unlock
-
-//   api.turnOn()
-//   return api.scriptTurnedOff
-// }
-
-// export function turnOff () {
-//   api.turnOff()
-
-//   api.scriptTurnedOff = true // lock
-//   return api.scriptTurnedOff
-// }
-
 export function setEditorLng (lng) {
   api.sendCurrentTargetLanguage(lng)
 }
@@ -84,14 +70,12 @@ const sendCurrentParsedContentDebounced = () => {
     content: Object.values(store.data).map(item => {
       return {
         id: item.id,
-        // subliminal: item.subliminal,
         keys: item.keys
       }
     }),
     uninstrumented: Object.values(uninstrumentedStore.data).map(item => {
       return {
         id: item.id,
-        // subliminal: item.subliminal,
         keys: item.keys
       }
     })
@@ -146,30 +130,9 @@ export const api = {
     handlers[action].push(fc)
   },
 
-  // legacy
   sendLocizeIsEnabled: payload => {
     sendMessage('locizeIsEnabled', { ...payload, enabled: true })
   },
-
-  // turnOn: () => {
-  //   if (api.scriptTurnedOff) return sendMessage('forcedOff')
-
-  //   if (!api.clickInterceptionEnabled) {
-  //     window.document.body.addEventListener('click', api.clickHandler, true)
-  //   }
-  //   api.clickInterceptionEnabled = true
-  //   sendMessage('turnedOn')
-  // },
-
-  // turnOff: () => {
-  //   if (api.scriptTurnedOff) return sendMessage('forcedOff')
-
-  //   if (api.clickInterceptionEnabled) {
-  //     window.document.body.removeEventListener('click', api.clickHandler, true)
-  //   }
-  //   api.clickInterceptionEnabled = false
-  //   sendMessage('turnedOff')
-  // },
 
   onAddedKey: (lng, ns, key, value) => {
     const msg = {

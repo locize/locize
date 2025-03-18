@@ -2,15 +2,6 @@ import { wrap } from 'i18next-subliminal'
 import { api } from './postMessage.js'
 import { store } from '../store.js'
 
-// function insertChildAtIndex (parent, child, index) {
-//   if (!index) index = 0;
-//   if (index >= parent.children.length) {
-//     parent.appendChild(child);
-//   } else {
-//     parent.insertBefore(child, parent.children[index]);
-//   }
-// }
-
 export function setValueOnNode (meta, value) {
   const item = store.get(meta.eleUniqueID)
 

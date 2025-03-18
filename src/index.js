@@ -1,11 +1,6 @@
 import { locizePlugin, locizeEditorPlugin } from './locizePlugin.js'
 import { startStandalone } from './_startStandalone.js'
-import {
-  addLocizeSavedHandler,
-  turnOn,
-  turnOff,
-  setEditorLng
-} from './api/index.js'
+import { addLocizeSavedHandler, setEditorLng } from './api/index.js'
 import {
   wrap,
   unwrap,
@@ -21,8 +16,6 @@ export {
   locizePlugin,
   locizeEditorPlugin,
   addLocizeSavedHandler,
-  // turnOn,
-  // turnOff,
   setEditorLng,
   startStandalone
 }
@@ -35,8 +28,6 @@ export default {
   addLocizeSavedHandler,
   locizePlugin,
   locizeEditorPlugin,
-  // turnOn,
-  // turnOff,
   setEditorLng,
   startStandalone
 }
