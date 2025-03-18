@@ -66,7 +66,7 @@ If not using recommended 1) or 2) the script will send the raw texts to the edit
 
 This plugin is already included in [locizify](https://github.com/locize/locizify) >= v4.1.0
 
-** Hint: ** show the incontext editor popup by adding incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
+**Hint:** show the incontext editor popup by adding incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
 
 ## with i18next
 
@@ -78,7 +78,7 @@ import { locizePlugin } from 'locize'
 i18next.use(locizePlugin)
 ```
 
-** Hint: **  this will show the locize incontext editor as a popup in your website only if the url contains the incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
+**Hint:**  this will show the locize incontext editor as a popup in your website only if the url contains the incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
 
 Open as default:
 
@@ -101,7 +101,7 @@ i18next.init({
 
 **Hint** you can match the integration to a locize project by:
 
-Having [i18next-locize-backend[(https://github.com/locize/i18next-locize-backend) configured or adding
+Having [i18next-locize-backend](https://github.com/locize/i18next-locize-backend) configured or adding
 
 ```js
 i18next.init({
@@ -115,7 +115,7 @@ i18next.init({
 
 ## not using i18next (messageformat, fluent, ...)
 
-Not using i18next currently only the option to show your website inside the locize incontext solution (https://locize.app) is available.
+Not using i18next currently only the option to show your website inside the locize incontext view (https://www.locize.com/docs/incontext).
 
 ### using import
 
@@ -150,7 +150,7 @@ startStandalone({
 
 ### vanilla javascript
 
-Only relevant when your website is shown inside the locize incontext solution on https://locize.app.
+Only relevant when your website is shown inside the locize incontext solution via incontext view (https://www.locize.com/docs/incontext).
 
 ```html
 <script src="https://unpkg.com/locize/locize.min.js" />
