@@ -102,8 +102,8 @@ Having [i18next-locize-backend](https://github.com/locize/i18next-locize-backend
 i18next.init({
   // ...
   editor: {
-    projectId="5e9ed7da-51ab-4b15-888b-27903f06be09"
-    version="latest"
+    projectId: "5e9ed7da-51ab-4b15-888b-27903f06be09"
+    version: "latest"
   }
 })
 ```
@@ -137,8 +137,8 @@ setEditorLng(lng)
 
 ```js
 startStandalone({
-  projectId="5e9ed7da-51ab-4b15-888b-27903f06be09"
-  version="latest"
+  projectId: "5e9ed7da-51ab-4b15-888b-27903f06be09",
+  version: "latest"
 })
 ```
 

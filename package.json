@@ -49,6 +49,7 @@
     "start": "web-dev-server --watch  --open /debuggingApps/demo/ --node-resolve",
     "start:react": "cd debuggingApps/demo_react && npm run start",
     "start:old": "cd debuggingApps/old && npm run start",
+    "start:vanilla": "cd debuggingApps/vanilla && npm run start",
     "lint:javascript": "eslint ./src/*",
     "lint:typescript": "eslint -c .ts.eslintrc *.d.ts *.d.mts test/types/**/*.test-d.ts",
     "lint": "npm run lint:javascript && npm run lint:typescript",

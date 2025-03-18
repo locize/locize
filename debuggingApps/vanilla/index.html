@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="/locize.js"></script>
+  </head>
+
+  <body style="display: block">
+    <div id="app" data-i18n-ns="app">
+      <div>
+        <p>lorem ipsum</p>
+        <p data-i18n="app.title">Welcome to {what} combined with locize</p>
+
+        <div i18next-options='{"ns": "ns1"}'>
+          <p>different namespace common is used</p>
+          <p>all the way down</p>
+
+          <p data-i18n="myKey">this has even a key</p>
+        </div>
+
+        <div id="output"></div>
+      </div>
+    </div>
+    <script>
+      this.locize.startStandalone(
+        // {
+        //   projectId: "da028c03-435a-4587-af3a-086de8c7bd9b",
+        //   version: "latest"
+        // }
+      );
+      // // console.warn(this.locize, this.i18next);
+      // this.locize.showLocizeLink({
+      //   projectId: '3f71a25a-00db-4780-adcf-6a07dc96e00f',
+      //   version: 'latest',
+      //   // editorUrl: 'https://dev.locize.app'
+      // });
+
+      // i18next.use(this.locize.locizePlugin);
+      // i18next.use(this.locize.locizeEditorPlugin({ show: true }));
+      // i18next.init(
+      //   {
+      //     lng: 'en',
+      //     defaultNS: 'app',
+      //     debug: true,
+      //     isLocizify: true,
+      //     resources: {
+      //       en: {
+      //         app: {
+      //           key: 'hello world',
+      //         },
+      //       },
+      //       de: {
+      //         app: {
+      //           key: 'hello welt',
+      //         },
+      //       },
+      //       it: {
+      //         app: {
+      //           key: 'ciao mondo',
+      //         },
+      //       },
+      //     },
+      //   },
+      //   function (err, t) {
+      //     // init set content
+      //     updateContent();
+      //   }
+      // );
+
+      function updateContent() {
+        document.getElementById('output').innerHTML = i18next.t('key', {
+          count: 10,
+        });
+      }
+    </script>
+  </body>
+</html>
