@@ -1,3 +1,7 @@
+### 4.0.5
+
+- fix some typos
+
 ### 4.0.0
 
 - support also non-i18next environments
