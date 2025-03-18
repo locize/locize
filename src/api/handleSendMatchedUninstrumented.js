@@ -27,8 +27,8 @@ function handler (payload) {
     )
 
     // remove uninstrumented
-    delete uni.keys[`${item.textType}`]
-    if (!Object.keys(uni.keys).length)
+    if (uni && uni.keys) delete uni.keys[`${item.textType}`]
+    if (uni && uni.keys && !Object.keys(uni.keys).length)
       uninstrumentedStore.remove(item.eleUniqueID, uni.node)
   })
 

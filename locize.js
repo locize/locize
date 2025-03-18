@@ -14,24 +14,24 @@
     }, _typeof(o);
   }
 
-  function toPrimitive(t, r) {
-    if ("object" != _typeof(t) || !t) return t;
-    var e = t[Symbol.toPrimitive];
-    if (void 0 !== e) {
-      var i = e.call(t, r || "default");
-      if ("object" != _typeof(i)) return i;
+  function _toPrimitive(input, hint) {
+    if (_typeof(input) !== "object" || input === null) return input;
+    var prim = input[Symbol.toPrimitive];
+    if (prim !== undefined) {
+      var res = prim.call(input, hint || "default");
+      if (_typeof(res) !== "object") return res;
       throw new TypeError("@@toPrimitive must return a primitive value.");
     }
-    return ("string" === r ? String : Number)(t);
+    return (hint === "string" ? String : Number)(input);
   }
 
-  function toPropertyKey(t) {
-    var i = toPrimitive(t, "string");
-    return "symbol" == _typeof(i) ? i : String(i);
+  function _toPropertyKey(arg) {
+    var key = _toPrimitive(arg, "string");
+    return _typeof(key) === "symbol" ? key : String(key);
   }
 
   function _defineProperty(obj, key, value) {
-    key = toPropertyKey(key);
+    key = _toPropertyKey(key);
     if (key in obj) {
       Object.defineProperty(obj, key, {
         value: value,
@@ -997,8 +997,8 @@
         ns: item.ns,
         key: item.key
       }), item.value), uni === null || uni === void 0 ? void 0 : uni.node);
-      delete uni.keys["".concat(item.textType)];
-      if (!Object.keys(uni.keys).length) uninstrumentedStore.remove(item.eleUniqueID, uni.node);
+      if (uni && uni.keys) delete uni.keys["".concat(item.textType)];
+      if (uni && uni.keys && !Object.keys(uni.keys).length) uninstrumentedStore.remove(item.eleUniqueID, uni.node);
     });
     api.sendCurrentParsedContent();
   }
