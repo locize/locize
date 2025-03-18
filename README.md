@@ -2,68 +2,93 @@
 
 # locize
 
-The locize script enables you to directly connect content from your website / application with your content on your localization project on locize.
+The locize script enables the [incontext editing](https://www.locize.com/docs/context#incontext) feature provided by [locize](https://locize.com).
 
 ## Getting started
 
 Source can be loaded via [npm](https://www.npmjs.com/package/locize), [downloaded](https://github.com/locize/locize/blob/master/locize.min.js) from this repo or loaded from the npm CDN [unpkg.com/locize](https://unpkg.com/locize/locize.min.js).
 
-Adding the script or importing it is enough.
+```html
+<script src="https://unpkg.com/locize/locize.min.js"></script>
+```
+
+Using a module  bundler simplest will be adding the script using npm (or yarn).
 
 ```bash
 npm i locize
 ```
 
-**Hint:** This module runs only in browser.
+**Hint:** This module works only in the browser environment.
 
-### InContext variants
 
-For i18next based solutions (i18next, react-i18next, locizify, ...) there are two options to work with locize incontext:
+# How it works
 
-#### a) Iframe on your page
+The script will parse the page content and pass found segments to locize using the browsers postMessage API. To work a text on your page has to be exactly matched to a segment in the editor by determing the matching namespace and key.
 
-The solution is best in class and uses [i18next-subliminal](https://github.com/i18next/i18next-subliminal) to add information about key and namespace as hidden text to the output of the `i18next.t` calls. Beside that it scans your website based on mutation observer to look out for those texts.
+There are three ways to get the namespace and key:
 
-You can both click text elements on your website or keys in the locize iframe to edit content. Results will always be exact matches based on the namespace and key.
+## 1) Using subliminal
 
-**Hint:** You can bind the ifame to a specific project by setting `ì18next.options.editor = { projectId, version }` or `ì18next.options.backend = { projectId, verstion }` (backend info might already exist when using i18next-locize-backend)
+By default using [locizify](https://github.com/locize/locizify) or the `locizePlugin` the translations on your page will contain hidden text containing that information by using [subliminal](https://github.com/i18next/i18next-subliminal)
 
-**Caveats:** You might have elements that rerender too often in short time. This might will give you a warning output in console that that element change was ignored for passing to the iframe. Consider adding the `data-locize-editor-ignore: true` attribute to the element to ignore it completely.
+## 2) Using data-attributes
 
-#### b) Opening it on https://locize.app
-
-Details for setting this up can be found [here](https://www.locize.com/docs/incontext)
-
-The solution extracts the text on the clicked element and passes it for a fuzzy search to the parent frame. As the search is fuzzy there is no guarantee for exact results.
-
-**hint** To get exact matches you can add following attributes to the element or it's parent:
+Extend your html to contain that information 
 
 `data-i18n` -> will pass exact key
+
 `data-i18n-ns` -> will pass namespace name
 
-# Using
+eg.:
+
+```html
+<div data-i18n-ns="usedNamespace">
+  <p data-i18n="usedKey">
+    Some translated text
+  </p>
+</div>
+
+// or using ns:key
+  <p data-i18n="ns:key">
+    Some translated text
+  </p>
+```
+
+Specifing content as [html](https://github.com/i18next/jquery-i18next?tab=readme-ov-file#set-innerhtml-attributes) or [title/placeholder attribute](https://github.com/i18next/jquery-i18next?tab=readme-ov-file#set-different-attribute) is also supported like used in `jquery-i18next`
+
+## 3) Lookup in locize
+
+If not using recommended 1) or 2) the script will send the raw texts to the editor which will try an exact search for that text and send the found exact match back (only one result with 100% exact match).
+
+# Setup
 
 ## with locizify
 
 This plugin is already included in [locizify](https://github.com/locize/locizify) >= v4.1.0
 
+** Hint: ** show the incontext editor popup by adding incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
+
 ## with i18next
 
-### this will show the locize incontext editor as a popup in your website only if the url contains the incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
+For i18next we provide a plugin to be used.
+
 ```js
 import { locizePlugin } from 'locize'
 
 i18next.use(locizePlugin)
 ```
 
-### this will show the locize incontext editor as a popup in your website
+** Hint: **  this will show the locize incontext editor as a popup in your website only if the url contains the incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
+
+Open as default:
+
 ```js
 import { locizeEditorPlugin } from 'locize'
 
 i18next.use(locizeEditorPlugin({ show: true }))
 ```
 
-Using react-i18next you might want to bind the editorSaved event to trigger a rerender:
+Using `react-i18next` you might want to bind the editorSaved event to trigger a rerender each time you save changes in the editor:
 
 ```js
 i18next.init({
@@ -74,15 +99,30 @@ i18next.init({
 })
 ```
 
-## without i18next
+**Hint** you can match the integration to a locize project by:
+
+Having [i18next-locize-backend[(https://github.com/locize/i18next-locize-backend) configured or adding
+
+```js
+i18next.init({
+  // ...
+  editor: {
+    projectId="5e9ed7da-51ab-4b15-888b-27903f06be09"
+    version="latest"
+  }
+})
+```
+
+## not using i18next (messageformat, fluent, ...)
 
 Not using i18next currently only the option to show your website inside the locize incontext solution (https://locize.app) is available.
 
-### with other as module
+### using import
 
 ```js
 import { addLocizeSavedHandler, startStandalone, setEditorLng } from 'locize'
 
+// optional
 addLocizeSavedHandler(res => {
   res.updated.forEach(item => {
     const { lng, ns, key, data } = item
@@ -98,7 +138,17 @@ startStandalone()
 setEditorLng(lng)
 ```
 
-### with other in vanilla javascript
+
+**Hint** you can match the integration to a locize project by adding:
+
+```js
+startStandalone({
+  projectId="5e9ed7da-51ab-4b15-888b-27903f06be09"
+  version="latest"
+})
+```
+
+### vanilla javascript
 
 Only relevant when your website is shown inside the locize incontext solution on https://locize.app.
 
@@ -118,7 +168,7 @@ window.locizeSavedHandler = res => {
 window.locizeStartStandalone()
 ```
 
-**Hint** you can fix the integration to a locize project by adding:
+**Hint** you can match the integration to a locize project by adding:
 
 ```js
 <script
@@ -127,16 +177,4 @@ window.locizeStartStandalone()
   version="latest"
   src="https://unpkg.com/locize/locize.min.js"
 >
-```
-
-### turn on/off click interception programmatically
-
-```js
-import { turnOn, turnOff } from 'locize'
-
-let isOff
-
-// or use window.locize.turnOn
-isOff = turnOff() // -> true
-isOff = turnOn() // -> false
 ```
