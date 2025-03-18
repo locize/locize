@@ -76,7 +76,7 @@ export function highlight (item, node, keys) {
         flip({ fallbackPlacements: ['left', 'bottom'] }),
         shift(),
         offset(({ placement, rects }) => {
-          if (placement === 'bottom') return rects.r
+          if (placement === 'bottom') return -rects.reference.height / 2 - rects.floating.height / 2
           return 35
         }),
         arrow({

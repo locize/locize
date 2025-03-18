@@ -1,3 +1,7 @@
+### 4.0.6
+
+- fix highlighting
+
 ### 4.0.5
 
 - fix some typos
