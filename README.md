@@ -12,14 +12,13 @@ Source can be loaded via [npm](https://www.npmjs.com/package/locize), [downloade
 <script src="https://unpkg.com/locize/locize.min.js"></script>
 ```
 
-Using a module  bundler simplest will be adding the script using npm (or yarn).
+Using a module bundler simplest will be adding the script using npm (or yarn).
 
 ```bash
 npm i locize
 ```
 
 **Hint:** This module works only in the browser environment.
-
 
 # How it works
 
@@ -33,7 +32,7 @@ By default using [locizify](https://github.com/locize/locizify) or the `locizePl
 
 ## 2) Using data-attributes
 
-Extend your html to contain that information 
+Extend your html to contain that information
 
 `data-i18n` -> will pass exact key
 
@@ -43,15 +42,11 @@ eg.:
 
 ```html
 <div data-i18n-ns="usedNamespace">
-  <p data-i18n="usedKey">
-    Some translated text
-  </p>
+  <p data-i18n="usedKey">Some translated text</p>
 </div>
 
 // or using ns:key
-  <p data-i18n="ns:key">
-    Some translated text
-  </p>
+<p data-i18n="ns:key">Some translated text</p>
 ```
 
 Specifing content as [html](https://github.com/i18next/jquery-i18next?tab=readme-ov-file#set-innerhtml-attributes) or [title/placeholder attribute](https://github.com/i18next/jquery-i18next?tab=readme-ov-file#set-different-attribute) is also supported like used in `jquery-i18next`
@@ -78,7 +73,7 @@ import { locizePlugin } from 'locize'
 i18next.use(locizePlugin)
 ```
 
-**Hint:**  this will show the locize incontext editor as a popup in your website only if the url contains the incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
+**Hint:** this will show the locize incontext editor as a popup in your website only if the url contains the incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
 
 Open as default:
 
@@ -138,13 +133,22 @@ startStandalone()
 setEditorLng(lng)
 ```
 
-
 **Hint** you can match the integration to a locize project by adding:
 
 ```js
 startStandalone({
   projectId="5e9ed7da-51ab-4b15-888b-27903f06be09"
   version="latest"
+})
+```
+
+**Hint:** show the incontext editor popup by adding incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
+
+or
+
+```js
+startStandalone({
+  show: true
 })
 ```
 

@@ -26,7 +26,8 @@ export function start (
 ) {
   if (typeof document === 'undefined') return
 
-  const showInContext = opt.show || getQsParameterByName(opt.qsProp) === 'true'
+  const showInContext =
+    opt.show || getQsParameterByName(opt.qsProp || 'incontext') === 'true'
 
   // get locize id, version
   const scriptEle = document.getElementById('locize')

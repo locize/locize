@@ -545,7 +545,7 @@
     sendCurrentParsedContent: debounce(sendCurrentParsedContentDebounced, 500),
     sendCurrentTargetLanguage: function sendCurrentTargetLanguage(lng) {
       sendMessage('sendCurrentTargetLanguage', {
-        targetLng: lng || api.i18n.getLng()
+        targetLng: lng || api.i18n && api.i18n.getLng && api.i18n.getLng()
       });
     },
     sendHrefchanged: function sendHrefchanged(href) {
@@ -2994,7 +2994,7 @@
       qsProp: 'incontext'
     };
     if (typeof document === 'undefined') return;
-    var showInContext = opt.show || getQsParameterByName(opt.qsProp) === 'true';
+    var showInContext = opt.show || getQsParameterByName(opt.qsProp || 'incontext') === 'true';
     var scriptEle = document.getElementById('locize');
     var config = {};
     ['projectId', 'version'].forEach(function (attr) {
@@ -3082,10 +3082,11 @@
   var locizePlugin = locizeEditorPlugin();
 
   var _excluded = ["implementation"];
-  function startStandalone(options) {
+  function startStandalone() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var implementation = options.implementation,
       rest = _objectWithoutProperties(options, _excluded);
-    start(implementation, rest);
+    start(implementation, Object.keys(rest).length > 0 ? rest : undefined);
   }
   if (typeof window !== 'undefined') window.locizeStartStandalone = startStandalone;
 

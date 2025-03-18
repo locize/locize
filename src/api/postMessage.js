@@ -117,7 +117,7 @@ export const api = {
 
   sendCurrentTargetLanguage: lng => {
     sendMessage('sendCurrentTargetLanguage', {
-      targetLng: lng || api.i18n.getLng()
+      targetLng: lng || (api.i18n && api.i18n.getLng && api.i18n.getLng())
     })
   },
 
