@@ -150,7 +150,7 @@ function storeIfQualifiedKey (
   // if we can 100% identify that ns:key store - else uninstrumented
   if (meta.qualifiedKey) {
     store.save(id, null, type, meta, node, children)
-    uninstrumentedStore.removeKey(i, type, node)
+    uninstrumentedStore.removeKey(id, type, node)
   } else {
     uninstrumentedStore.save(id, type, node, txt)
   }
