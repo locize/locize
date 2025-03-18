@@ -1,5 +1,5 @@
 import { locizePlugin, locizeEditorPlugin } from './locizePlugin.js'
-import { startStandalone } from './_startStandalone.js'
+import { startStandalone } from './startStandalone.js'
 import { addLocizeSavedHandler, setEditorLng } from './api/index.js'
 import {
   wrap,
