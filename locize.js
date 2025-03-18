@@ -45,6 +45,37 @@
     return obj;
   }
 
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+    return arr2;
+  }
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) return _arrayLikeToArray(arr);
+  }
+
+  function _iterableToArray(iter) {
+    if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
+  }
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  function _toConsumableArray(arr) {
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
+  }
+
   var INVISIBLE_CHARACTERS = ["\u200B", "\u200C"];
   var INVISIBLE_REGEX = RegExp("([".concat(INVISIBLE_CHARACTERS.join(''), "]{9})+"), 'gu');
   var TEMPLATE_MINIMUM_LENGTH = '{"k":"a"}'.length;
@@ -198,9 +229,11 @@
   };
 
   var validAttributes = ['placeholder', 'title', 'alt'];
+  var ignoreElements = ['SCRIPT'];
   var colors = {
-    highlight: '#26a69a',
-    warning: '#e67a00'
+    highlight: '#1976d2',
+    warning: '#e67a00',
+    gray: '#ccc'
   };
   var getIframeUrl = function getIframeUrl() {
     var _prc$env;
@@ -221,296 +254,6 @@
 
   function ownKeys$7(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
   function _objectSpread$7(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$7(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$7(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-  var legacyEventMapping = {
-    committed: 'commitKeys'
-  };
-  function getMappedLegacyEvent(msg) {
-    if (legacyEventMapping[msg]) return legacyEventMapping[msg];
-    return msg;
-  }
-  function addLocizeSavedHandler(handler) {
-    api.locizeSavedHandler = handler;
-  }
-  function turnOn() {
-    api.scriptTurnedOff = false;
-    api.turnOn();
-    return api.scriptTurnedOff;
-  }
-  function turnOff() {
-    api.turnOff();
-    api.scriptTurnedOff = true;
-    return api.scriptTurnedOff;
-  }
-  function setEditorLng(lng) {
-    api.sendCurrentTargetLanguage(lng);
-  }
-  var pendingMsgs = [];
-  function sendMessage(action, payload) {
-    if (!api.source) {
-      var _document$getElementB;
-      api.source = (_document$getElementB = document.getElementById('i18next-editor-iframe')) === null || _document$getElementB === void 0 ? void 0 : _document$getElementB.contentWindow;
-    }
-    if (!api.origin) api.origin = getIframeUrl();
-    if (!api.source || !api.source.postMessage) {
-      pendingMsgs.push({
-        action: action,
-        payload: payload
-      });
-      return;
-    }
-    if (api.legacy) {
-      api.source.postMessage(_objectSpread$7({
-        message: action
-      }, payload), api.origin);
-    } else {
-      api.source.postMessage({
-        sender: 'i18next-editor',
-        senderAPIVersion: 'v1',
-        action: action,
-        message: action,
-        payload: payload
-      }, api.origin);
-    }
-    var todo = pendingMsgs;
-    pendingMsgs = [];
-    todo.forEach(function (_ref) {
-      var action = _ref.action,
-        payload = _ref.payload;
-      sendMessage(action, payload);
-    });
-  }
-  var handlers = {};
-  var repeat = 5;
-  var api = {
-    init: function init(implementation, clickHandler) {
-      api.i18n = implementation;
-      api.clickHandler = clickHandler;
-    },
-    requestInitialize: function requestInitialize(payload) {
-      sendMessage('requestInitialize', payload);
-      if (api.initInterval) return;
-      api.initInterval = setInterval(function () {
-        repeat = repeat - 1;
-        api.requestInitialize(payload);
-        if (repeat < 0 && api.initInterval) {
-          clearInterval(api.initInterval);
-          delete api.initInterval;
-        }
-      }, 1000);
-    },
-    selectKey: function selectKey(meta) {
-      sendMessage('selectKey', meta);
-    },
-    confirmResourceBundle: function confirmResourceBundle(payload) {
-      sendMessage('confirmResourceBundle', payload);
-    },
-    sendCurrentParsedContent: function sendCurrentParsedContent() {
-      sendMessage('sendCurrentParsedContent', {
-        content: Object.values(store.data).map(function (item) {
-          return {
-            id: item.id,
-            keys: item.keys
-          };
-        })
-      });
-    },
-    sendCurrentTargetLanguage: function sendCurrentTargetLanguage(lng) {
-      sendMessage('sendCurrentTargetLanguage', {
-        targetLng: lng || api.i18n.getLng()
-      });
-    },
-    addHandler: function addHandler(action, fc) {
-      if (!handlers[action]) handlers[action] = [];
-      handlers[action].push(fc);
-    },
-    sendLocizeIsEnabled: function sendLocizeIsEnabled() {
-      sendMessage('locizeIsEnabled', {
-        enabled: true
-      });
-    },
-    turnOn: function turnOn() {
-      if (api.scriptTurnedOff) return sendMessage('forcedOff');
-      if (!api.clickInterceptionEnabled) {
-        window.document.body.addEventListener('click', api.clickHandler, true);
-      }
-      api.clickInterceptionEnabled = true;
-      sendMessage('turnedOn');
-    },
-    turnOff: function turnOff() {
-      if (api.scriptTurnedOff) return sendMessage('forcedOff');
-      if (api.clickInterceptionEnabled) {
-        window.document.body.removeEventListener('click', api.clickHandler, true);
-      }
-      api.clickInterceptionEnabled = false;
-      sendMessage('turnedOff');
-    },
-    onAddedKey: function onAddedKey(lng, ns, key, value) {
-      var msg = {
-        lng: lng,
-        ns: ns,
-        key: key,
-        value: value
-      };
-      sendMessage('added', msg);
-    }
-  };
-  if (typeof window !== 'undefined') {
-    window.addEventListener('message', function (e) {
-      var _e$data = e.data,
-        sender = _e$data.sender,
-        action = _e$data.action,
-        message = _e$data.message,
-        payload = _e$data.payload;
-      if (message) {
-        var usedEventName = getMappedLegacyEvent(message);
-        if (handlers[usedEventName]) {
-          handlers[usedEventName].forEach(function (fc) {
-            fc(payload, e);
-          });
-        }
-      } else if (sender === 'i18next-editor-frame' && handlers[action]) {
-        handlers[action].forEach(function (fc) {
-          fc(payload);
-        });
-      }
-    });
-  }
-
-  function setValueOnNode(meta, value) {
-    var item = store.get(meta.eleUniqueID);
-    if (!item || !item.keys[meta.textType]) return;
-    var txtWithHiddenMeta = wrap(value, item.subliminal);
-    if (meta.textType === 'text') {
-      item.node.textContent = txtWithHiddenMeta;
-    } else if (meta.textType.indexOf('attr:') === 0) {
-      var attr = meta.textType.replace('attr:', '');
-      item.node.setAttribute(attr, txtWithHiddenMeta);
-    } else if (meta.textType === 'html') {
-      var id = "".concat(meta.textType, "-").concat(meta.children);
-      if (!item.originalChildNodes) {
-        var clones = [];
-        item.node.childNodes.forEach(function (c) {
-          clones.push(c);
-        });
-        item.originalChildNodes = clones;
-      }
-      if (item.children[id].length === item.node.childNodes.length) {
-        item.node.innerHTML = txtWithHiddenMeta;
-      } else {
-        var children = item.children[id];
-        var first = children[0].child;
-        var dummy = document.createElement('div');
-        dummy.innerHTML = txtWithHiddenMeta;
-        var nodes = [];
-        dummy.childNodes.forEach(function (c) {
-          nodes.push(c);
-        });
-        nodes.forEach(function (c) {
-          try {
-            item.node.insertBefore(c, first);
-          } catch (error) {
-            item.node.appendChild(c);
-          }
-        });
-        children.forEach(function (replaceable) {
-          if (item.node.contains(replaceable.child)) item.node.removeChild(replaceable.child);
-        });
-      }
-    }
-  }
-  function handler$9(payload) {
-    var meta = payload.meta,
-      value = payload.value;
-    if (meta && value !== undefined) {
-      setValueOnNode(meta, value);
-    }
-  }
-  api.addHandler('editKey', handler$9);
-
-  function handler$8(payload) {
-    var meta = payload.meta,
-      value = payload.value,
-      lng = payload.lng;
-    if (meta && value !== undefined) {
-      setValueOnNode(meta, value);
-      var usedLng = lng || api.i18n.getLng();
-      api.i18n.setResource(usedLng, meta.ns, meta.key, value);
-      api.i18n.triggerRerender();
-    }
-  }
-  api.addHandler('commitKey', handler$8);
-
-  function _arrayLikeToArray(arr, len) {
-    if (len == null || len > arr.length) len = arr.length;
-    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-    return arr2;
-  }
-
-  function _arrayWithoutHoles(arr) {
-    if (Array.isArray(arr)) return _arrayLikeToArray(arr);
-  }
-
-  function _iterableToArray(iter) {
-    if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
-  }
-
-  function _unsupportedIterableToArray(o, minLen) {
-    if (!o) return;
-    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
-    var n = Object.prototype.toString.call(o).slice(8, -1);
-    if (n === "Object" && o.constructor) n = o.constructor.name;
-    if (n === "Map" || n === "Set") return Array.from(o);
-    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
-  }
-
-  function _nonIterableSpread() {
-    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-
-  function _toConsumableArray(arr) {
-    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
-  }
-
-  function handler$7(payload) {
-    var updated = payload.updated;
-    updated.forEach(function (item) {
-      var lng = item.lng,
-        ns = item.ns,
-        key = item.key,
-        data = item.data,
-        metas = item.metas,
-        meta = item.meta;
-      if (meta && data.value) setValueOnNode(meta, data.value);
-      if (metas) {
-        Object.values(metas).forEach(function (metaItem) {
-          setValueOnNode(metaItem, data.value);
-        });
-      }
-      api.i18n.setResource(lng, ns, key, data.value);
-    });
-    Object.values(store.data).forEach(function (item) {
-      if (item.originalChildNodes) {
-        var _item$node;
-        (_item$node = item.node).replaceChildren.apply(_item$node, _toConsumableArray(item.originalChildNodes));
-      }
-    });
-    api.i18n.triggerRerender();
-    if (api.locizeSavedHandler) api.locizeSavedHandler(payload);
-    if (window.locizeSavedHandler) window.locizeSavedHandler(payload);
-  }
-  api.addHandler('commitKeys', handler$7);
-
-  function handler$6(payload) {
-    api.initialized = true;
-    clearInterval(api.initInterval);
-    delete api.initInterval;
-    api.sendCurrentParsedContent();
-    api.sendCurrentTargetLanguage();
-  }
-  api.addHandler('confirmInitialized', handler$6);
-
-  function ownKeys$6(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-  function _objectSpread$6(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$6(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$6(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
   var data$1 = {};
   function clean$1() {
     Object.values(data$1).forEach(function (item) {
@@ -520,7 +263,7 @@
       }
     });
   }
-  function save$1(id, type, node) {
+  function save$1(id, type, node, txt) {
     if (!id || !type || !node) return;
     if (!data$1[id]) {
       data$1[id] = {
@@ -528,53 +271,72 @@
         node: node
       };
     }
-    data$1[id].keys = _objectSpread$6(_objectSpread$6({}, data$1[id].keys), {}, _defineProperty({}, "".concat(type), 'uninstrumented'));
+    data$1[id].keys = _objectSpread$7(_objectSpread$7({}, data$1[id].keys), {}, _defineProperty({}, "".concat(type), {
+      value: txt,
+      eleUniqueID: id,
+      textType: type
+    }));
+  }
+  function remove(id, node) {
+    resetHighlight(id, node);
+    delete data$1[id];
+  }
+  function removeKey(id, key, node) {
+    var item = get$1(id);
+    if (!item) return;
+    delete item.keys["".concat(key)];
+    if (!Object.keys(item.keys).length) remove(id, node);
   }
   function get$1(id) {
     return data$1[id];
   }
   var uninstrumentedStore = {
     save: save$1,
+    remove: remove,
+    removeKey: removeKey,
     clean: clean$1,
     get: get$1,
     data: data$1
   };
 
-  function isInViewport(el) {
-    var rect = el.getBoundingClientRect();
-    var windowHeight = window.innerHeight || document.documentElement.clientHeight;
-    var windowWidth = window.innerWidth || document.documentElement.clientWidth;
-    var vertInView = rect.top <= windowHeight && rect.top + rect.height >= 0;
-    var horInView = rect.left <= windowWidth && rect.left + rect.width >= 0;
-    return vertInView && horInView;
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
   }
-  function mouseDistanceFromElement(mouseEvent, element) {
-    var $n = element,
-      mX = mouseEvent.pageX,
-      mY = mouseEvent.pageY,
-      from = {
-        x: mX,
-        y: mY
-      },
-      off = $n.getBoundingClientRect(),
-      ny1 = off.top + document.documentElement.scrollTop,
-      ny2 = ny1 + $n.offsetHeight,
-      nx1 = off.left + document.documentElement.scrollLeft,
-      nx2 = nx1 + $n.offsetWidth,
-      maxX1 = Math.max(mX, nx1),
-      minX2 = Math.min(mX, nx2),
-      maxY1 = Math.max(mY, ny1),
-      minY2 = Math.min(mY, ny2),
-      intersectX = minX2 >= maxX1,
-      intersectY = minY2 >= maxY1,
-      to = {
-        x: intersectX ? mX : nx2 < mX ? nx2 : nx1,
-        y: intersectY ? mY : ny2 < mY ? ny2 : ny1
-      },
-      distX = to.x - from.x,
-      distY = to.y - from.y,
-      hypot = Math.pow(Math.pow(distX, 2) + Math.pow(distY, 2), 1 / 2);
-    return Math.floor(hypot);
+
+  function _iterableToArrayLimit(r, l) {
+    var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+    if (null != t) {
+      var e,
+        n,
+        i,
+        u,
+        a = [],
+        f = !0,
+        o = !1;
+      try {
+        if (i = (t = t.call(r)).next, 0 === l) {
+          if (Object(t) !== t) return;
+          f = !1;
+        } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0);
+      } catch (r) {
+        o = !0, n = r;
+      } finally {
+        try {
+          if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return;
+        } finally {
+          if (o) throw n;
+        }
+      }
+      return a;
+    }
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  function _slicedToArray(arr, i) {
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
   }
 
   function debounce(func, wait, immediate) {
@@ -673,6 +435,57 @@
     }
     return undefined;
   }
+  function parseAttrFromKey(key) {
+    var attr = 'text';
+    if (key.indexOf('[') == 0) {
+      var parts = key.split(']');
+      key = parts[1];
+      attr = parts[0].substr(1, parts[0].length - 1);
+    }
+    var newKey = key.indexOf(';') == key.length - 1 ? key.substr(0, key.length - 2) : key;
+    return [newKey, attr];
+  }
+  function getI18nMetaFromNode(el) {
+    var hasNamespacePrependToKey = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+    var key = getElementI18nKey(el);
+    var ns = getElementNamespace(el);
+    var allKeys = {};
+    if (key && key.indexOf(';') >= 0) {
+      var keys = key.split(';');
+      for (var ix = 0, l_ix = keys.length; ix < l_ix; ix++) {
+        if (keys[ix] != '') {
+          var _parseAttrFromKey = parseAttrFromKey(keys[ix]),
+            _parseAttrFromKey2 = _slicedToArray(_parseAttrFromKey, 2),
+            usedKey = _parseAttrFromKey2[0],
+            attr = _parseAttrFromKey2[1];
+          allKeys[attr] = usedKey;
+        }
+      }
+    } else if (key) {
+      var _parseAttrFromKey3 = parseAttrFromKey(key),
+        _parseAttrFromKey4 = _slicedToArray(_parseAttrFromKey3, 2),
+        _usedKey = _parseAttrFromKey4[0],
+        _attr = _parseAttrFromKey4[1];
+      allKeys[_attr] = _usedKey;
+    }
+    if (Object.keys(allKeys).length < 1) return null;
+    var res = Object.keys(allKeys).reduce(function (mem, attr) {
+      var key = allKeys[attr];
+      var usedNS = ns;
+      var usedKey = key;
+      if (hasNamespacePrependToKey && key.indexOf(':') > -1) {
+        var parts = key.split(':');
+        usedKey = parts[1];
+        usedNS = parts[0];
+      }
+      mem[attr] = {
+        key: usedKey,
+        ns: usedNS
+      };
+      return mem;
+    }, {});
+    return res;
+  }
   function getElementNamespace(el) {
     var found;
     var find = function find(ele) {
@@ -705,6 +518,312 @@
     if (!results) return null;
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
+  }
+
+  function ownKeys$6(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+  function _objectSpread$6(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$6(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$6(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+  var legacyEventMapping = {
+    committed: 'commitKeys'
+  };
+  function getMappedLegacyEvent(msg) {
+    if (legacyEventMapping[msg]) return legacyEventMapping[msg];
+    return msg;
+  }
+  function addLocizeSavedHandler(handler) {
+    api.locizeSavedHandler = handler;
+  }
+  function setEditorLng(lng) {
+    api.sendCurrentTargetLanguage(lng);
+  }
+  var pendingMsgs = [];
+  var allowedActionsBeforeInit = ['locizeIsEnabled', 'requestInitialize'];
+  function sendMessage(action, payload) {
+    if (!api.source) {
+      var _document$getElementB;
+      api.source = (_document$getElementB = document.getElementById('i18next-editor-iframe')) === null || _document$getElementB === void 0 ? void 0 : _document$getElementB.contentWindow;
+    }
+    if (!api.origin) api.origin = getIframeUrl();
+    if (!api.source || !api.source.postMessage || !api.initialized && allowedActionsBeforeInit.indexOf(action) < 0) {
+      pendingMsgs.push({
+        action: action,
+        payload: payload
+      });
+      return;
+    }
+    if (api.legacy) {
+      api.source.postMessage(_objectSpread$6({
+        message: action
+      }, payload), api.origin);
+    } else {
+      api.source.postMessage({
+        sender: 'i18next-editor',
+        senderAPIVersion: 'v2',
+        action: action,
+        message: action,
+        payload: payload
+      }, api.origin);
+    }
+    var todo = pendingMsgs;
+    pendingMsgs = [];
+    todo.forEach(function (_ref) {
+      var action = _ref.action,
+        payload = _ref.payload;
+      sendMessage(action, payload);
+    });
+  }
+  var sendCurrentParsedContentDebounced = function sendCurrentParsedContentDebounced() {
+    sendMessage('sendCurrentParsedContent', {
+      content: Object.values(store.data).map(function (item) {
+        return {
+          id: item.id,
+          keys: item.keys
+        };
+      }),
+      uninstrumented: Object.values(uninstrumentedStore.data).map(function (item) {
+        return {
+          id: item.id,
+          keys: item.keys
+        };
+      })
+    });
+  };
+  var handlers = {};
+  var repeat = 5;
+  var api = {
+    init: function init(implementation, clickHandler) {
+      api.i18n = implementation;
+      api.clickHandler = clickHandler;
+    },
+    requestInitialize: function requestInitialize(payload) {
+      sendMessage('requestInitialize', payload);
+      if (api.initInterval) return;
+      api.initInterval = setInterval(function () {
+        repeat = repeat - 1;
+        api.requestInitialize(payload);
+        if (repeat < 0 && api.initInterval) {
+          clearInterval(api.initInterval);
+          delete api.initInterval;
+        }
+      }, 2000);
+    },
+    selectKey: function selectKey(meta) {
+      sendMessage('selectKey', meta);
+    },
+    confirmResourceBundle: function confirmResourceBundle(payload) {
+      sendMessage('confirmResourceBundle', payload);
+    },
+    sendCurrentParsedContent: debounce(sendCurrentParsedContentDebounced, 500),
+    sendCurrentTargetLanguage: function sendCurrentTargetLanguage(lng) {
+      sendMessage('sendCurrentTargetLanguage', {
+        targetLng: lng || api.i18n.getLng()
+      });
+    },
+    sendHrefchanged: function sendHrefchanged(href) {
+      sendMessage('hrefChanged', {
+        href: href
+      });
+    },
+    addHandler: function addHandler(action, fc) {
+      if (!handlers[action]) handlers[action] = [];
+      handlers[action].push(fc);
+    },
+    sendLocizeIsEnabled: function sendLocizeIsEnabled(payload) {
+      sendMessage('locizeIsEnabled', _objectSpread$6(_objectSpread$6({}, payload), {}, {
+        enabled: true
+      }));
+    },
+    onAddedKey: function onAddedKey(lng, ns, key, value) {
+      var msg = {
+        lng: lng,
+        ns: ns,
+        key: key,
+        value: value
+      };
+      sendMessage('added', msg);
+    }
+  };
+  if (typeof window !== 'undefined') {
+    window.addEventListener('message', function (e) {
+      var _e$data = e.data,
+        sender = _e$data.sender,
+        action = _e$data.action,
+        message = _e$data.message,
+        payload = _e$data.payload;
+      if (message) {
+        var usedEventName = getMappedLegacyEvent(message);
+        if (handlers[usedEventName]) {
+          handlers[usedEventName].forEach(function (fc) {
+            fc(payload, e);
+          });
+        }
+      } else if (sender === 'i18next-editor-frame' && handlers[action]) {
+        handlers[action].forEach(function (fc) {
+          fc(payload, e);
+        });
+      }
+    });
+  }
+
+  function setValueOnNode(meta, value) {
+    var item = store.get(meta.eleUniqueID);
+    if (!item || !item.keys[meta.textType]) return;
+    var txtWithHiddenMeta = item.subliminal ? wrap(value, item.subliminal) : value;
+    if (meta.textType === 'text') {
+      item.node.textContent = txtWithHiddenMeta;
+    } else if (meta.textType.indexOf('attr:') === 0) {
+      var attr = meta.textType.replace('attr:', '');
+      item.node.setAttribute(attr, txtWithHiddenMeta);
+    } else if (meta.textType === 'html') {
+      var id = "".concat(meta.textType, "-").concat(meta.children);
+      if (!item.originalChildNodes) {
+        var clones = [];
+        item.node.childNodes.forEach(function (c) {
+          clones.push(c);
+        });
+        item.originalChildNodes = clones;
+      }
+      if (item.children[id].length === item.node.childNodes.length) {
+        item.node.innerHTML = txtWithHiddenMeta;
+      } else {
+        var children = item.children[id];
+        var first = children[0].child;
+        var dummy = document.createElement('div');
+        dummy.innerHTML = txtWithHiddenMeta;
+        var nodes = [];
+        dummy.childNodes.forEach(function (c) {
+          nodes.push(c);
+        });
+        nodes.forEach(function (c) {
+          try {
+            item.node.insertBefore(c, first);
+          } catch (error) {
+            item.node.appendChild(c);
+          }
+        });
+        children.forEach(function (replaceable) {
+          if (item.node.contains(replaceable.child)) item.node.removeChild(replaceable.child);
+        });
+      }
+    }
+  }
+  function handler$8(payload) {
+    var meta = payload.meta,
+      value = payload.value;
+    if (meta && value !== undefined) {
+      setValueOnNode(meta, value);
+    }
+  }
+  api.addHandler('editKey', handler$8);
+
+  function handler$7(payload) {
+    var meta = payload.meta,
+      value = payload.value,
+      lng = payload.lng;
+    if (meta && value !== undefined) {
+      setValueOnNode(meta, value);
+      var usedLng = lng || api.i18n.getLng();
+      api.i18n.setResource(usedLng, meta.ns, meta.key, value);
+      api.i18n.triggerRerender();
+    }
+  }
+  api.addHandler('commitKey', handler$7);
+
+  function handler$6(payload) {
+    var updated = payload.updated;
+    updated.forEach(function (item) {
+      var lng = item.lng,
+        ns = item.ns,
+        key = item.key,
+        data = item.data,
+        metas = item.metas,
+        meta = item.meta;
+      if (meta && data.value) setValueOnNode(meta, data.value);
+      if (metas) {
+        Object.values(metas).forEach(function (metaItem) {
+          setValueOnNode(metaItem, data.value);
+        });
+      }
+      api.i18n.setResource(lng, ns, key, data.value);
+      if (metas) {
+        Object.values(metas).forEach(function (m) {
+          var sItem = store.get(m.eleUniqueID);
+          recalcSelectedHighlight(sItem, sItem.node, sItem.keys);
+        });
+      }
+    });
+    Object.values(store.data).forEach(function (item) {
+      if (item.originalChildNodes) {
+        var _item$node;
+        (_item$node = item.node).replaceChildren.apply(_item$node, _toConsumableArray(item.originalChildNodes));
+      }
+    });
+    api.i18n.triggerRerender();
+    if (api.locizeSavedHandler) api.locizeSavedHandler(payload);
+    if (window.locizeSavedHandler) window.locizeSavedHandler(payload);
+  }
+  api.addHandler('commitKeys', handler$6);
+
+  function handler$5(payload) {
+    api.initialized = true;
+    clearInterval(api.initInterval);
+    delete api.initInterval;
+    api.sendCurrentParsedContent();
+    api.sendCurrentTargetLanguage();
+  }
+  api.addHandler('confirmInitialized', handler$5);
+
+  function isInViewport(el) {
+    var rect = el.getBoundingClientRect();
+    var windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    var windowWidth = window.innerWidth || document.documentElement.clientWidth;
+    var vertInView = rect.top <= windowHeight && rect.top + rect.height >= 0;
+    var horInView = rect.left <= windowWidth && rect.left + rect.width >= 0;
+    return vertInView && horInView;
+  }
+  function mouseDistanceFromElement(mouseEvent, element) {
+    var $n = element,
+      mX = mouseEvent.pageX,
+      mY = mouseEvent.pageY,
+      from = {
+        x: mX,
+        y: mY
+      },
+      off = $n.getBoundingClientRect(),
+      ny1 = off.top + document.documentElement.scrollTop,
+      ny2 = ny1 + $n.offsetHeight,
+      nx1 = off.left + document.documentElement.scrollLeft,
+      nx2 = nx1 + $n.offsetWidth,
+      maxX1 = Math.max(mX, nx1),
+      minX2 = Math.min(mX, nx2),
+      maxY1 = Math.max(mY, ny1),
+      minY2 = Math.min(mY, ny2),
+      intersectX = minX2 >= maxX1,
+      intersectY = minY2 >= maxY1,
+      to = {
+        x: intersectX ? mX : nx2 < mX ? nx2 : nx1,
+        y: intersectY ? mY : ny2 < mY ? ny2 : ny1
+      },
+      distX = to.x - from.x,
+      distY = to.y - from.y,
+      hypot = Math.pow(Math.pow(distX, 2) + Math.pow(distY, 2), 1 / 2);
+    return Math.floor(hypot);
+  }
+  function getOptimizedBoundingRectEle(node) {
+    var refEle = node;
+    if (node.childNodes.length === 1) {
+      var childNode = node.childNodes[0];
+      if (childNode && childNode.nodeName === '#text') {
+        var range = document.createRange();
+        range.selectNode(childNode);
+        var rect = range.getBoundingClientRect();
+        refEle = {
+          getBoundingClientRect: function getBoundingClientRect() {
+            return rect;
+          }
+        };
+      }
+    }
+    return refEle;
   }
 
   var debouncedUpdateDistance = debounce(function (e, observer) {
@@ -746,7 +865,7 @@
   var editIconUrl = URL.createObjectURL(new Blob([iconEdit], {
     type: 'image/svg+xml'
   }));
-  var i18nextIconUrl = URL.createObjectURL(new Blob([i18nextIcon], {
+  URL.createObjectURL(new Blob([i18nextIcon], {
     type: 'image/svg+xml'
   }));
   var minimizeIconUrl = URL.createObjectURL(new Blob([minimizeIcon], {
@@ -762,18 +881,6 @@
     image.style.width = '15px';
     return image;
   }
-  function RibbonLogo() {
-    var circleSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '18px';
-    var logoSize = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '15px';
-    var ribbon = document.createElement('div');
-    ribbon.setAttribute('data-i18next-editor-element', 'true');
-    ribbon.style = "display: inline-flex; align-items: center; justify-content: center; width: ".concat(circleSize, "; height: ").concat(circleSize, "; box-shadow: inset 0 0 5px ").concat(colors.highlight, "; border: 2px solid ").concat(colors.highlight, "; border-radius: 50%");
-    var image = document.createElement('img');
-    image.src = i18nextIconUrl;
-    image.style.width = logoSize;
-    ribbon.appendChild(image);
-    return ribbon;
-  }
 
   if (sheet) {
     sheet.insertRule("@keyframes i18next-editor-animate-top { \n      from {\n        top: calc(100vh + 600px); \n        left: calc(100vw + 300px);\n        opacity: 0;\n      }\n      to {\n        top: var(--i18next-editor-popup-position-top);\n        left: var(--i18next-editor-popup-position-left);\n        opacity: 1;\n      }\n    }");
@@ -786,7 +893,7 @@
   function Ribbon(popupEle, onMaximize) {
     var ribbon = document.createElement('div');
     ribbon.setAttribute('data-i18next-editor-element', 'true');
-    ribbon.style = "\n  cursor: pointer;\n  position: fixed;\n  bottom: 25px;\n  right: 25px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  width: 50px;\n  height: 50px;\n  background-color:  rgba(249, 249, 249, 0.2);\n  backdrop-filter: blur(3px);\n  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);\n  border-radius: 50%\n  ";
+    ribbon.style = "\n  cursor: pointer;\n  position: fixed;\n  bottom: 25px;\n  right: 25px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  width: 50px;\n  height: 50px;\n  background-color:  rgba(249, 249, 249, 0.2);\n  backdrop-filter: blur(3px);\n  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);\n  border-radius: 50%;\n  ";
     ribbon.onclick = function () {
       onMaximize();
     };
@@ -815,7 +922,7 @@
     var popup = document.createElement('div');
     popup.setAttribute('id', popupId);
     popup.classList.add('i18next-editor-popup');
-    popup.style = "\n  z-index: 9;\n  background-color: transparent;\n  border: 1px solid rgba(200, 200, 200, 0.9);\n  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);\n  border-radius: 3px;\n  --i18next-editor-popup-height: 200px;\n  height: var(--i18next-editor-popup-height);\n  min-height: 150px;\n  min-width: 300px;\n  --i18next-editor-popup-width: 400px;\n  width: var(--i18next-editor-popup-width);\n  max-height: 600px;\n  max-width: 800px;\n\n  position: fixed;\n  --i18next-editor-popup-position-top: calc(100vh - var(--i18next-editor-popup-height) - 10px);\n  top: calc(100vh - var(--i18next-editor-popup-height) - 10px);\n  --i18next-editor-popup-position-left: calc(100vw - var(--i18next-editor-popup-width) - 10px);\n  left: calc(100vw - var(--i18next-editor-popup-width) - 10px);\n\n  overflow: visible;\n  ";
+    popup.style = "\n  z-index: 9;\n  background-color: transparent;\n  border: 1px solid rgba(200, 200, 200, 0.9);\n  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);\n  border-radius: 3px;\n  --i18next-editor-popup-height: 200px;\n  height: var(--i18next-editor-popup-height);\n  min-height: 150px;\n  min-width: 300px;\n  --i18next-editor-popup-width: 400px;\n  width: var(--i18next-editor-popup-width);\n  max-height: 800px;\n  max-width: 1000px;\n\n  position: fixed;\n  --i18next-editor-popup-position-top: calc(100vh - var(--i18next-editor-popup-height) - 10px);\n  top: calc(100vh - var(--i18next-editor-popup-height) - 10px);\n  --i18next-editor-popup-position-left: calc(100vw - var(--i18next-editor-popup-width) - 10px);\n  left: calc(100vw - var(--i18next-editor-popup-width) - 10px);\n\n  overflow: visible;\n  ";
     popup.setAttribute('data-i18next-editor-element', 'true');
     var header = document.createElement('div');
     header.classList.add('i18next-editor-popup-header');
@@ -835,7 +942,7 @@
     var iframe = document.createElement('iframe');
     iframe.setAttribute('id', 'i18next-editor-iframe');
     iframe.setAttribute('data-i18next-editor-element', 'true');
-    iframe.style = "\n    z-index: 100;\n    width: 100%;\n    height: calc(100% - 28px);\n    border: none;\n    background: #fff;\n  ";
+    iframe.style = "\n    z-index: 100;\n    width: 100%;\n    height: calc(100% - 32px);\n    border: none;\n    background: #fff;\n  ";
     iframe.setAttribute('src', url);
     iframe.addEventListener('load', cb);
     popup.appendChild(iframe);
@@ -847,10 +954,19 @@
     return popup;
   }
 
-  function handler$5(payload) {
+  function handler$4(payload) {
     var containerStyle = payload.containerStyle;
     if (containerStyle) {
       var popup = document.getElementById(popupId);
+      if (!popup) return;
+      var storedPos = localStorage.getItem('locize_popup_pos');
+      if (storedPos) storedPos = JSON.parse(storedPos);
+      var storedSize = localStorage.getItem('locize_popup_size');
+      if (storedSize) storedSize = JSON.parse(storedSize);
+      if (storedSize && storedSize.height && storedSize.width) {
+        containerStyle.height = storedSize.height + 'px';
+        containerStyle.width = storedSize.width + 'px';
+      }
       if (containerStyle.height) {
         var diff = "calc(".concat(containerStyle.height, " - ").concat(popup.style.height, ")");
         popup.style.setProperty('top', "calc(".concat(popup.style.top, " - ").concat(diff, ")"));
@@ -861,9 +977,11 @@
         popup.style.setProperty('left', "calc(".concat(popup.style.left, " - ").concat(_diff, ")"));
         popup.style.setProperty('width', containerStyle.width);
       }
+      if (storedPos && storedPos.top && storedPos.top < window.innerHeight - containerStyle.height.replace('px', '')) popup.style.setProperty('top', storedPos.top + 'px');
+      if (storedPos && storedPos.left && storedPos.left < window.innerWidth - containerStyle.width.replace('px', '')) popup.style.setProperty('left', storedPos.left + 'px');
     }
   }
-  api.addHandler('requestPopupChanges', handler$5);
+  api.addHandler('requestPopupChanges', handler$4);
 
   function _objectWithoutPropertiesLoose(source, excluded) {
     if (source == null) return {};
@@ -897,7 +1015,7 @@
   var _excluded = ["lng", "ns"];
   function ownKeys$5(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
   function _objectSpread$5(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$5(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$5(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-  function handler$4(payload) {
+  function handler$3(payload) {
     var lng = payload.lng,
       ns = payload.ns,
       rest = _objectWithoutProperties(payload, _excluded);
@@ -909,10 +1027,10 @@
       }, rest));
     });
   }
-  api.addHandler('requestResourceBundle', handler$4);
+  api.addHandler('requestResourceBundle', handler$3);
 
   var previousMatches = [];
-  function handler$3(payload) {
+  function handler$2(payload) {
     var keys = payload.keys;
     var matchingItems = [];
     Object.values(store.data).forEach(function (item) {
@@ -931,32 +1049,37 @@
     });
     previousMatches = matchingItems;
   }
-  api.addHandler('selectedKeys', handler$3);
-
-  function handler$2(payload, e) {
-    api.source = e.source;
-    api.origin = e.origin;
-    api.legacy = true;
-    api.sendLocizeIsEnabled();
-  }
-  api.addHandler('isLocizeEnabled', handler$2);
+  api.addHandler('selectedKeys', handler$2);
 
   function handler$1(payload, e) {
-    api.turnOn();
+    api.source = e.source;
+    api.origin = e.origin;
+    api.sendLocizeIsEnabled(payload);
+    api.requestInitialize(api.config);
   }
-  api.addHandler('turnOn', handler$1);
+  api.addHandler('isLocizeEnabled', handler$1);
 
-  function handler(payload, e) {
-    api.turnOff();
+  function handler(payload) {
+    if (!payload.length) return;
+    payload.forEach(function (item) {
+      var uni = uninstrumentedStore.get(item.eleUniqueID);
+      store.save(item.eleUniqueID, undefined, item.textType, extractNodeMeta(item.eleUniqueID, item.textType, _defineProperty({}, "".concat(item.textType), {
+        ns: item.ns,
+        key: item.key
+      }), item.value), uni === null || uni === void 0 ? void 0 : uni.node);
+      delete uni.keys["".concat(item.textType)];
+      if (!Object.keys(uni.keys).length) uninstrumentedStore.remove(item.eleUniqueID, uni.node);
+    });
+    api.sendCurrentParsedContent();
   }
-  api.addHandler('turnOff', handler);
+  api.addHandler('sendMatchedUninstrumented', handler);
 
   if (sheet) {
-    sheet.insertRule('.i18next-editor-button:hover { background-color: rgba(38, 166, 154, 1) !important; }');
+    sheet.insertRule('.i18next-editor-button:hover { background-color: rgba(21, 65, 154, 1) !important; }');
   }
   function RibbonButton(text, attrTitle, onClick) {
     var btn = document.createElement('button');
-    btn.style = 'font-family: Arial; position: relative; backdrop-filter: blur(3px); cursor: pointer; padding: 2px 10px 2px 20px; font-size: 15px; font-weight: 300; text-transform: uppercase; color: #fff; background-color: rgba(38, 166, 154, 0.8); border: none; border-radius: 12px';
+    btn.style = 'font-family: Arial; position: relative; backdrop-filter: blur(3px); cursor: pointer; padding: 2px 10px 2px 20px; font-size: 15px; font-weight: 300; text-transform: uppercase; color: #fff; background-color: rgba(25, 118, 210, 0.8); border: none; border-radius: 12px; z-index: 99999;';
     btn.classList.add('i18next-editor-button');
     btn.setAttribute('data-i18next-editor-element', 'true');
     btn.setAttribute('title', attrTitle);
@@ -978,8 +1101,6 @@
     var arrow = document.createElement('div');
     arrow.style = "\n    position: absolute;\n    width: 0;\n    height: 0;\n    border-top-width: 7px;\n    border-bottom-width: 7px;\n    border-left-width: 10px;\n    border-right-width: 10px;\n    border-style: solid;\n    border-color: transparent ".concat(colors.highlight, " transparent\n      transparent;\n    ");
     box.appendChild(arrow);
-    var logo = RibbonLogo();
-    box.appendChild(logo);
     var btnbox = document.createElement('div');
     btnbox.style = 'display: flex; flex-direction: column; align-items: flex-start; margin-left: 2px; margin-top: 1px';
     Object.keys(keys).forEach(function (k) {
@@ -995,6 +1116,14 @@
       box: box,
       arrow: arrow
     };
+  }
+
+  function HighlightBox(ele, borderColor, shadowColor) {
+    var rect = ele.getBoundingClientRect();
+    var box = document.createElement('div');
+    box.style = "position: absolute; top: ".concat(rect.top - 2 + window.scrollY, "px; left: ").concat(rect.left - 2 + window.scrollX, "px; height: ").concat(rect.height + 4, "px; width: ").concat(rect.width + 4, "px; border: 1px solid ").concat(borderColor, "; border-radius: 2px; ").concat(shadowColor ? "box-shadow: 0 0 20px 0 ".concat(shadowColor, ";") : '');
+    box.setAttribute('data-i18next-editor-element', 'true');
+    return box;
   }
 
   const min = Math.min;
@@ -2239,50 +2368,21 @@
     });
   };
 
-  var eleToOutline = ['DIV', 'P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'OL', 'UL', 'ADDRESS', 'BLOCKQUOTE', 'DL', 'PRE'];
-  var overriddenStyles = ['outline', 'border-radius', 'outline-offset', 'filter'];
-  var originalStyles = {};
   var selected = {};
   function highlight(item, node, keys) {
-    var id = item.id;
-    if (selected[id]) return;
-    if (!originalStyles[id]) {
-      originalStyles[id] = overriddenStyles.reduce(function (mem, s) {
-        mem[s] = node.style[s];
-        return mem;
-      }, {});
-    }
-    if (eleToOutline.includes(node.nodeName)) {
-      node.style.outline = "".concat(colors.highlight, " solid 1px");
-      node.style.setProperty('border-radius', '1px');
-      node.style.setProperty('outline-offset', '2px');
-      node.style.filter = 'brightness(110%)';
-    } else {
-      node.style.outline = "".concat(colors.highlight, " solid 1px");
-      node.style.setProperty('border-radius', '1px');
-      node.style.setProperty('outline-offset', '1px');
-      node.style.filter = 'brightness(110%)';
+    item.id;
+    var rectEle = getOptimizedBoundingRectEle(node);
+    if (!item.highlightBox) {
+      var box = HighlightBox(rectEle, colors.highlight);
+      document.body.appendChild(box);
+      item.highlightBox = box;
     }
     if (!item.ribbonBox) {
       var _RibbonBox = RibbonBox(keys),
         actions = _RibbonBox.box,
         arrowEle = _RibbonBox.arrow;
       document.body.appendChild(actions);
-      var refEle = node;
-      if (node.childNodes.length === 1) {
-        var childNode = node.childNodes[0];
-        if (childNode && childNode.nodeName === '#text') {
-          var range = document.createRange();
-          range.selectNode(childNode);
-          var rect = range.getBoundingClientRect();
-          refEle = {
-            getBoundingClientRect: function getBoundingClientRect() {
-              return rect;
-            }
-          };
-        }
-      }
-      computePosition(refEle, actions, {
+      computePosition(rectEle, actions, {
         placement: 'right',
         middleware: [flip({
           fallbackPlacements: ['left', 'bottom']
@@ -2329,58 +2429,35 @@
   function highlightUninstrumented(item, node, keys) {
     var id = item.id;
     if (selected[id]) return;
-    if (!originalStyles[id]) {
-      originalStyles[id] = overriddenStyles.reduce(function (mem, s) {
-        mem[s] = node.style[s];
-        return mem;
-      }, {});
-    }
-    if (eleToOutline.includes(node.nodeName)) {
-      node.style.outline = "".concat(colors.warning, " solid 1px");
-      node.style.setProperty('border-radius', '1px');
-      node.style.setProperty('outline-offset', '2px');
-      node.style.filter = 'brightness(110%)';
-    } else {
-      node.style.outline = "".concat(colors.warning, " solid 1px");
-      node.style.setProperty('border-radius', '1px');
-      node.style.setProperty('outline-offset', '1px');
-      node.style.filter = 'brightness(110%)';
+    var rectEle = getOptimizedBoundingRectEle(node);
+    if (!item.highlightBox) {
+      var box = HighlightBox(rectEle, colors.warning);
+      document.body.appendChild(box);
+      item.highlightBox = box;
     }
   }
   function selectedHighlight(item, node, keys) {
     var id = item.id;
-    if (!originalStyles[id]) {
-      originalStyles[id] = overriddenStyles.reduce(function (mem, s) {
-        mem[s] = node.style[s];
-        return mem;
-      }, {});
-    }
-    if (eleToOutline.includes(node.nodeName)) {
-      node.style.outline = "".concat(colors.highlight, " solid 1px");
-      node.style.setProperty('border-radius', '1px');
-      node.style.setProperty('outline-offset', '2px');
-      node.style.filter = "brightness(110%) drop-shadow(0px 0px 2px ".concat(colors.highlight, " )");
-    } else {
-      node.style.outline = "".concat(colors.highlight, " solid 1px");
-      node.style.setProperty('border-radius', '1px');
-      node.style.setProperty('outline-offset', '1px');
-      node.style.filter = "brightness(110%) drop-shadow(0px 0px 2px ".concat(colors.highlight, " )");
-    }
-    if (item.ribbonBox) {
-      document.body.removeChild(item.ribbonBox);
-      delete item.ribbonBox;
+    var rectEle = getOptimizedBoundingRectEle(node);
+    if (!item.highlightBox) {
+      var box = HighlightBox(rectEle, colors.highlight, colors.gray);
+      document.body.appendChild(box);
+      item.highlightBox = box;
     }
     selected[id] = true;
+  }
+  function recalcSelectedHighlight(item, node, keys) {
+    if (!selected[item.id]) return;
+    resetHighlight(item, node, keys, false);
+    selectedHighlight(item, node);
   }
   function resetHighlight(item, node, keys) {
     var ignoreSelected = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
     var id = item.id;
     if (ignoreSelected && selected[id]) return;
-    if (originalStyles[id]) {
-      overriddenStyles.forEach(function (s) {
-        node.style.setProperty(s, originalStyles[id][s]);
-      });
-      delete originalStyles[id];
+    if (item.highlightBox) {
+      document.body.removeChild(item.highlightBox);
+      delete item.highlightBox;
     }
     if (item.ribbonBox) {
       document.body.removeChild(item.ribbonBox);
@@ -2409,6 +2486,7 @@
         subliminal: subliminal
       };
     }
+    if (subliminal) data[id].subliminal = subliminal;
     data[id].keys = _objectSpread$4(_objectSpread$4({}, data[id].keys), {}, _defineProperty({}, "".concat(type), meta));
     if (children) {
       data[id].children = _objectSpread$4(_objectSpread$4({}, data[id].children), {}, _defineProperty({}, "".concat(type, "-").concat(children.map(function (c) {
@@ -2467,35 +2545,84 @@
   function walk(node, func) {
     if (node.dataset && node.dataset.i18nextEditorElement === 'true') return;
     func(node);
+    var instr = store.get(node.uniqueID);
+    var uninstr = uninstrumentedStore.get(node.uniqueID);
+    if (instr || uninstr) {
+      var _node$parentElement;
+      var id = (_node$parentElement = node.parentElement) === null || _node$parentElement === void 0 ? void 0 : _node$parentElement.uniqueID;
+      uninstrumentedStore.remove(id, node.parentElement);
+    }
     var children = node.childNodes;
-    for (var i = 0; i < children.length; i++) {
-      walk(children[i], func);
+    for (var _i = 0; _i < children.length; _i++) {
+      walk(children[_i], func);
     }
   }
-  function extractMeta(id, type, meta, children) {
-    var _i18n, _i18n2;
+  function extractHiddenMeta(id, type, meta, children) {
+    var _i18n, _i18n2, _i18n3;
     var invisibleMeta = meta.invisibleMeta,
       text = meta.text;
     if (!invisibleMeta || !invisibleMeta.key || !invisibleMeta.ns) return;
-    if (!currentSourceLng) currentSourceLng = (_i18n = i18n) === null || _i18n === void 0 ? void 0 : _i18n.getSourceLng();
+    if (!currentSourceLng) currentSourceLng = i18n.getSourceLng();
     return _objectSpread$3(_objectSpread$3({
       eleUniqueID: id,
       textType: type,
-      children: children ? children.map(function (c) {
+      children: children && children.map ? children.map(function (c) {
         return c.childIndex;
       }).join(',') : null,
       qualifiedKey: "".concat(invisibleMeta.ns, ":").concat(invisibleMeta.key)
     }, invisibleMeta), {}, {
       extractedText: text,
-      i18nTargetLng: (_i18n2 = i18n) === null || _i18n2 === void 0 ? void 0 : _i18n2.getLng(),
+      i18nTargetLng: (_i18n = i18n) === null || _i18n === void 0 ? void 0 : _i18n.getLng(),
       i18nSourceLng: currentSourceLng,
-      i18nRawText: _defineProperty(_defineProperty({}, "".concat(invisibleMeta.lng), invisibleMeta.source === 'translation' && i18n ? i18n.getResource(invisibleMeta.lng, invisibleMeta.ns, invisibleMeta.key) : null), "".concat(currentSourceLng), invisibleMeta.source === 'translation' && i18n ? i18n.getResource(currentSourceLng, invisibleMeta.ns, invisibleMeta.key) : null)
+      i18nRawText: _defineProperty(_defineProperty({}, "".concat(invisibleMeta.lng), invisibleMeta.source === 'translation' && i18n ? (_i18n2 = i18n) === null || _i18n2 === void 0 ? void 0 : _i18n2.getResource(invisibleMeta.lng, invisibleMeta.ns, invisibleMeta.key) : null), "".concat(currentSourceLng), invisibleMeta.source === 'translation' && i18n ? (_i18n3 = i18n) === null || _i18n3 === void 0 ? void 0 : _i18n3.getResource(currentSourceLng, invisibleMeta.ns, invisibleMeta.key) : null)
     });
+  }
+  function extractNodeMeta(id, type) {
+    var _i18n4, _i18n5, _i18n6, _i18n7, _i18n8;
+    var nodeMeta = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var text = arguments.length > 3 ? arguments[3] : undefined;
+    var children = arguments.length > 4 ? arguments[4] : undefined;
+    var meta = nodeMeta[type];
+    if (!meta) return;
+    if (!currentSourceLng) currentSourceLng = i18n.getSourceLng();
+    var i18nTargetLng = i18n.getLng();
+    return {
+      eleUniqueID: id,
+      textType: type,
+      children: children && children.map ? children.map(function (c) {
+        return c.childIndex;
+      }).join(',') : null,
+      qualifiedKey: meta.key && (meta.ns || (_i18n4 = i18n) !== null && _i18n4 !== void 0 && _i18n4.getDefaultNS()) ? "".concat(meta.ns || ((_i18n5 = i18n) === null || _i18n5 === void 0 ? void 0 : _i18n5.getDefaultNS()), ":").concat(meta.key) : null,
+      key: meta.key,
+      ns: meta.ns || ((_i18n6 = i18n) === null || _i18n6 === void 0 ? void 0 : _i18n6.getDefaultNS()),
+      extractedText: text,
+      i18nTargetLng: i18nTargetLng,
+      i18nSourceLng: currentSourceLng,
+      i18nRawText: _defineProperty(_defineProperty({}, "".concat(i18nTargetLng), i18n && meta.ns && meta.key ? ((_i18n7 = i18n) === null || _i18n7 === void 0 ? void 0 : _i18n7.getResource(i18nTargetLng, meta.ns, meta.key)) || text : text), "".concat(currentSourceLng), i18n && meta.ns && meta.key ? (_i18n8 = i18n) === null || _i18n8 === void 0 ? void 0 : _i18n8.getResource(currentSourceLng, meta.ns, meta.key) : null)
+    };
   }
   function containsOnlySpaces(str) {
     return /^\s*$/.test(str);
   }
+  function storeIfQualifiedKey(id, subliminal, type, nodeI18nMeta, node, children, txt) {
+    var stored = store.get(id);
+    var storedMeta = stored && stored.keys["".concat(type)] || {};
+    var typeMeta = nodeI18nMeta["".concat(type)] || {};
+    if (!typeMeta.key && storedMeta.key) typeMeta.key = storedMeta.key;
+    if (!typeMeta.ns && storedMeta.ns) typeMeta.ns = storedMeta.ns;
+    nodeI18nMeta["".concat(type)] = typeMeta;
+    var meta = extractNodeMeta(id, type, nodeI18nMeta, txt, children);
+    if (meta.qualifiedKey) {
+      store.save(id, null, type, meta, node, children);
+      uninstrumentedStore.removeKey(i, type, node);
+    } else {
+      uninstrumentedStore.save(id, type, node, txt);
+    }
+  }
   function handleNode(node) {
+    if (ignoreElements.indexOf(node.nodeName) > -1) return;
+    var nodeI18nMeta = getI18nMetaFromNode(node);
+    var usedSubliminalForText = false;
     if (node.childNodes && !ignoreMergedEleUniqueIds.includes(node.uniqueID)) {
       var merge = [];
       node.childNodes.forEach(function (child, i) {
@@ -2511,9 +2638,11 @@
         if (containsOnlySpaces(txt)) return;
         var hasHiddenMeta = containsHiddenMeta(txt);
         var hasHiddenStartMarker = containsHiddenStartMarker(txt);
+        if (hasHiddenMeta) usedSubliminalForText = true;
         if (hasHiddenStartMarker && hasHiddenMeta) {
           var meta = unwrap(txt);
-          store.save(node.uniqueID, meta.invisibleMeta, 'text', extractMeta(node.uniqueID, 'text', meta), node);
+          uninstrumentedStore.remove(node.uniqueID, node);
+          store.save(node.uniqueID, meta.invisibleMeta, 'text', extractHiddenMeta(node.uniqueID, 'text', meta), node);
         } else if (hasHiddenStartMarker) {
           merge.push({
             childIndex: i,
@@ -2535,21 +2664,54 @@
           var _meta = unwrap(merge.reduce(function (mem, item) {
             return mem + item.text;
           }, ''));
-          store.save(node.uniqueID, _meta.invisibleMeta, 'html', extractMeta(node.uniqueID, 'html', _meta, merge), node, merge);
+          uninstrumentedStore.removeKey(node.uniqueID, 'html', node, txt);
+          store.save(node.uniqueID, _meta.invisibleMeta, 'html', extractHiddenMeta(node.uniqueID, 'html', _meta, merge), node, merge);
           merge = [];
-        } else if (txt) {
-          uninstrumentedStore.save(node.uniqueID, 'text', node);
         }
       });
+      if (!usedSubliminalForText) {
+        node.childNodes.forEach(function (child, i) {
+          if (merge.length && child.nodeName !== '#text') {
+            ignoreMergedEleUniqueIds.push(child.uniqueID);
+          }
+          var txt = child.textContent;
+          if (nodeI18nMeta && nodeI18nMeta['html'] && i < node.childNodes.length - 1) {
+            merge.push({
+              childIndex: i,
+              child: child,
+              text: txt
+            });
+          } else if (nodeI18nMeta && nodeI18nMeta['html'] && i === node.childNodes.length - 1) {
+            merge.push({
+              childIndex: i,
+              child: child,
+              text: txt
+            });
+            storeIfQualifiedKey(node.uniqueID, null, 'html', nodeI18nMeta, node, merge, node.innerHTML);
+            merge = [];
+          } else if (txt) {
+            if (nodeI18nMeta && nodeI18nMeta['text']) {
+              storeIfQualifiedKey(node.uniqueID, null, 'text', nodeI18nMeta, node, undefined, txt);
+            } else if (child.nodeName === '#text' && !containsOnlySpaces(txt)) {
+              uninstrumentedStore.save(node.uniqueID, 'text', node, txt);
+            }
+          }
+        });
+      }
     }
     if (!node.getAttribute) return;
     validAttributes.forEach(function (attr) {
       var txt = node.getAttribute(attr);
       if (containsHiddenMeta(txt)) {
         var meta = unwrap(txt);
-        store.save(node.uniqueID, meta.invisibleMeta, "attr:".concat(attr), extractMeta(node.uniqueID, "attr:".concat(attr), meta), node);
+        uninstrumentedStore.removeKey(node.uniqueID, attr, node);
+        store.save(node.uniqueID, meta.invisibleMeta, attr, extractHiddenMeta(node.uniqueID, "".concat(attr), meta), node);
       } else if (txt) {
-        uninstrumentedStore.save(node.uniqueID, "attr:".concat(attr), node);
+        if (nodeI18nMeta && nodeI18nMeta[attr]) {
+          storeIfQualifiedKey(node.uniqueID, null, attr, nodeI18nMeta, node, undefined, txt);
+        } else {
+          uninstrumentedStore.save(node.uniqueID, attr, node, txt);
+        }
       }
     });
   }
@@ -2653,6 +2815,7 @@
           characterData: true,
           subtree: true
         };
+        handle([ele]);
         observer.observe(ele, observerConfig);
       },
       skipNext: function skipNext() {
@@ -2708,6 +2871,11 @@
     function closeDragElement() {
       startMouseTracking();
       if (overlay) overlay.style.display = 'none';
+      var ele = document.getElementById('i18next-editor-popup');
+      localStorage.setItem('locize_popup_pos', JSON.stringify({
+        top: parseInt(document.defaultView.getComputedStyle(ele).top, 10),
+        left: parseInt(document.defaultView.getComputedStyle(ele).left, 10)
+      }));
       document.onmouseup = null;
       document.onmousemove = null;
     }
@@ -2761,6 +2929,11 @@
     function stopDrag() {
       startMouseTracking();
       if (overlay) overlay.style.display = 'none';
+      var ele = document.getElementById('i18next-editor-popup');
+      localStorage.setItem('locize_popup_size', JSON.stringify({
+        width: parseInt(document.defaultView.getComputedStyle(ele).width, 10),
+        height: parseInt(document.defaultView.getComputedStyle(ele).height, 10)
+      }));
       document.documentElement.removeEventListener('mousemove', doDrag, false);
       document.documentElement.removeEventListener('mouseup', stopDrag, false);
     }
@@ -2768,9 +2941,130 @@
 
   function ownKeys$2(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
   function _objectSpread$2(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$2(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$2(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+  function getImplementation$1(i18n) {
+    var impl = {
+      getResource: function getResource(lng, ns, key) {
+        return i18n.getResource && i18n.getResource(lng, ns, key);
+      },
+      setResource: function setResource(lng, ns, key, value) {
+        return i18n.addResource(lng, ns, key, value, {
+          silent: true
+        });
+      },
+      getResourceBundle: function getResourceBundle(lng, ns, cb) {
+        i18n.loadNamespaces(ns, function () {
+          cb(i18n.getResourceBundle(lng, ns));
+        });
+      },
+      getDefaultNS: function getDefaultNS() {
+        return i18n.options.defaultNS;
+      },
+      getLng: function getLng() {
+        return i18n.resolvedLanguage || i18n.languages && i18n.languages[0] || i18n.options.lng;
+      },
+      getSourceLng: function getSourceLng() {
+        var fallback = i18n.options.fallbackLng;
+        if (typeof fallback === 'string') return fallback;
+        if (Array.isArray(fallback)) return fallback[fallback.length - 1];
+        if (fallback && fallback["default"]) {
+          if (typeof fallback["default"] === 'string') return fallback;
+          if (Array.isArray(fallback["default"])) return fallback["default"][fallback["default"].length - 1];
+        }
+        if (typeof fallback === 'function') {
+          var res = fallback(i18n.resolvedLanguage);
+          if (typeof res === 'string') return res;
+          if (Array.isArray(res)) return res[res.length - 1];
+        }
+        return 'dev';
+      },
+      getLocizeDetails: function getLocizeDetails() {
+        var backendName;
+        if (i18n.services.backendConnector.backend && i18n.services.backendConnector.backend.options && i18n.services.backendConnector.backend.options.loadPath && i18n.services.backendConnector.backend.options.loadPath.indexOf('.locize.') > 0) {
+          backendName = 'I18nextLocizeBackend';
+        } else {
+          backendName = i18n.services.backendConnector.backend ? i18n.services.backendConnector.backend.constructor.name : 'options.resources';
+        }
+        var opts = {
+          backendName: backendName,
+          sourceLng: impl.getSourceLng(),
+          i18nFormat: i18n.options.compatibilityJSON === 'v3' ? 'i18next_v3' : 'i18next_v4',
+          i18nFramework: 'i18next',
+          isLocizify: i18n.options.isLocizify,
+          defaultNS: i18n.options.defaultNS,
+          targetLngs: _toConsumableArray(new Set([].concat(i18n.options.preload, i18n.options.supportedLngs, [impl.getLng()]))).filter(function (l) {
+            return l !== 'cimode' && l !== false && l !== 'false' && l !== undefined && l !== impl.getSourceLng();
+          }),
+          ns: _toConsumableArray(new Set([].concat(i18n.options.ns, i18n.options.fallbackNS, i18n.options.defaultNS))).filter(function (n) {
+            return n !== false && n !== 'false';
+          })
+        };
+        if (!i18n.options.backend && !i18n.options.editor) return opts;
+        var pickFrom = i18n.options.editor || i18n.options.backend;
+        return _objectSpread$2(_objectSpread$2({}, opts), {}, {
+          projectId: pickFrom.projectId,
+          version: pickFrom.version
+        });
+      },
+      bindLanguageChange: function bindLanguageChange(cb) {
+        i18n.on('languageChanged', cb);
+      },
+      bindMissingKeyHandler: function bindMissingKeyHandler(cb) {
+        i18n.options.missingKeyHandler = function (lng, ns, k, val, isUpdate, opts) {
+          if (!isUpdate) cb(lng, ns, k, val);
+        };
+      },
+      triggerRerender: function triggerRerender() {
+        i18n.emit('editorSaved');
+      }
+    };
+    return impl;
+  }
+
+  function getImplementation() {
+    var impl = {
+      getResource: function getResource(lng, ns, key) {
+        return {};
+      },
+      setResource: function setResource(lng, ns, key, value) {
+        return;
+      },
+      getResourceBundle: function getResourceBundle(lng, ns, cb) {
+        cb({});
+      },
+      getDefaultNS: function getDefaultNS() {
+        return;
+      },
+      getLng: function getLng() {
+        return;
+      },
+      getSourceLng: function getSourceLng() {
+        return;
+      },
+      getLocizeDetails: function getLocizeDetails() {
+        return {};
+      },
+      bindLanguageChange: function bindLanguageChange(cb) {},
+      bindMissingKeyHandler: function bindMissingKeyHandler(cb) {},
+      triggerRerender: function triggerRerender() {}
+    };
+    return impl;
+  }
+
+  function ownKeys$1(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+  function _objectSpread$1(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$1(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$1(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+  var dummyImplementation = getImplementation();
+  var isInIframe = typeof window !== 'undefined';
+  try {
+    isInIframe = self !== top;
+  } catch (e) {}
   function start() {
-    var implementation = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var implementation = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : dummyImplementation;
+    var opt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
+      show: false,
+      qsProp: 'incontext'
+    };
     if (typeof document === 'undefined') return;
+    var showInContext = opt.show || getQsParameterByName(opt.qsProp) === 'true';
     var scriptEle = document.getElementById('locize');
     var config = {};
     ['projectId', 'version'].forEach(function (attr) {
@@ -2780,13 +3074,15 @@
       if (value === 'false') value = false;
       if (value !== undefined && value !== null) config[attr] = value;
     });
-    config = _objectSpread$2(_objectSpread$2({}, implementation.getLocizeDetails()), config);
+    config = _objectSpread$1(_objectSpread$1(_objectSpread$1({}, implementation.getLocizeDetails()), config), opt);
+    api.config = config;
     api.init(implementation);
     setImplementation(implementation);
     implementation === null || implementation === void 0 || implementation.bindLanguageChange(function (lng) {
       api.sendCurrentTargetLanguage(implementation.getLng());
     });
     function continueToStart() {
+      if (!isInIframe && !showInContext) return;
       var observer = createObserver(document.body, function (eles) {
         eles.forEach(function (ele) {
           parseTree(ele);
@@ -2795,12 +3091,30 @@
       });
       observer.start();
       startMouseTracking(observer);
-      if (!document.getElementById(popupId)) {
+      if (!isInIframe && !document.getElementById(popupId)) {
         document.body.append(Popup(getIframeUrl(), function () {
           api.requestInitialize(config);
         }));
         initDragElement();
         initResizeElement();
+      }
+      if (typeof window !== 'undefined') {
+        var oldHref = window.document.location.href;
+        api.sendHrefchanged(oldHref);
+        var bodyList = window.document.querySelector('body');
+        var _observer = new window.MutationObserver(function (mutations) {
+          mutations.forEach(function (mutation) {
+            if (oldHref !== window.document.location.href) {
+              oldHref = window.document.location.href;
+              api.sendHrefchanged(oldHref);
+            }
+          });
+        });
+        var _config = {
+          childList: true,
+          subtree: true
+        };
+        _observer.observe(bodyList, _config);
       }
     }
     if (document.body) return continueToStart();
@@ -2808,6 +3122,34 @@
       return continueToStart();
     });
   }
+
+  function configurePostProcessor(i18next, options) {
+    i18next.use(SubliminalPostProcessor);
+    if (typeof options.postProcess === 'string') {
+      options.postProcess = [options.postProcess, 'subliminal'];
+    } else if (Array.isArray(options.postProcess)) {
+      options.postProcess.push('subliminal');
+    } else {
+      options.postProcess = 'subliminal';
+    }
+    options.postProcessPassResolved = true;
+  }
+  var i18next;
+  var locizeEditorPlugin = function locizeEditorPlugin() {
+    var opt = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    opt.qsProp = opt.qsProp || 'incontext';
+    return {
+      type: '3rdParty',
+      init: function init(i18n) {
+        var options = i18n.options;
+        i18next = i18n;
+        var impl = getImplementation$1(i18n);
+        configurePostProcessor(i18next, options);
+        start(impl, opt);
+      }
+    };
+  };
+  var locizePlugin = locizeEditorPlugin();
 
   function createClickHandler(cb) {
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -2856,8 +3198,8 @@
     return handler;
   }
 
-  function ownKeys$1(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-  function _objectSpread$1(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$1(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$1(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+  function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+  function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
   function startLegacy() {
     var implementation = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     if (typeof document === 'undefined') return;
@@ -2870,7 +3212,7 @@
       if (value === 'false') value = false;
       if (value !== undefined && value !== null) config[attr] = value;
     });
-    config = _objectSpread$1(_objectSpread$1({}, implementation.getLocizeDetails()), config);
+    config = _objectSpread(_objectSpread({}, implementation.getLocizeDetails()), config);
     api.init(implementation, createClickHandler(function (payload) {
       sendMessage('clickedElement', {
         payload: payload
@@ -2913,114 +3255,6 @@
     });
   }
 
-  function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-  function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-  var isInIframe = typeof window !== 'undefined';
-  try {
-    isInIframe = self !== top;
-  } catch (e) {}
-  function configurePostProcessor(i18next, options) {
-    i18next.use(SubliminalPostProcessor);
-    if (typeof options.postProcess === 'string') {
-      options.postProcess = [options.postProcess, 'subliminal'];
-    } else if (Array.isArray(options.postProcess)) {
-      options.postProcess.push('subliminal');
-    } else {
-      options.postProcess = 'subliminal';
-    }
-    options.postProcessPassResolved = true;
-  }
-  function getImplementation(i18n) {
-    var impl = {
-      getResource: function getResource(lng, ns, key) {
-        return i18n.getResource(lng, ns, key);
-      },
-      setResource: function setResource(lng, ns, key, value) {
-        return i18n.addResource(lng, ns, key, value, {
-          silent: true
-        });
-      },
-      getResourceBundle: function getResourceBundle(lng, ns, cb) {
-        i18n.loadNamespaces(ns, function () {
-          cb(i18n.getResourceBundle(lng, ns));
-        });
-      },
-      getLng: function getLng() {
-        return i18n.resolvedLanguage || i18n.languages[0];
-      },
-      getSourceLng: function getSourceLng() {
-        var fallback = i18n.options.fallbackLng;
-        if (typeof fallback === 'string') return fallback;
-        if (Array.isArray(fallback)) return fallback[fallback.length - 1];
-        if (fallback && fallback["default"]) {
-          if (typeof fallback["default"] === 'string') return fallback;
-          if (Array.isArray(fallback["default"])) return fallback["default"][fallback["default"].length - 1];
-        }
-        if (typeof fallback === 'function') {
-          var res = fallback(i18n.resolvedLanguage);
-          if (typeof res === 'string') return res;
-          if (Array.isArray(res)) return res[res.length - 1];
-        }
-        return 'dev';
-      },
-      getLocizeDetails: function getLocizeDetails() {
-        var backendName;
-        if (i18n.services.backendConnector.backend && i18n.services.backendConnector.backend.options && i18n.services.backendConnector.backend.options.loadPath && i18n.services.backendConnector.backend.options.loadPath.indexOf('.locize.') > 0) {
-          backendName = 'I18NextLocizeBackend';
-        } else {
-          backendName = i18n.services.backendConnector.backend ? i18n.services.backendConnector.backend.constructor.name : 'options.resources';
-        }
-        var opts = {
-          backendName: backendName,
-          sourceLng: impl.getSourceLng(),
-          i18nFormat: i18n.options.compatibilityJSON === 'v3' ? 'i18next_v3' : 'i18next_v4',
-          i18nFramework: 'i18next',
-          isLocizify: i18n.options.isLocizify,
-          defaultNS: i18n.options.defaultNS
-        };
-        if (!i18n.options.backend && !i18n.options.editor) return opts;
-        var pickFrom = i18n.options.backend || i18n.options.editor;
-        return _objectSpread(_objectSpread({}, opts), {}, {
-          projectId: pickFrom.projectId,
-          version: pickFrom.version
-        });
-      },
-      bindLanguageChange: function bindLanguageChange(cb) {
-        i18n.on('languageChanged', cb);
-      },
-      bindMissingKeyHandler: function bindMissingKeyHandler(cb) {
-        i18n.options.missingKeyHandler = function (lng, ns, k, val, isUpdate, opts) {
-          if (!isUpdate) cb(lng, ns, k, val);
-        };
-      },
-      triggerRerender: function triggerRerender() {
-        i18n.emit('editorSaved');
-      }
-    };
-    return impl;
-  }
-  var i18next;
-  var locizeEditorPlugin = function locizeEditorPlugin() {
-    var opt = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    opt.qsProp = opt.qsProp || 'incontext';
-    return {
-      type: '3rdParty',
-      init: function init(i18n) {
-        var options = i18n.options;
-        i18next = i18n;
-        var showInContext = opt.show || getQsParameterByName(opt.qsProp) === 'true';
-        if (!isInIframe && showInContext) configurePostProcessor(i18next, options);
-        var impl = getImplementation(i18n);
-        if (!isInIframe && showInContext) {
-          start(impl);
-        } else if (isInIframe) {
-          startLegacy(impl);
-        }
-      }
-    };
-  };
-  var locizePlugin = locizeEditorPlugin();
-
   function startStandalone() {
     startLegacy({
       getLocizeDetails: function getLocizeDetails() {
@@ -3048,8 +3282,6 @@
     addLocizeSavedHandler: addLocizeSavedHandler,
     locizePlugin: locizePlugin,
     locizeEditorPlugin: locizeEditorPlugin,
-    turnOn: turnOn,
-    turnOff: turnOff,
     setEditorLng: setEditorLng,
     startStandalone: startStandalone
   };
@@ -3062,8 +3294,6 @@
   exports.locizePlugin = locizePlugin;
   exports.setEditorLng = setEditorLng;
   exports.startStandalone = startStandalone;
-  exports.turnOff = turnOff;
-  exports.turnOn = turnOn;
   exports.unwrap = unwrap;
   exports.wrap = wrap;
 
