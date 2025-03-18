@@ -1,3 +1,7 @@
+### 4.0.0
+
+- support also non-i18next environments
+
 ### 3.3.0
 
 - support i18next-subliminal in clickHandler used in locize iframe
