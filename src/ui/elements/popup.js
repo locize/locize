@@ -164,7 +164,7 @@ export function Popup (url, cb) {
   left: calc(100vw - var(--i18next-editor-popup-width) - 10px);
 
   overflow: visible;
-   z-index: 99999;
+  z-index: 99999;
   `
   popup.setAttribute('data-i18next-editor-element', 'true')
 
