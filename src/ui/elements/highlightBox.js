@@ -3,7 +3,7 @@ export function HighlightBox (ele, borderColor, shadowColor) {
 
   const box = document.createElement('div')
   box.classList.add('i18next-editor-highlight')
-  box.style = `position: absolute; z-index: 99999; top: ${
+  box.style = `position: absolute; z-index: 99999; pointer-events: none; top: ${
     rect.top - 2 + window.scrollY
   }px; left: ${rect.left - 2 + window.scrollX}px; height: ${
     rect.height + 4

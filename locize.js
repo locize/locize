@@ -1053,7 +1053,7 @@
     var rect = ele.getBoundingClientRect();
     var box = document.createElement('div');
     box.classList.add('i18next-editor-highlight');
-    box.style = "position: absolute; z-index: 99999; top: ".concat(rect.top - 2 + window.scrollY, "px; left: ").concat(rect.left - 2 + window.scrollX, "px; height: ").concat(rect.height + 4, "px; width: ").concat(rect.width + 4, "px; border: 1px solid ").concat(borderColor, "; border-radius: 2px; ").concat(shadowColor ? "box-shadow: 0 0 20px 0 ".concat(shadowColor, ";") : '');
+    box.style = "position: absolute; z-index: 99999; pointer-events: none; top: ".concat(rect.top - 2 + window.scrollY, "px; left: ").concat(rect.left - 2 + window.scrollX, "px; height: ").concat(rect.height + 4, "px; width: ").concat(rect.width + 4, "px; border: 1px solid ").concat(borderColor, "; border-radius: 2px; ").concat(shadowColor ? "box-shadow: 0 0 20px 0 ".concat(shadowColor, ";") : '');
     box.setAttribute('data-i18next-editor-element', 'true');
     return box;
   }
