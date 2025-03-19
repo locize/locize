@@ -13,7 +13,7 @@ export function RibbonButton (text, attrTitle, onClick) {
   const btn = document.createElement('button')
 
   btn.style =
-    'font-family: Arial; position: relative; backdrop-filter: blur(3px); cursor: pointer; padding: 2px 10px 2px 20px; font-size: 15px; font-weight: 300; text-transform: uppercase; color: #fff; background-color: rgba(25, 118, 210, 0.8); border: none; border-radius: 12px; z-index: 99999;'
+    'font-family: Arial; position: relative; backdrop-filter: blur(3px); cursor: pointer; padding: 2px 10px 2px 20px; font-size: 15px; font-weight: 300; text-transform: uppercase; color: #fff; background-color: rgba(25, 118, 210, 0.8); border: none; border-radius: 12px; '
   btn.classList.add('i18next-editor-button')
   btn.setAttribute('data-i18next-editor-element', 'true')
   btn.setAttribute('title', attrTitle)
@@ -34,8 +34,9 @@ export function RibbonButton (text, attrTitle, onClick) {
 
 export function RibbonBox (keys = {}) {
   const box = document.createElement('div')
+  box.classList.add('i18next-editor-button-container')
   box.style =
-    'position: absolute; top: 0; left: 0; display: flex; align-items: flex-start; justify-content: center; filter: drop-shadow(0px 0px 20px #aaa );'
+    'position: absolute; top: 0; left: 0; display: flex; align-items: flex-start; justify-content: center; filter: drop-shadow(0px 0px 20px #aaa ); z-index: 99999;'
   box.setAttribute('data-i18next-editor-element', 'true')
 
   const arrow = document.createElement('div')
