@@ -1,7 +1,6 @@
 import {
   unwrap,
-  containsHiddenMeta,
-  containsHiddenStartMarker
+  containsHiddenMeta
 } from 'i18next-subliminal'
 
 /* eslint-disable import/prefer-default-export */
@@ -34,10 +33,8 @@ export function createClickHandler (cb, options = {}) {
     if (containsHiddenMeta(text)) {
       const meta = unwrap(text)
 
-      if (meta && meta.invisibleMeta && meta.invisibleMeta.key)
-        key = meta.invisibleMeta.key
-      if (meta && meta.invisibleMeta && meta.invisibleMeta.ns)
-        ns = meta.invisibleMeta.ns
+      if (meta && meta.invisibleMeta && meta.invisibleMeta.key) { key = meta.invisibleMeta.key }
+      if (meta && meta.invisibleMeta && meta.invisibleMeta.ns) { ns = meta.invisibleMeta.ns }
     }
 
     const rectEl = el.getBoundingClientRect ? el : el.parentElement

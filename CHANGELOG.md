@@ -1,3 +1,7 @@
+### 4.0.12
+
+- locizePlugin: start i18next-subliminal only if popup or in iframe
+
 ### 4.0.11
 
 - fix highlighting

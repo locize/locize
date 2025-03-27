@@ -72,8 +72,7 @@ export function getClickedElement (e) {
     el = e.originalEvent.explicitOriginalTarget
   } else {
     const parent = e.srcElement
-    if (parent.getAttribute && parent.getAttribute('ignorelocizeeditor') === '')
-      return null
+    if (parent.getAttribute && parent.getAttribute('ignorelocizeeditor') === '') { return null }
 
     const left = e.pageX
     const top = e.pageY
@@ -93,13 +92,11 @@ export function getClickedElement (e) {
       if (n.nodeType === 1 && nOffset.bottom < top) topStartsAt = i + 1
 
       // if node is below top click set end index to this node
-      if (!topBreaksAt && nOffset.top + (n.clientHeight || 0) > top)
-        topBreaksAt = i
+      if (!topBreaksAt && nOffset.top + (n.clientHeight || 0) > top) { topBreaksAt = i }
     }
 
     // check we are inside children lenght
-    if (topStartsAt + 1 > parent.childNodes.length)
-      topStartsAt = parent.childNodes.length - 1
+    if (topStartsAt + 1 > parent.childNodes.length) { topStartsAt = parent.childNodes.length - 1 }
     if (!topBreaksAt) topBreaksAt = parent.childNodes.length
     // console.warn('bound', topStartsAt, topBreaksAt)
 
@@ -142,14 +139,14 @@ export function getElementI18nKey (el) {
 function parseAttrFromKey (key) {
   let attr = 'text'
 
-  if (key.indexOf('[') == 0) {
-    var parts = key.split(']')
+  if (key.indexOf('[') === 0) {
+    const parts = key.split(']')
     key = parts[1]
     attr = parts[0].substr(1, parts[0].length - 1)
   }
 
   const newKey =
-    key.indexOf(';') == key.length - 1 ? key.substr(0, key.length - 2) : key
+    key.indexOf(';') === key.length - 1 ? key.substr(0, key.length - 2) : key
 
   return [newKey, attr]
 }
@@ -161,8 +158,9 @@ export function getI18nMetaFromNode (el, hasNamespacePrependToKey = true) {
   const allKeys = {}
 
   if (key && key.indexOf(';') >= 0) {
-    let keys = key.split(';')
-    for (let ix = 0, l_ix = keys.length; ix < l_ix; ix++) {
+    const keys = key.split(';')
+    for (let ix = 0, lix = keys.length; ix < lix; ix++) {
+      // eslint-disable-next-line eqeqeq
       if (keys[ix] != '') {
         const [usedKey, attr] = parseAttrFromKey(keys[ix])
 
@@ -178,7 +176,7 @@ export function getI18nMetaFromNode (el, hasNamespacePrependToKey = true) {
   if (Object.keys(allKeys).length < 1) return null
 
   const res = Object.keys(allKeys).reduce((mem, attr) => {
-    let key = allKeys[attr]
+    const key = allKeys[attr]
     let usedNS = ns
     let usedKey = key
 
@@ -235,3 +233,11 @@ export function getQsParameterByName (name, url) {
   if (!results[2]) return ''
   return decodeURIComponent(results[2].replace(/\+/g, ' '))
 }
+
+let _isInIframe = typeof window !== 'undefined'
+try {
+  // eslint-disable-next-line no-undef, no-restricted-globals
+  _isInIframe = self !== top
+  // eslint-disable-next-line no-empty
+} catch (e) {}
+export const isInIframe = _isInIframe

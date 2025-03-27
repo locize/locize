@@ -9,9 +9,9 @@ function handler (payload) {
 
     if (!popup) return
 
-    let storedPos = localStorage.getItem('locize_popup_pos')
+    let storedPos = window.localStorage.getItem('locize_popup_pos')
     if (storedPos) storedPos = JSON.parse(storedPos)
-    let storedSize = localStorage.getItem('locize_popup_size')
+    let storedSize = window.localStorage.getItem('locize_popup_size')
     if (storedSize) storedSize = JSON.parse(storedSize)
 
     if (storedSize && storedSize.height && storedSize.width) {
@@ -38,15 +38,13 @@ function handler (payload) {
       storedPos.top &&
       storedPos.top <
         window.innerHeight - containerStyle.height.replace('px', '')
-    )
-      popup.style.setProperty('top', storedPos.top + 'px')
+    ) { popup.style.setProperty('top', storedPos.top + 'px') }
     if (
       storedPos &&
       storedPos.left &&
       storedPos.left <
         window.innerWidth - containerStyle.width.replace('px', '')
-    )
-      popup.style.setProperty('left', storedPos.left + 'px')
+    ) { popup.style.setProperty('left', storedPos.left + 'px') }
   }
 }
 

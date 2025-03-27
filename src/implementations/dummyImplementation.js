@@ -4,19 +4,20 @@ export function getImplementation () {
       return {}
     },
     setResource: (lng, ns, key, value) => {
-      return
+
     },
     getResourceBundle: (lng, ns, cb) => {
+      // eslint-disable-next-line n/no-callback-literal
       cb({})
     },
     getDefaultNS: () => {
-      return
+
     },
     getLng: () => {
-      return
+
     },
     getSourceLng: () => {
-      return
+
     },
     getLocizeDetails: () => {
       return {}

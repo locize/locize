@@ -58,8 +58,7 @@ export function setValueOnNode (meta, value) {
 
       // remove old stuff (startMarker to endHiddenMeta)
       children.forEach(replaceable => {
-        if (item.node.contains(replaceable.child))
-          item.node.removeChild(replaceable.child)
+        if (item.node.contains(replaceable.child)) { item.node.removeChild(replaceable.child) }
       })
     }
   }

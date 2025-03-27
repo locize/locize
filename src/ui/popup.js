@@ -25,8 +25,7 @@ export function initDragElement () {
   }
 
   function dragMouseDown (e) {
-    if (!overlay)
-      overlay = document.getElementById('i18next-editor-popup-overlay')
+    if (!overlay) { overlay = document.getElementById('i18next-editor-popup-overlay') }
     if (overlay) overlay.style.display = 'block'
     stopMouseTracking()
 
@@ -63,7 +62,7 @@ export function initDragElement () {
     if (overlay) overlay.style.display = 'none'
 
     const ele = document.getElementById('i18next-editor-popup')
-    localStorage.setItem(
+    window.localStorage.setItem(
       'locize_popup_pos',
       JSON.stringify({
         top: parseInt(document.defaultView.getComputedStyle(ele).top, 10),
@@ -119,8 +118,7 @@ export function initResizeElement () {
 
   function initDrag (e) {
     stopMouseTracking()
-    if (!overlay)
-      overlay = document.getElementById('i18next-editor-popup-overlay')
+    if (!overlay) { overlay = document.getElementById('i18next-editor-popup-overlay') }
     if (overlay) overlay.style.display = 'block'
 
     element = this.parentPopup
@@ -149,7 +147,7 @@ export function initResizeElement () {
     if (overlay) overlay.style.display = 'none'
 
     const ele = document.getElementById('i18next-editor-popup')
-    localStorage.setItem(
+    window.localStorage.setItem(
       'locize_popup_size',
       JSON.stringify({
         width: parseInt(document.defaultView.getComputedStyle(ele).width, 10),

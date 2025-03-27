@@ -5,17 +5,10 @@ import { initDragElement, initResizeElement } from './ui/popup.js'
 import { Popup, popupId } from './ui/elements/popup.js'
 import { getIframeUrl } from './vars.js'
 import { api } from './api/index.js'
-import { getQsParameterByName } from './utils.js'
+import { isInIframe, getQsParameterByName } from './utils.js'
 import * as implementations from './implementations/index.js'
 
 const dummyImplementation = implementations.dummy.getImplementation()
-
-let isInIframe = typeof window !== 'undefined'
-try {
-  // eslint-disable-next-line no-undef, no-restricted-globals
-  isInIframe = self !== top
-  // eslint-disable-next-line no-empty
-} catch (e) {}
 
 // eslint-disable-next-line no-unused-vars
 let data = []
@@ -108,5 +101,5 @@ export function start (
 
   if (document.body) return continueToStart()
 
-  window.addEventListener('load', () => continueToStart())
+  if (typeof window !== 'undefined') window.addEventListener('load', () => continueToStart())
 }

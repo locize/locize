@@ -28,8 +28,7 @@ function handler (payload) {
 
     // remove uninstrumented
     if (uni && uni.keys) delete uni.keys[`${item.textType}`]
-    if (uni && uni.keys && !Object.keys(uni.keys).length)
-      uninstrumentedStore.remove(item.eleUniqueID, uni.node)
+    if (uni && uni.keys && !Object.keys(uni.keys).length) { uninstrumentedStore.remove(item.eleUniqueID, uni.node) }
   })
 
   api.sendCurrentParsedContent()

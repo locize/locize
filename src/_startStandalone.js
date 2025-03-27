@@ -18,5 +18,4 @@ export function startStandalone () {
   })
 }
 
-if (typeof window !== 'undefined')
-  window.locizeStartStandalone = startStandalone
+if (typeof window !== 'undefined') { window.locizeStartStandalone = startStandalone }

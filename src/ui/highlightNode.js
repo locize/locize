@@ -4,33 +4,33 @@ import { HighlightBox } from './elements/highlightBox.js'
 import { computePosition, flip, shift, offset, arrow } from '@floating-ui/dom'
 import { getOptimizedBoundingRectEle } from './utils.js'
 
-const eleToOutline = [
-  'DIV',
-  'P',
-  'H1',
-  'H2',
-  'H3',
-  'H4',
-  'H5',
-  'H6',
-  'OL',
-  'UL',
-  'ADDRESS',
-  'BLOCKQUOTE',
-  'DL',
-  'PRE'
-]
-const overriddenStyles = [
-  'outline',
-  'border-radius',
-  'outline-offset',
-  'filter'
-]
-const originalStyles = {}
+// const eleToOutline = [
+//   'DIV',
+//   'P',
+//   'H1',
+//   'H2',
+//   'H3',
+//   'H4',
+//   'H5',
+//   'H6',
+//   'OL',
+//   'UL',
+//   'ADDRESS',
+//   'BLOCKQUOTE',
+//   'DL',
+//   'PRE'
+// ]
+// const overriddenStyles = [
+//   'outline',
+//   'border-radius',
+//   'outline-offset',
+//   'filter'
+// ]
+// const originalStyles = {}
 const selected = {}
 
 export function highlight (item, node, keys) {
-  const { id } = item
+  // const { id } = item
 
   // uncomment below if we do not won't the ribbon box to show on selected
   // if (selected[id]) return
@@ -113,8 +113,8 @@ export function highlight (item, node, keys) {
             side === 'bottom'
               ? 'rotate(90deg)'
               : side === 'left'
-              ? 'rotate(180deg)'
-              : ''
+                ? 'rotate(180deg)'
+                : ''
         })
       }
     })

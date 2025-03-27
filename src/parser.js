@@ -67,18 +67,18 @@ function extractHiddenMeta (id, type, meta, children) {
       [`${invisibleMeta.lng}`]:
         invisibleMeta.source === 'translation' && i18n
           ? i18n?.getResource(
-              invisibleMeta.lng,
-              invisibleMeta.ns,
-              invisibleMeta.key
-            )
+            invisibleMeta.lng,
+            invisibleMeta.ns,
+            invisibleMeta.key
+          )
           : null,
       [`${currentSourceLng}`]:
         invisibleMeta.source === 'translation' && i18n
           ? i18n?.getResource(
-              currentSourceLng,
-              invisibleMeta.ns,
-              invisibleMeta.key
-            )
+            currentSourceLng,
+            invisibleMeta.ns,
+            invisibleMeta.key
+          )
           : null
     }
   }
@@ -244,13 +244,13 @@ function handleNode (node) {
         // merge and add data-i18n=[html]key
         if (
           nodeI18nMeta &&
-          nodeI18nMeta['html'] &&
+          nodeI18nMeta.html &&
           i < node.childNodes.length - 1
         ) {
           merge.push({ childIndex: i, child, text: txt })
         } else if (
           nodeI18nMeta &&
-          nodeI18nMeta['html'] &&
+          nodeI18nMeta.html &&
           i === node.childNodes.length - 1
         ) {
           merge.push({ childIndex: i, child, text: txt })
@@ -277,7 +277,7 @@ function handleNode (node) {
           // )
 
           // add data-i18n=key (inner text)
-          if (nodeI18nMeta && nodeI18nMeta['text']) {
+          if (nodeI18nMeta && nodeI18nMeta.text) {
             storeIfQualifiedKey(
               node.uniqueID,
               null,

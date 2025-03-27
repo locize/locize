@@ -15,6 +15,6 @@ export const getIframeUrl = () => {
   return env === 'development'
     ? 'http://localhost:3003/'
     : env === 'staging'
-    ? 'https://incontext-dev.locize.app'
-    : 'https://incontext.locize.app'
+      ? 'https://incontext-dev.locize.app'
+      : 'https://incontext.locize.app'
 }
