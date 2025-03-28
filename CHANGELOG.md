@@ -1,3 +1,7 @@
+### 4.0.13
+
+- update i18next-subliminal
+
 ### 4.0.12
 
 - locizePlugin: start i18next-subliminal only if popup or in iframe
