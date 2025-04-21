@@ -20,6 +20,8 @@ export const locizePlugin: LocizePlugin
 export function locizeEditorPlugin(opt?: {
   qsProp?: string
   show?: boolean
+  projectId?: string
+  version?: string
 }): LocizePlugin
 
 /**
@@ -35,4 +37,9 @@ export function addLocizeSavedHandler(fn: (data: any) => void): void
 /**
  * If used without i18next.
  */
-export function startStandalone(): void
+export function startStandalone(opt?: {
+  qsProp?: string
+  show?: boolean
+  projectId?: string
+  version?: string
+}): void

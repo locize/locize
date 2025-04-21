@@ -1,3 +1,7 @@
+### 4.0.14
+
+- fix typescript types for startStandalone
+
 ### 4.0.13
 
 - update i18next-subliminal
