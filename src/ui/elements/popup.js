@@ -79,7 +79,7 @@ if (sheet) {
   )
 }
 
-function Ribbon (popupEle, onMaximize) {
+function Ribbon(popupEle, onMaximize) {
   const ribbon = document.createElement('div')
   ribbon.setAttribute('data-i18next-editor-element', 'true')
   ribbon.style = `
@@ -112,7 +112,7 @@ function Ribbon (popupEle, onMaximize) {
   return ribbon
 }
 
-function Minimize (popupEle, onMinimize) {
+function Minimize(popupEle, onMinimize) {
   const image = document.createElement('img')
   image.setAttribute('data-i18next-editor-element', 'true')
   image.src = minimizeIconUrl
@@ -139,7 +139,7 @@ function Minimize (popupEle, onMinimize) {
 
 export const popupId = 'i18next-editor-popup'
 
-export function Popup (url, cb) {
+export function Popup(url, cb) {
   const popup = document.createElement('div')
   popup.setAttribute('id', popupId)
   popup.classList.add('i18next-editor-popup')
@@ -164,7 +164,7 @@ export function Popup (url, cb) {
   left: calc(100vw - var(--i18next-editor-popup-width) - 10px);
 
   overflow: visible;
-  z-index: 99999;
+  z-index: 100000;
   `
   popup.setAttribute('data-i18next-editor-element', 'true')
 

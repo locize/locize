@@ -1,6 +1,6 @@
 import { startMouseTracking, stopMouseTracking } from './mouseDistance.js'
 
-export function initDragElement () {
+export function initDragElement() {
   let pos1 = 0
   let pos2 = 0
   let pos3 = 0
@@ -8,7 +8,7 @@ export function initDragElement () {
   const popups = document.getElementsByClassName('i18next-editor-popup')
   let elmnt = null
   let overlay = null
-  let currentZIndex = 100 // TODO reset z index when a threshold is passed
+  let currentZIndex = 100000 // TODO reset z index when a threshold is passed
 
   for (let i = 0; i < popups.length; i++) {
     const popup = popups[i]
@@ -24,7 +24,7 @@ export function initDragElement () {
     }
   }
 
-  function dragMouseDown (e) {
+  function dragMouseDown(e) {
     if (!overlay) { overlay = document.getElementById('i18next-editor-popup-overlay') }
     if (overlay) overlay.style.display = 'block'
     stopMouseTracking()
@@ -41,7 +41,7 @@ export function initDragElement () {
     document.onmousemove = elementDrag
   }
 
-  function elementDrag (e) {
+  function elementDrag(e) {
     if (!elmnt) {
       return
     }
@@ -57,7 +57,7 @@ export function initDragElement () {
     elmnt.style.left = elmnt.offsetLeft - pos1 + 'px'
   }
 
-  function closeDragElement () {
+  function closeDragElement() {
     startMouseTracking()
     if (overlay) overlay.style.display = 'none'
 
@@ -75,7 +75,7 @@ export function initDragElement () {
     document.onmousemove = null
   }
 
-  function getHeader (element) {
+  function getHeader(element) {
     const headerItems = element.getElementsByClassName(
       'i18next-editor-popup-header'
     )
@@ -88,7 +88,7 @@ export function initDragElement () {
   }
 }
 
-export function initResizeElement () {
+export function initResizeElement() {
   const popups = document.getElementsByClassName('i18next-editor-popup')
   let element = null
   let overlay = null
@@ -116,7 +116,7 @@ export function initResizeElement () {
     both.parentPopup = p
   }
 
-  function initDrag (e) {
+  function initDrag(e) {
     stopMouseTracking()
     if (!overlay) { overlay = document.getElementById('i18next-editor-popup-overlay') }
     if (overlay) overlay.style.display = 'block'
@@ -137,12 +137,12 @@ export function initResizeElement () {
     document.documentElement.addEventListener('mouseup', stopDrag, false)
   }
 
-  function doDrag (e) {
+  function doDrag(e) {
     element.style.width = startWidth + e.clientX - startX + 'px'
     element.style.height = startHeight + e.clientY - startY + 'px'
   }
 
-  function stopDrag () {
+  function stopDrag() {
     startMouseTracking()
     if (overlay) overlay.style.display = 'none'
 
