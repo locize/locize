@@ -1,207 +1,204 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <script src="https://unpkg.com/i18next/i18next.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/loc-i18next@0.1.5/dist/umd/loc-i18next.min.js"></script>
-    <style>
-      div.filler {
-        margin: 300px 10px;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="main">
-      <h1 id="maintitle" data-i18n="title">Test on text node</h1>
 
-      <div>
-        <p data-i18n="[title]test.title;[html]introduction">
-          Test on another node
-        </p>
-      </div>
-      <h4 id="subtitle" data-i18n="title">Test on text node</h4>
-      <hr />
-      <div class="filler"></div>
-      <div>
-        Some more tests on attributes:
-        <h4>title:</h4>
-        <a
-          href="/docs/ecosystem/#postprocessors"
-          title="Works on title"
-          data-i18n="[title]test.title;common:button.hoverMe"
-        >
-          hover me
-        </a>
-        <h4>placeholder:</h4>
-        <input
-          type="text"
-          placeholder="translated placeholder"
-          data-i18n="[placeholder]test.placeholder"
-        />
-      </div>
-      <div>
-        <h4>image - alt tag:</h4>
-        <img
-          src="https://cdn.prod.website-files.com/67a323e323a50df7f24f0a6f/67b5d94bf07eacb4bcf9848c_locize_white.svg"
-          alt="big a"
-          style="width: 200px; background-color: #ccc"
-          data-i18n="[alt]test.alt"
-        />
-      </div>
-      <p data-i18n="translation:addedAfterInit">
-        This node was added after init locize
-      </p>
+<head>
+  <script src="https://unpkg.com/i18next/i18next.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/loc-i18next@0.1.5/dist/umd/loc-i18next.min.js"></script>
+  <style>
+    div.filler {
+      margin: 300px 10px;
+    }
+  </style>
+</head>
 
-      <hr />
-      <div class="filler"></div>
-      <div>dynamically removed:</div>
-      <div id="removeFromInner">
-        <p data-i18n="removed">Test on removed node</p>
-      </div>
+<body>
+  <div id="main">
+    <h1 id="maintitle" data-i18n="title">Test on text node</h1>
 
-      <div>dynamically added:</div>
-      <div id="appendToInner"></div>
-      <div>
-        <button id="updateBtn" data-locize-editor-ignore="false">
-          initial
-        </button>
-      </div>
-    </div>
-    <div id="non-loc-i18next">
-      <h4>Some instrumented stuff</h4>
-      <p
-        data-i18n="translation:aNonI18nextKey;[title]common:anotherNonI18nextKey"
-        title="some non i18next title"
-      >
-        This is a translation from non i18next
-      </p>
-      <p data-i18n="aNonI18nextKey2" data-i18n-ns="aNonI18nextNS">
-        This is a translation from non i18next 2
-      </p>
-      <h4>Some uninstrumented stuff</h4>
-      <p>Welcome to test the i18next incontext editor</p>
-      <p>Welcome to test the fuzzy lookup incontext editor</p>
-      <p>
-        Something we practically don't have in our locize project and should not
-        be fuzzy found....
+    <div>
+      <p data-i18n="[title]test.title;[html]introduction">
+        Test on another node
       </p>
     </div>
-    <script>
-      process = {
-        env: {
-          locizeIncontext: 'development'
-        }
+    <h4 id="subtitle" data-i18n="title">Test on text node</h4>
+    <hr />
+    <div class="filler"></div>
+    <div>
+      Some more tests on attributes:
+      <h4>title:</h4>
+      <a href="/docs/ecosystem/#postprocessors" title="Works on title"
+        data-i18n="[title]test.title;common:button.hoverMe">
+        hover me
+      </a>
+      <h4>placeholder:</h4>
+      <input type="text" placeholder="translated placeholder" data-i18n="[placeholder]test.placeholder" />
+    </div>
+    <div>
+      <h4>image - alt tag:</h4>
+      <img src="https://cdn.prod.website-files.com/67a323e323a50df7f24f0a6f/67b5d94bf07eacb4bcf9848c_locize_white.svg"
+        alt="big a" style="width: 200px; background-color: #ccc" data-i18n="[alt]test.alt" />
+    </div>
+    <p data-i18n="translation:addedAfterInit">
+      This node was added after init locize
+    </p>
+
+    <hr />
+    <div>test propagation:</div>
+    <div style="padding: 30px; background-color: #6a9ac963;" onClick="console.warn('propagated not good')">
+      <button data-i18n="common:button.clickMe">
+        initial
+      </button>
+    </div>
+
+    <hr />
+    <div class="filler"></div>
+    <div>dynamically removed:</div>
+    <div id="removeFromInner">
+      <p data-i18n="removed">Test on removed node</p>
+    </div>
+
+    <div>dynamically added:</div>
+    <div id="appendToInner"></div>
+    <div>
+      <button id="updateBtn" data-locize-editor-ignore="false">
+        initial
+      </button>
+    </div>
+  </div>
+  <div id="non-loc-i18next">
+    <h4>Some instrumented stuff</h4>
+    <p data-i18n="translation:aNonI18nextKey;[title]common:anotherNonI18nextKey" title="some non i18next title">
+      This is a translation from non i18next
+    </p>
+    <p data-i18n="aNonI18nextKey2" data-i18n-ns="aNonI18nextNS">
+      This is a translation from non i18next 2
+    </p>
+    <h4>Some uninstrumented stuff</h4>
+    <p>Welcome to test the i18next incontext editor</p>
+    <p>Welcome to test the fuzzy lookup incontext editor</p>
+    <p>
+      Something we practically don't have in our locize project and should not
+      be fuzzy found....
+    </p>
+  </div>
+  <script>
+    process = {
+      env: {
+        locizeIncontext: 'development'
       }
-    </script>
-    <script>
-      // just simulating some interactivity adding, removing content
-      setTimeout(function () {
-        var ele = document.getElementById('main')
+    }
+  </script>
+  <script>
+    // just simulating some interactivity adding, removing content
+    setTimeout(function () {
+      var ele = document.getElementById('main')
 
-        var btn = document.createElement('BUTTON')
-        var t = document.createTextNode(i18next.t('common:button.clickMe'))
-        btn.appendChild(t)
+      var btn = document.createElement('BUTTON')
+      var t = document.createTextNode(i18next.t('common:button.clickMe'))
+      btn.appendChild(t)
 
-        console.log('appendingFromOutside')
-        ele.appendChild(btn)
-      }, 5000)
+      console.log('appendingFromOutside')
+      ele.appendChild(btn)
+    }, 5000)
 
-      setTimeout(function () {
-        var ele = document.getElementById('appendToInner')
+    setTimeout(function () {
+      var ele = document.getElementById('appendToInner')
 
-        var btn = document.createElement('BUTTON')
-        var t = document.createTextNode(i18next.t('common:button.clickMeInner'))
-        btn.appendChild(t)
+      var btn = document.createElement('BUTTON')
+      var t = document.createTextNode(i18next.t('common:button.clickMeInner'))
+      btn.appendChild(t)
 
-        console.log('appendingFromOutsideToInner')
-        ele.appendChild(btn)
-      }, 5000)
+      console.log('appendingFromOutsideToInner')
+      ele.appendChild(btn)
+    }, 5000)
 
-      setTimeout(function () {
-        var ele = document.getElementById('removeFromInner')
+    setTimeout(function () {
+      var ele = document.getElementById('removeFromInner')
 
-        console.log('removeFromInner')
-        ele.innerHTML = ''
-      }, 8000)
+      console.log('removeFromInner')
+      ele.innerHTML = ''
+    }, 15000)
 
-      let i = 1
-      setInterval(function () {
-        var ele = document.getElementById('updateBtn')
-        ele.innerText = i
-        i = i + 1
-      }, 500)
-    </script>
+    let i = 1
+    setInterval(function () {
+      var ele = document.getElementById('updateBtn')
+      ele.innerText = i
+      i = i + 1
+    }, 5000)
+  </script>
 
-    <!-- <script
+  <!-- <script
 id="locize"
 projectid="5e9ed7da-51ab-4b15-888b-27903f06be09"
 version="latest"
 type="module"
 > -->
-    <script id="locize" type="module">
-      import { locizeEditorPlugin } from '/../../src/locizePlugin.js'
-      import { startStandalone } from '/../../src/startStandalone.js'
-      // import { locizePlugin } from '/../../src/locizePlugin.js'
+  <script id="locize" type="module">
+    import { locizeEditorPlugin } from '/../../src/locizePlugin.js'
+    import { startStandalone } from '/../../src/startStandalone.js'
+    // import { locizePlugin } from '/../../src/locizePlugin.js'
 
-      i18next
-        .use(locizeEditorPlugin({ show: true }))
-        // .use(locizePlugin)
-        .init(
-          {
-            lng: 'de',
-            fallbackLng: 'en',
-            debug: true,
-            ns: ['translation', 'common'],
-            defaultNS: 'translation',
-            fallbackNS: ['fbNS1', 'fbNS2'],
-            preload: ['de', 'it'],
-            supportedLngs: ['en', 'de', 'it', 'fr', 'pt', 'en-US'],
-            saveMissing: true,
-            editor: {
-              projectId: '800bae87-7232-40dc-8c1c-0144e6361736',
-              version: 'latest'
-            },
-            resources: {
-              de: {
-                translation: {
-                  title: 'Willkommen beim Test für den i18next incontext editor'
-                }
-              },
-              en: {
-                translation: {
-                  title: 'Welcome to test the i18next incontext editor',
-                  introduction:
-                    'This page will create some <strong>basic content</strong> to test parsing DOM to find text nodes and pass them to the <i>editor.</i>',
-                  removed: 'will get removed',
-                  test: {
-                    title: 'Title attribute',
-                    placeholder: 'Placeholder attribute',
-                    alt: 'Alt attribute'
-                  }
-                },
-                common: {
-                  button: {
-                    hoverMe: 'Hover this link',
-                    clickMe: 'Click this button',
-                    clickMeInner: 'Click another button'
-                  }
-                }
+    i18next
+      .use(locizeEditorPlugin({ show: true }))
+      // .use(locizePlugin)
+      .init(
+        {
+          lng: 'de',
+          fallbackLng: 'en',
+          debug: true,
+          ns: ['translation', 'common'],
+          defaultNS: 'translation',
+          fallbackNS: ['fbNS1', 'fbNS2'],
+          preload: ['de', 'it'],
+          supportedLngs: ['en', 'de', 'it', 'fr', 'pt', 'en-US'],
+          saveMissing: true,
+          editor: {
+            projectId: '800bae87-7232-40dc-8c1c-0144e6361736',
+            version: 'latest'
+          },
+          resources: {
+            de: {
+              translation: {
+                title: 'Willkommen beim Test für den i18next incontext editor'
               }
             },
-            missingKeyHandler: (lng, ns, k, val, isUpdate, opts) => {
-              console.error(lng, ns, k, val)
+            en: {
+              translation: {
+                title: 'Welcome to test the i18next incontext editor',
+                introduction:
+                  'This page will create some <strong>basic content</strong> to test parsing DOM to find text nodes and pass them to the <i>editor.</i>',
+                removed: 'will get removed',
+                test: {
+                  title: 'Title attribute',
+                  placeholder: 'Placeholder attribute',
+                  alt: 'Alt attribute'
+                }
+              },
+              common: {
+                button: {
+                  hoverMe: 'Hover this link',
+                  clickMe: 'Click this button',
+                  clickMeInner: 'Click another button'
+                }
+              }
             }
           },
-          function (err, t) {
-            var localize = locI18next.init(i18next)
-            localize('#main')
-
-            // startStandalone({
-            //   show: true,
-            //   projectId: '800bae87-7232-40dc-8c1c-0144e6361736',
-            //   version: 'latest'
-            // })
+          missingKeyHandler: (lng, ns, k, val, isUpdate, opts) => {
+            console.error(lng, ns, k, val)
           }
-        )
-    </script>
-  </body>
+        },
+        function (err, t) {
+          var localize = locI18next.init(i18next)
+          localize('#main')
+
+          // startStandalone({
+          //   show: true,
+          //   projectId: '800bae87-7232-40dc-8c1c-0144e6361736',
+          //   version: 'latest'
+          // })
+        }
+      )
+  </script>
+</body>
+
 </html>
