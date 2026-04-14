@@ -76,6 +76,14 @@ export function createObserver (ele, handle) {
         return
       }
 
+      // For characterData mutations (e.g. Angular text interpolation),
+      // the target is a text node — resolve to parent element so the
+      // parser can scan its childNodes for subliminal markers.
+      const target = mutation.target.nodeType === 3
+        ? mutation.target.parentElement
+        : mutation.target
+      if (!target) return
+
       // cleanup mutation triggers after some time of non triggering
       Object.keys(mutationTriggeringElements).forEach(k => {
         const info = mutationTriggeringElements[k]
@@ -89,7 +97,7 @@ export function createObserver (ele, handle) {
       if (mutation.type === 'childList') {
         let notOurs = 0
 
-        if (!ignoreMutation(mutation.target)) {
+        if (!ignoreMutation(target)) {
           mutation.addedNodes.forEach(n => {
             if (ignoreMutation(n)) return
             notOurs = notOurs + 1
@@ -108,23 +116,23 @@ export function createObserver (ele, handle) {
       triggerMutation = true
 
       // add to mutationTriggers to check for spamming elements
-      if (mutation.target && mutation.target.uniqueID) {
-        const info = mutationTriggeringElements[mutation.target.uniqueID] || {
+      if (target.uniqueID) {
+        const info = mutationTriggeringElements[target.uniqueID] || {
           triggered: 0
         }
 
         info.triggered = info.triggered + 1
         info.lastTriggerDate = Date.now()
 
-        mutationTriggeringElements[mutation.target.uniqueID] = info
+        mutationTriggeringElements[target.uniqueID] = info
       }
 
       // test if mutated element is already part of another mutation
       const includedAlready = targetEles.reduce((mem, element) => {
         if (
           mem ||
-          element.contains(mutation.target) ||
-          !mutation.target.parentElement
+          element.contains(target) ||
+          !target.parentElement
         ) {
           return true
         }
@@ -135,9 +143,9 @@ export function createObserver (ele, handle) {
       // and add it
       if (!includedAlready) {
         targetEles = targetEles.filter(
-          element => !mutation.target.contains(element)
+          element => !target.contains(element)
         )
-        targetEles.push(mutation.target)
+        targetEles.push(target)
       }
 
       // console.log('MUTATION', mutation.type, mutation)

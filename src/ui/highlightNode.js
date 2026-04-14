@@ -29,7 +29,7 @@ import { getOptimizedBoundingRectEle } from './utils.js'
 // const originalStyles = {}
 const selected = {}
 
-export function highlight(item, node, keys) {
+export function highlight (item, node, keys) {
   // const { id } = item
 
   // uncomment below if we do not won't the ribbon box to show on selected
@@ -124,7 +124,7 @@ export function highlight(item, node, keys) {
   }
 }
 
-export function highlightUninstrumented(item, node, keys) {
+export function highlightUninstrumented (item, node, keys) {
   const { id } = item
 
   if (selected[id]) return
@@ -158,7 +158,7 @@ export function highlightUninstrumented(item, node, keys) {
   }
 }
 
-export function selectedHighlight(item, node, keys) {
+export function selectedHighlight (item, node, keys) {
   const { id } = item
 
   // if (!originalStyles[id]) {
@@ -200,13 +200,13 @@ export function selectedHighlight(item, node, keys) {
   selected[id] = true
 }
 
-export function recalcSelectedHighlight(item, node, keys) {
+export function recalcSelectedHighlight (item, node, keys) {
   if (!selected[item.id]) return
   resetHighlight(item, node, keys, false)
   selectedHighlight(item, node, keys)
 }
 
-export function resetHighlight(item, node, keys, ignoreSelected = true) {
+export function resetHighlight (item, node, keys, ignoreSelected = true) {
   const { id } = item
 
   if (ignoreSelected && selected[id]) return

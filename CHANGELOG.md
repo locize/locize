@@ -1,3 +1,7 @@
+### 4.0.17
+
+- fix InContext editor not detecting translated text in frameworks using text interpolation (e.g. Angular `{{ 'key' | i18next }}`). The MutationObserver for characterData changes now correctly resolves text nodes to their parent element before parsing.
+
 ### 4.0.14
 
 - fix typescript types for startStandalone

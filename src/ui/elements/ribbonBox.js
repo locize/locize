@@ -9,7 +9,7 @@ if (sheet) {
     '.i18next-editor-button:hover { background-color: rgba(21, 65, 154, 1) !important; }'
   )
 }
-export function RibbonButton(text, attrTitle, onClick) {
+export function RibbonButton (text, attrTitle, onClick) {
   const btn = document.createElement('button')
 
   btn.style =
@@ -32,7 +32,7 @@ export function RibbonButton(text, attrTitle, onClick) {
   return btn
 }
 
-export function RibbonBox(keys = {}) {
+export function RibbonBox (keys = {}) {
   const box = document.createElement('div')
   box.classList.add('i18next-editor-button-container')
   box.style =

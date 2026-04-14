@@ -1,4 +1,4 @@
-export function HighlightBox(ele, borderColor, shadowColor) {
+export function HighlightBox (ele, borderColor, shadowColor) {
   const rect = ele.getBoundingClientRect()
 
   const box = document.createElement('div')
