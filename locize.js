@@ -396,7 +396,7 @@
   }
   function getElementNamespace(el) {
     var found;
-    var find = function find(ele) {
+    var _find = function find(ele) {
       var opts = getAttribute(ele, 'i18next-options');
       if (!opts) opts = getAttribute(ele, 'data-i18next-options');
       if (!opts) opts = getAttribute(ele, 'i18n-options');
@@ -412,9 +412,9 @@
       if (!found) found = getAttribute(ele, 'data-i18next-ns');
       if (!found) found = getAttribute(ele, 'i18n-ns');
       if (!found) found = getAttribute(ele, 'data-i18n-ns');
-      if (!found && ele.parentElement) find(ele.parentElement);
+      if (!found && ele.parentElement) _find(ele.parentElement);
     };
-    find(el);
+    _find(el);
     return found;
   }
   function getQsParameterByName(name, url) {
@@ -1083,10 +1083,6 @@
     bottom: 'top',
     top: 'bottom'
   };
-  const oppositeAlignmentMap = {
-    start: 'end',
-    end: 'start'
-  };
   function clamp(start, value, end) {
     return max(start, min(value, end));
   }
@@ -1106,7 +1102,8 @@
     return axis === 'y' ? 'height' : 'width';
   }
   function getSideAxis(placement) {
-    return ['top', 'bottom'].includes(getSide(placement)) ? 'y' : 'x';
+    const firstChar = placement[0];
+    return firstChar === 't' || firstChar === 'b' ? 'y' : 'x';
   }
   function getAlignmentAxis(placement) {
     return getOppositeAxis(getSideAxis(placement));
@@ -1129,21 +1126,21 @@
     return [getOppositeAlignmentPlacement(placement), oppositePlacement, getOppositeAlignmentPlacement(oppositePlacement)];
   }
   function getOppositeAlignmentPlacement(placement) {
-    return placement.replace(/start|end/g, alignment => oppositeAlignmentMap[alignment]);
+    return placement.includes('start') ? placement.replace('start', 'end') : placement.replace('end', 'start');
   }
+  const lrPlacement = ['left', 'right'];
+  const rlPlacement = ['right', 'left'];
+  const tbPlacement = ['top', 'bottom'];
+  const btPlacement = ['bottom', 'top'];
   function getSideList(side, isStart, rtl) {
-    const lr = ['left', 'right'];
-    const rl = ['right', 'left'];
-    const tb = ['top', 'bottom'];
-    const bt = ['bottom', 'top'];
     switch (side) {
       case 'top':
       case 'bottom':
-        if (rtl) return isStart ? rl : lr;
-        return isStart ? lr : rl;
+        if (rtl) return isStart ? rlPlacement : lrPlacement;
+        return isStart ? lrPlacement : rlPlacement;
       case 'left':
       case 'right':
-        return isStart ? tb : bt;
+        return isStart ? tbPlacement : btPlacement;
       default:
         return [];
     }
@@ -1160,7 +1157,8 @@
     return list;
   }
   function getOppositePlacement(placement) {
-    return placement.replace(/left|right|bottom|top/g, side => oppositeSideMap[side]);
+    const side = getSide(placement);
+    return oppositeSideMap[side] + placement.slice(side.length);
   }
   function expandPaddingObject(padding) {
     return {
@@ -1255,97 +1253,6 @@
   }
 
   /**
-   * Computes the `x` and `y` coordinates that will place the floating element
-   * next to a given reference element.
-   *
-   * This export does not have any `platform` interface logic. You will need to
-   * write one for the platform you are using Floating UI with.
-   */
-  const computePosition$1 = async (reference, floating, config) => {
-    const {
-      placement = 'bottom',
-      strategy = 'absolute',
-      middleware = [],
-      platform
-    } = config;
-    const validMiddleware = middleware.filter(Boolean);
-    const rtl = await (platform.isRTL == null ? void 0 : platform.isRTL(floating));
-    let rects = await platform.getElementRects({
-      reference,
-      floating,
-      strategy
-    });
-    let {
-      x,
-      y
-    } = computeCoordsFromPlacement(rects, placement, rtl);
-    let statefulPlacement = placement;
-    let middlewareData = {};
-    let resetCount = 0;
-    for (let i = 0; i < validMiddleware.length; i++) {
-      const {
-        name,
-        fn
-      } = validMiddleware[i];
-      const {
-        x: nextX,
-        y: nextY,
-        data,
-        reset
-      } = await fn({
-        x,
-        y,
-        initialPlacement: placement,
-        placement: statefulPlacement,
-        strategy,
-        middlewareData,
-        rects,
-        platform,
-        elements: {
-          reference,
-          floating
-        }
-      });
-      x = nextX != null ? nextX : x;
-      y = nextY != null ? nextY : y;
-      middlewareData = {
-        ...middlewareData,
-        [name]: {
-          ...middlewareData[name],
-          ...data
-        }
-      };
-      if (reset && resetCount <= 50) {
-        resetCount++;
-        if (typeof reset === 'object') {
-          if (reset.placement) {
-            statefulPlacement = reset.placement;
-          }
-          if (reset.rects) {
-            rects = reset.rects === true ? await platform.getElementRects({
-              reference,
-              floating,
-              strategy
-            }) : reset.rects;
-          }
-          ({
-            x,
-            y
-          } = computeCoordsFromPlacement(rects, statefulPlacement, rtl));
-        }
-        i = -1;
-      }
-    }
-    return {
-      x,
-      y,
-      placement: statefulPlacement,
-      strategy,
-      middlewareData
-    };
-  };
-
-  /**
    * Resolves with an object of overflow side offsets that determine how much the
    * element is overflowing a given clipping boundary on each side.
    * - positive = overflowing the boundary by that number of pixels
@@ -1409,6 +1316,104 @@
       right: (elementClientRect.right - clippingClientRect.right + paddingObject.right) / offsetScale.x
     };
   }
+
+  // Maximum number of resets that can occur before bailing to avoid infinite reset loops.
+  const MAX_RESET_COUNT = 50;
+
+  /**
+   * Computes the `x` and `y` coordinates that will place the floating element
+   * next to a given reference element.
+   *
+   * This export does not have any `platform` interface logic. You will need to
+   * write one for the platform you are using Floating UI with.
+   */
+  const computePosition$1 = async (reference, floating, config) => {
+    const {
+      placement = 'bottom',
+      strategy = 'absolute',
+      middleware = [],
+      platform
+    } = config;
+    const platformWithDetectOverflow = platform.detectOverflow ? platform : {
+      ...platform,
+      detectOverflow
+    };
+    const rtl = await (platform.isRTL == null ? void 0 : platform.isRTL(floating));
+    let rects = await platform.getElementRects({
+      reference,
+      floating,
+      strategy
+    });
+    let {
+      x,
+      y
+    } = computeCoordsFromPlacement(rects, placement, rtl);
+    let statefulPlacement = placement;
+    let resetCount = 0;
+    const middlewareData = {};
+    for (let i = 0; i < middleware.length; i++) {
+      const currentMiddleware = middleware[i];
+      if (!currentMiddleware) {
+        continue;
+      }
+      const {
+        name,
+        fn
+      } = currentMiddleware;
+      const {
+        x: nextX,
+        y: nextY,
+        data,
+        reset
+      } = await fn({
+        x,
+        y,
+        initialPlacement: placement,
+        placement: statefulPlacement,
+        strategy,
+        middlewareData,
+        rects,
+        platform: platformWithDetectOverflow,
+        elements: {
+          reference,
+          floating
+        }
+      });
+      x = nextX != null ? nextX : x;
+      y = nextY != null ? nextY : y;
+      middlewareData[name] = {
+        ...middlewareData[name],
+        ...data
+      };
+      if (reset && resetCount < MAX_RESET_COUNT) {
+        resetCount++;
+        if (typeof reset === 'object') {
+          if (reset.placement) {
+            statefulPlacement = reset.placement;
+          }
+          if (reset.rects) {
+            rects = reset.rects === true ? await platform.getElementRects({
+              reference,
+              floating,
+              strategy
+            }) : reset.rects;
+          }
+          ({
+            x,
+            y
+          } = computeCoordsFromPlacement(rects, statefulPlacement, rtl));
+        }
+        i = -1;
+      }
+    }
+    return {
+      x,
+      y,
+      placement: statefulPlacement,
+      strategy,
+      middlewareData
+    };
+  };
 
   /**
    * Provides data to position an inner element of the floating element so that it
@@ -1531,7 +1536,7 @@
           ...detectOverflowOptions
         } = evaluate(options, state);
         const placements$1 = alignment !== undefined || allowedPlacements === placements ? getPlacementList(alignment || null, autoAlignment, allowedPlacements) : allowedPlacements;
-        const overflow = await detectOverflow(state, detectOverflowOptions);
+        const overflow = await platform.detectOverflow(state, detectOverflowOptions);
         const currentIndex = ((_middlewareData$autoP = middlewareData.autoPlacement) == null ? void 0 : _middlewareData$autoP.index) || 0;
         const currentPlacement = placements$1[currentIndex];
         if (currentPlacement == null) {
@@ -1645,7 +1650,7 @@
           fallbackPlacements.push(...getOppositeAxisPlacements(initialPlacement, flipAlignment, fallbackAxisSideDirection, rtl));
         }
         const placements = [initialPlacement, ...fallbackPlacements];
-        const overflow = await detectOverflow(state, detectOverflowOptions);
+        const overflow = await platform.detectOverflow(state, detectOverflowOptions);
         const overflows = [];
         let overflowsData = ((_middlewareData$flip = middlewareData.flip) == null ? void 0 : _middlewareData$flip.overflows) || [];
         if (checkMainAxis) {
@@ -1666,16 +1671,22 @@
           const nextIndex = (((_middlewareData$flip2 = middlewareData.flip) == null ? void 0 : _middlewareData$flip2.index) || 0) + 1;
           const nextPlacement = placements[nextIndex];
           if (nextPlacement) {
-            // Try next placement and re-run the lifecycle.
-            return {
-              data: {
-                index: nextIndex,
-                overflows: overflowsData
-              },
-              reset: {
-                placement: nextPlacement
-              }
-            };
+            const ignoreCrossAxisOverflow = checkCrossAxis === 'alignment' ? initialSideAxis !== getSideAxis(nextPlacement) : false;
+            if (!ignoreCrossAxisOverflow ||
+            // We leave the current main axis only if every placement on that axis
+            // overflows the main axis.
+            overflowsData.every(d => getSideAxis(d.placement) === initialSideAxis ? d.overflows[0] > 0 : true)) {
+              // Try next placement and re-run the lifecycle.
+              return {
+                data: {
+                  index: nextIndex,
+                  overflows: overflowsData
+                },
+                reset: {
+                  placement: nextPlacement
+                }
+              };
+            }
           }
 
           // First, find the candidates that fit on the mainAxis side of overflow,
@@ -1746,7 +1757,8 @@
       options,
       async fn(state) {
         const {
-          rects
+          rects,
+          platform
         } = state;
         const {
           strategy = 'referenceHidden',
@@ -1755,7 +1767,7 @@
         switch (strategy) {
           case 'referenceHidden':
             {
-              const overflow = await detectOverflow(state, {
+              const overflow = await platform.detectOverflow(state, {
                 ...detectOverflowOptions,
                 elementContext: 'reference'
               });
@@ -1769,7 +1781,7 @@
             }
           case 'escaped':
             {
-              const overflow = await detectOverflow(state, {
+              const overflow = await platform.detectOverflow(state, {
                 ...detectOverflowOptions,
                 altBoundary: true
               });
@@ -1921,6 +1933,8 @@
     };
   };
 
+  const originSides = /*#__PURE__*/new Set(['left', 'top']);
+
   // For type backwards-compatibility, the `OffsetOptions` type was also
   // Derivable.
 
@@ -1934,7 +1948,7 @@
     const side = getSide(placement);
     const alignment = getAlignment(placement);
     const isVertical = getSideAxis(placement) === 'y';
-    const mainAxisMulti = ['left', 'top'].includes(side) ? -1 : 1;
+    const mainAxisMulti = originSides.has(side) ? -1 : 1;
     const crossAxisMulti = rtl && isVertical ? -1 : 1;
     const rawValue = evaluate(options, state);
 
@@ -2021,7 +2035,8 @@
         const {
           x,
           y,
-          placement
+          placement,
+          platform
         } = state;
         const {
           mainAxis: checkMainAxis = true,
@@ -2044,7 +2059,7 @@
           x,
           y
         };
-        const overflow = await detectOverflow(state, detectOverflowOptions);
+        const overflow = await platform.detectOverflow(state, detectOverflowOptions);
         const crossAxis = getSideAxis(getSide(placement));
         const mainAxis = getOppositeAxis(crossAxis);
         let mainAxisCoord = coords[mainAxis];
@@ -2134,7 +2149,7 @@
         if (checkCrossAxis) {
           var _middlewareData$offse, _middlewareData$offse2;
           const len = mainAxis === 'y' ? 'width' : 'height';
-          const isOriginSide = ['top', 'left'].includes(getSide(placement));
+          const isOriginSide = originSides.has(getSide(placement));
           const limitMin = rects.reference[crossAxis] - rects.floating[len] + (isOriginSide ? ((_middlewareData$offse = middlewareData.offset) == null ? void 0 : _middlewareData$offse[crossAxis]) || 0 : 0) + (isOriginSide ? 0 : computedOffset.crossAxis);
           const limitMax = rects.reference[crossAxis] + rects.reference[len] + (isOriginSide ? 0 : ((_middlewareData$offse2 = middlewareData.offset) == null ? void 0 : _middlewareData$offse2[crossAxis]) || 0) - (isOriginSide ? computedOffset.crossAxis : 0);
           if (crossAxisCoord < limitMin) {
@@ -2176,7 +2191,7 @@
           apply = () => {},
           ...detectOverflowOptions
         } = evaluate(options, state);
-        const overflow = await detectOverflow(state, detectOverflowOptions);
+        const overflow = await platform.detectOverflow(state, detectOverflowOptions);
         const side = getSide(placement);
         const alignment = getAlignment(placement);
         const isYAxis = getSideAxis(placement) === 'y';
@@ -2285,28 +2300,36 @@
       overflowX,
       overflowY,
       display
-    } = getComputedStyle(element);
-    return /auto|scroll|overlay|hidden|clip/.test(overflow + overflowY + overflowX) && !['inline', 'contents'].includes(display);
+    } = getComputedStyle$1(element);
+    return /auto|scroll|overlay|hidden|clip/.test(overflow + overflowY + overflowX) && display !== 'inline' && display !== 'contents';
   }
   function isTableElement(element) {
-    return ['table', 'td', 'th'].includes(getNodeName(element));
+    return /^(table|td|th)$/.test(getNodeName(element));
   }
   function isTopLayer(element) {
-    return [':popover-open', ':modal'].some(selector => {
-      try {
-        return element.matches(selector);
-      } catch (e) {
-        return false;
+    try {
+      if (element.matches(':popover-open')) {
+        return true;
       }
-    });
+    } catch (_e) {
+      // no-op
+    }
+    try {
+      return element.matches(':modal');
+    } catch (_e) {
+      return false;
+    }
   }
+  const willChangeRe = /transform|translate|scale|rotate|perspective|filter/;
+  const containRe = /paint|layout|strict|content/;
+  const isNotNone = value => !!value && value !== 'none';
+  let isWebKitValue;
   function isContainingBlock(elementOrCss) {
-    const webkit = isWebKit();
-    const css = isElement(elementOrCss) ? getComputedStyle(elementOrCss) : elementOrCss;
+    const css = isElement(elementOrCss) ? getComputedStyle$1(elementOrCss) : elementOrCss;
 
     // https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block#identifying_the_containing_block
     // https://drafts.csswg.org/css-transforms-2/#individual-transforms
-    return ['transform', 'translate', 'scale', 'rotate', 'perspective'].some(value => css[value] ? css[value] !== 'none' : false) || (css.containerType ? css.containerType !== 'normal' : false) || !webkit && (css.backdropFilter ? css.backdropFilter !== 'none' : false) || !webkit && (css.filter ? css.filter !== 'none' : false) || ['transform', 'translate', 'scale', 'rotate', 'perspective', 'filter'].some(value => (css.willChange || '').includes(value)) || ['paint', 'layout', 'strict', 'content'].some(value => (css.contain || '').includes(value));
+    return isNotNone(css.transform) || isNotNone(css.translate) || isNotNone(css.scale) || isNotNone(css.rotate) || isNotNone(css.perspective) || !isWebKit() && (isNotNone(css.backdropFilter) || isNotNone(css.filter)) || willChangeRe.test(css.willChange || '') || containRe.test(css.contain || '');
   }
   function getContainingBlock(element) {
     let currentNode = getParentNode(element);
@@ -2321,13 +2344,15 @@
     return null;
   }
   function isWebKit() {
-    if (typeof CSS === 'undefined' || !CSS.supports) return false;
-    return CSS.supports('-webkit-backdrop-filter', 'none');
+    if (isWebKitValue == null) {
+      isWebKitValue = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('-webkit-backdrop-filter', 'none');
+    }
+    return isWebKitValue;
   }
   function isLastTraversableNode(node) {
-    return ['html', 'body', '#document'].includes(getNodeName(node));
+    return /^(html|body|#document)$/.test(getNodeName(node));
   }
-  function getComputedStyle(element) {
+  function getComputedStyle$1(element) {
     return getWindow(element).getComputedStyle(element);
   }
   function getNodeScroll(element) {
@@ -2381,15 +2406,16 @@
     if (isBody) {
       const frameElement = getFrameElement(win);
       return list.concat(win, win.visualViewport || [], isOverflowElement(scrollableAncestor) ? scrollableAncestor : [], frameElement && traverseIframes ? getOverflowAncestors(frameElement) : []);
+    } else {
+      return list.concat(scrollableAncestor, getOverflowAncestors(scrollableAncestor, [], traverseIframes));
     }
-    return list.concat(scrollableAncestor, getOverflowAncestors(scrollableAncestor, [], traverseIframes));
   }
   function getFrameElement(win) {
     return win.parent && Object.getPrototypeOf(win.parent) ? win.frameElement : null;
   }
 
   function getCssDimensions(element) {
-    const css = getComputedStyle(element);
+    const css = getComputedStyle$1(element);
     // In testing environments, the `width` and `height` properties are empty
     // strings for SVG elements, returning NaN. Fallback to `0` in this case.
     let width = parseFloat(css.width) || 0;
@@ -2494,7 +2520,7 @@
       while (currentIFrame && offsetParent && offsetWin !== currentWin) {
         const iframeScale = getScale(currentIFrame);
         const iframeRect = currentIFrame.getBoundingClientRect();
-        const css = getComputedStyle(currentIFrame);
+        const css = getComputedStyle$1(currentIFrame);
         const left = iframeRect.left + (currentIFrame.clientLeft + parseFloat(css.paddingLeft)) * iframeScale.x;
         const top = iframeRect.top + (currentIFrame.clientTop + parseFloat(css.paddingTop)) * iframeScale.y;
         x *= iframeScale.x;
@@ -2525,14 +2551,9 @@
     return rect.left + leftScroll;
   }
 
-  function getHTMLOffset(documentElement, scroll, ignoreScrollbarX) {
-    if (ignoreScrollbarX === void 0) {
-      ignoreScrollbarX = false;
-    }
+  function getHTMLOffset(documentElement, scroll) {
     const htmlRect = documentElement.getBoundingClientRect();
-    const x = htmlRect.left + scroll.scrollLeft - (ignoreScrollbarX ? 0 :
-    // RTL <body> scrollbar.
-    getWindowScrollBarX(documentElement, htmlRect));
+    const x = htmlRect.left + scroll.scrollLeft - getWindowScrollBarX(documentElement, htmlRect);
     const y = htmlRect.top + scroll.scrollTop;
     return {
       x,
@@ -2564,14 +2585,14 @@
       if (getNodeName(offsetParent) !== 'body' || isOverflowElement(documentElement)) {
         scroll = getNodeScroll(offsetParent);
       }
-      if (isHTMLElement(offsetParent)) {
+      if (isOffsetParentAnElement) {
         const offsetRect = getBoundingClientRect(offsetParent);
         scale = getScale(offsetParent);
         offsets.x = offsetRect.x + offsetParent.clientLeft;
         offsets.y = offsetRect.y + offsetParent.clientTop;
       }
     }
-    const htmlOffset = documentElement && !isOffsetParentAnElement && !isFixed ? getHTMLOffset(documentElement, scroll, true) : createCoords(0);
+    const htmlOffset = documentElement && !isOffsetParentAnElement && !isFixed ? getHTMLOffset(documentElement, scroll) : createCoords(0);
     return {
       width: rect.width * scale.x,
       height: rect.height * scale.y,
@@ -2594,7 +2615,7 @@
     const height = max(html.scrollHeight, html.clientHeight, body.scrollHeight, body.clientHeight);
     let x = -scroll.scrollLeft + getWindowScrollBarX(element);
     const y = -scroll.scrollTop;
-    if (getComputedStyle(body).direction === 'rtl') {
+    if (getComputedStyle$1(body).direction === 'rtl') {
       x += max(html.clientWidth, body.clientWidth) - width;
     }
     return {
@@ -2605,6 +2626,10 @@
     };
   }
 
+  // Safety check: ensure the scrollbar space is reasonable in case this
+  // calculation is affected by unusual styles.
+  // Most scrollbars leave 15-18px of space.
+  const SCROLLBAR_MAX = 25;
   function getViewportRect(element, strategy) {
     const win = getWindow(element);
     const html = getDocumentElement(element);
@@ -2621,6 +2646,24 @@
         x = visualViewport.offsetLeft;
         y = visualViewport.offsetTop;
       }
+    }
+    const windowScrollbarX = getWindowScrollBarX(html);
+    // <html> `overflow: hidden` + `scrollbar-gutter: stable` reduces the
+    // visual width of the <html> but this is not considered in the size
+    // of `html.clientWidth`.
+    if (windowScrollbarX <= 0) {
+      const doc = html.ownerDocument;
+      const body = doc.body;
+      const bodyStyles = getComputedStyle(body);
+      const bodyMarginInline = doc.compatMode === 'CSS1Compat' ? parseFloat(bodyStyles.marginLeft) + parseFloat(bodyStyles.marginRight) || 0 : 0;
+      const clippingStableScrollbarWidth = Math.abs(html.clientWidth - body.clientWidth - bodyMarginInline);
+      if (clippingStableScrollbarWidth <= SCROLLBAR_MAX) {
+        width -= clippingStableScrollbarWidth;
+      }
+    } else if (windowScrollbarX <= SCROLLBAR_MAX) {
+      // If the <body> scrollbar is on the left, the width needs to be extended
+      // by the scrollbar amount so there isn't extra space on the right.
+      width += windowScrollbarX;
     }
     return {
       width,
@@ -2671,7 +2714,7 @@
     if (parentNode === stopNode || !isElement(parentNode) || isLastTraversableNode(parentNode)) {
       return false;
     }
-    return getComputedStyle(parentNode).position === 'fixed' || hasFixedPositionAncestor(parentNode, stopNode);
+    return getComputedStyle$1(parentNode).position === 'fixed' || hasFixedPositionAncestor(parentNode, stopNode);
   }
 
   // A "clipping ancestor" is an `overflow` element with the characteristic of
@@ -2684,17 +2727,17 @@
     }
     let result = getOverflowAncestors(element, [], false).filter(el => isElement(el) && getNodeName(el) !== 'body');
     let currentContainingBlockComputedStyle = null;
-    const elementIsFixed = getComputedStyle(element).position === 'fixed';
+    const elementIsFixed = getComputedStyle$1(element).position === 'fixed';
     let currentNode = elementIsFixed ? getParentNode(element) : element;
 
     // https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block#identifying_the_containing_block
     while (isElement(currentNode) && !isLastTraversableNode(currentNode)) {
-      const computedStyle = getComputedStyle(currentNode);
+      const computedStyle = getComputedStyle$1(currentNode);
       const currentNodeIsContaining = isContainingBlock(currentNode);
       if (!currentNodeIsContaining && computedStyle.position === 'fixed') {
         currentContainingBlockComputedStyle = null;
       }
-      const shouldDropCurrentNode = elementIsFixed ? !currentNodeIsContaining && !currentContainingBlockComputedStyle : !currentNodeIsContaining && computedStyle.position === 'static' && !!currentContainingBlockComputedStyle && ['absolute', 'fixed'].includes(currentContainingBlockComputedStyle.position) || isOverflowElement(currentNode) && !currentNodeIsContaining && hasFixedPositionAncestor(element, currentNode);
+      const shouldDropCurrentNode = elementIsFixed ? !currentNodeIsContaining && !currentContainingBlockComputedStyle : !currentNodeIsContaining && computedStyle.position === 'static' && !!currentContainingBlockComputedStyle && (currentContainingBlockComputedStyle.position === 'absolute' || currentContainingBlockComputedStyle.position === 'fixed') || isOverflowElement(currentNode) && !currentNodeIsContaining && hasFixedPositionAncestor(element, currentNode);
       if (shouldDropCurrentNode) {
         // Drop non-containing blocks.
         result = result.filter(ancestor => ancestor !== currentNode);
@@ -2719,20 +2762,23 @@
     } = _ref;
     const elementClippingAncestors = boundary === 'clippingAncestors' ? isTopLayer(element) ? [] : getClippingElementAncestors(element, this._c) : [].concat(boundary);
     const clippingAncestors = [...elementClippingAncestors, rootBoundary];
-    const firstClippingAncestor = clippingAncestors[0];
-    const clippingRect = clippingAncestors.reduce((accRect, clippingAncestor) => {
-      const rect = getClientRectFromClippingAncestor(element, clippingAncestor, strategy);
-      accRect.top = max(rect.top, accRect.top);
-      accRect.right = min(rect.right, accRect.right);
-      accRect.bottom = min(rect.bottom, accRect.bottom);
-      accRect.left = max(rect.left, accRect.left);
-      return accRect;
-    }, getClientRectFromClippingAncestor(element, firstClippingAncestor, strategy));
+    const firstRect = getClientRectFromClippingAncestor(element, clippingAncestors[0], strategy);
+    let top = firstRect.top;
+    let right = firstRect.right;
+    let bottom = firstRect.bottom;
+    let left = firstRect.left;
+    for (let i = 1; i < clippingAncestors.length; i++) {
+      const rect = getClientRectFromClippingAncestor(element, clippingAncestors[i], strategy);
+      top = max(rect.top, top);
+      right = min(rect.right, right);
+      bottom = min(rect.bottom, bottom);
+      left = max(rect.left, left);
+    }
     return {
-      width: clippingRect.right - clippingRect.left,
-      height: clippingRect.bottom - clippingRect.top,
-      x: clippingRect.left,
-      y: clippingRect.top
+      width: right - left,
+      height: bottom - top,
+      x: left,
+      y: top
     };
   }
 
@@ -2757,6 +2803,12 @@
       scrollTop: 0
     };
     const offsets = createCoords(0);
+
+    // If the <body> scrollbar appears on the left (e.g. RTL systems). Use
+    // Firefox with layout.scrollbar.side = 3 in about:config to test this.
+    function setLeftRTLScrollbarOffset() {
+      offsets.x = getWindowScrollBarX(documentElement);
+    }
     if (isOffsetParentAnElement || !isOffsetParentAnElement && !isFixed) {
       if (getNodeName(offsetParent) !== 'body' || isOverflowElement(documentElement)) {
         scroll = getNodeScroll(offsetParent);
@@ -2766,10 +2818,11 @@
         offsets.x = offsetRect.x + offsetParent.clientLeft;
         offsets.y = offsetRect.y + offsetParent.clientTop;
       } else if (documentElement) {
-        // If the <body> scrollbar appears on the left (e.g. RTL systems). Use
-        // Firefox with layout.scrollbar.side = 3 in about:config to test this.
-        offsets.x = getWindowScrollBarX(documentElement);
+        setLeftRTLScrollbarOffset();
       }
+    }
+    if (isFixed && !isOffsetParentAnElement && documentElement) {
+      setLeftRTLScrollbarOffset();
     }
     const htmlOffset = documentElement && !isOffsetParentAnElement && !isFixed ? getHTMLOffset(documentElement, scroll) : createCoords(0);
     const x = rect.left + scroll.scrollLeft - offsets.x - htmlOffset.x;
@@ -2783,11 +2836,11 @@
   }
 
   function isStaticPositioned(element) {
-    return getComputedStyle(element).position === 'static';
+    return getComputedStyle$1(element).position === 'static';
   }
 
   function getTrueOffsetParent(element, polyfill) {
-    if (!isHTMLElement(element) || getComputedStyle(element).position === 'fixed') {
+    if (!isHTMLElement(element) || getComputedStyle$1(element).position === 'fixed') {
       return null;
     }
     if (polyfill) {
@@ -2848,7 +2901,7 @@
   };
 
   function isRTL(element) {
-    return getComputedStyle(element).direction === 'rtl';
+    return getComputedStyle$1(element).direction === 'rtl';
   }
 
   const platform = {
