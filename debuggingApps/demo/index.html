@@ -65,6 +65,16 @@
       </button>
     </div>
   </div>
+  <hr />
+  <div id="textContent-test">
+    <h4>textContent update (no data-i18n — like Angular pipe):</h4>
+    <p>These elements have NO data-i18n attribute. Text is set via textContent using i18next.t(), simulating Angular's {{ 'key' | i18next }} pipe behavior.</p>
+    <h4 id="tc-title">loading...</h4>
+    <label id="tc-label">loading...</label>
+    <p id="tc-paragraph">loading...</p>
+    <input id="tc-input" type="text" placeholder="loading..." />
+  </div>
+
   <div id="non-loc-i18next">
     <h4>Some instrumented stuff</h4>
     <p data-i18n="translation:aNonI18nextKey;[title]common:anotherNonI18nextKey" title="some non i18next title">
@@ -125,6 +135,19 @@
       ele.innerText = i
       i = i + 1
     }, 5000)
+
+    // Simulate Angular-style text interpolation: Angular creates text nodes
+    // once during component init, then updates the EXISTING text node's data
+    // during change detection. This triggers a characterData mutation (not
+    // childList), where mutation.target is the text node, not the element.
+    // Setting element.textContent would trigger childList instead — wrong test.
+    setTimeout(function () {
+      document.getElementById('tc-title').firstChild.data = i18next.t('title')
+      document.getElementById('tc-label').firstChild.data = i18next.t('common:button.hoverMe')
+      document.getElementById('tc-paragraph').firstChild.data = i18next.t('test.title')
+      document.getElementById('tc-input').placeholder = i18next.t('test.placeholder')
+      console.log('textContent test: updated existing text nodes via .data (characterData mutation, no data-i18n)')
+    }, 2000)
   </script>
 
   <!-- <script
