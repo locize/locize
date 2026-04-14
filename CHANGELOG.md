@@ -1,6 +1,6 @@
 ### 4.0.17
 
-- fix InContext editor not detecting translated text in frameworks using text interpolation (e.g. Angular `{{ 'key' | i18next }}`). The MutationObserver for characterData changes now correctly resolves text nodes to their parent element before parsing.
+- fix InContext editor not detecting translated text set via textContent/text interpolation (e.g. Angular `{{ 'key' | i18next }}`, loc-i18next, Vue `{{ $t('key') }}`). The MutationObserver for characterData changes now correctly resolves text nodes to their parent element before parsing.
 
 ### 4.0.14
 
