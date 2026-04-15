@@ -75,6 +75,22 @@
     <input id="tc-input" type="text" placeholder="loading..." />
   </div>
 
+  <hr />
+  <div id="modal-test">
+    <h4>Modal overlay test (occlusion detection):</h4>
+    <p>Click the button to open a modal. Text behind the modal should NOT be highlighted by the InContext editor.</p>
+    <p data-i18n="title">This text should be hidden behind modal</p>
+    <p data-i18n="common:button.hoverMe">This text should also be hidden</p>
+    <button id="modal-open-btn" onclick="document.getElementById('test-modal').style.display='flex'" style="padding: 8px 16px; cursor: pointer;">Open Modal</button>
+    <div id="test-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;">
+      <div style="background:white; padding:30px; border-radius:8px; max-width:400px;">
+        <h4 data-i18n="test.title">This text is INSIDE the modal</h4>
+        <p>The elements behind the dark backdrop should not show InContext highlights when hovering over them.</p>
+        <button onclick="document.getElementById('test-modal').style.display='none'" style="padding: 8px 16px; cursor: pointer;">Close Modal</button>
+      </div>
+    </div>
+  </div>
+
   <div id="non-loc-i18next">
     <h4>Some instrumented stuff</h4>
     <p data-i18n="translation:aNonI18nextKey;[title]common:anotherNonI18nextKey" title="some non i18next title">

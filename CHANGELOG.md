@@ -1,3 +1,7 @@
+### 4.0.18
+
+- fix InContext editor highlights appearing on top of modals and overlays. Uses `document.elementFromPoint()` to detect when a translated element is visually covered and suppresses the highlight.
+
 ### 4.0.17
 
 - fix InContext editor not detecting translated text set via textContent/text interpolation (e.g. Angular `{{ 'key' | i18next }}`, loc-i18next, Vue `{{ $t('key') }}`). The MutationObserver for characterData changes now correctly resolves text nodes to their parent element before parsing.

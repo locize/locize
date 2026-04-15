@@ -757,9 +757,23 @@
     return refEle;
   }
 
+  function isOccluded(node) {
+    var rect = node.getBoundingClientRect();
+    if (!rect.width || !rect.height) return true;
+    var x = rect.left + rect.width / 2;
+    var y = rect.top + rect.height / 2;
+    var topEl = document.elementFromPoint(x, y);
+    if (!topEl) return true;
+    if (topEl.dataset && topEl.dataset.i18nextEditorElement === 'true') return false;
+    return !node.contains(topEl) && !topEl.contains(node);
+  }
   var debouncedUpdateDistance = debounce(function (e, observer) {
     Object.values(store.data).forEach(function (item) {
       if (!isInViewport(item.node)) return;
+      if (isOccluded(item.node)) {
+        resetHighlight(item, item.node, item.keys);
+        return;
+      }
       var distance = mouseDistanceFromElement(e, item.node);
       if (distance < 5) {
         highlight(item, item.node, item.keys);
@@ -770,6 +784,10 @@
     });
     Object.values(uninstrumentedStore.data).forEach(function (item) {
       if (!isInViewport(item.node)) return;
+      if (isOccluded(item.node)) {
+        resetHighlight(item, item.node, item.keys);
+        return;
+      }
       var distance = mouseDistanceFromElement(e, item.node);
       if (distance < 10) {
         highlightUninstrumented(item, item.node, item.keys);
