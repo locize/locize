@@ -73,6 +73,14 @@
     <label id="tc-label">loading...</label>
     <p id="tc-paragraph">loading...</p>
     <input id="tc-input" type="text" placeholder="loading..." />
+
+    <h4>Mixed content with icon + text (leading whitespace):</h4>
+    <p>Simulates Angular template: &lt;h4&gt;&lt;mat-icon&gt;icon&lt;/mat-icon&gt; {{ 'key' | i18next }}&lt;/h4&gt;</p>
+    <h4 id="tc-icon-text" style="display:flex; align-items:center;">
+      <span style="margin-right:4px;">&#9733;</span>
+      <span id="tc-icon-text-inner">loading...</span>
+    </h4>
+    <h4 id="tc-whitespace-text">loading...</h4>
   </div>
 
   <hr />
@@ -162,6 +170,10 @@
       document.getElementById('tc-label').firstChild.data = i18next.t('common:button.hoverMe')
       document.getElementById('tc-paragraph').firstChild.data = i18next.t('test.title')
       document.getElementById('tc-input').placeholder = i18next.t('test.placeholder')
+      // Mixed content: icon sibling + text with leading whitespace (Angular pattern)
+      document.getElementById('tc-icon-text-inner').firstChild.data = i18next.t('common:button.clickMe')
+      // Text with leading whitespace (simulates Angular template indentation)
+      document.getElementById('tc-whitespace-text').firstChild.data = '\n    ' + i18next.t('title')
       console.log('textContent test: updated existing text nodes via .data (characterData mutation, no data-i18n)')
     }, 2000)
   </script>

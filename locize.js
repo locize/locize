@@ -3292,7 +3292,7 @@
         var txt = child.textContent;
         if (containsOnlySpaces(txt)) return;
         var hasHiddenMeta = containsHiddenMeta(txt);
-        var hasHiddenStartMarker = containsHiddenStartMarker(txt);
+        var hasHiddenStartMarker = containsHiddenStartMarker(txt) || containsHiddenStartMarker(txt.trimStart());
         if (hasHiddenMeta) usedSubliminalForText = true;
         if (hasHiddenStartMarker && hasHiddenMeta) {
           var meta = unwrap(txt);

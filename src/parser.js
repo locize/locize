@@ -177,7 +177,7 @@ function handleNode (node) {
       if (containsOnlySpaces(txt)) return
 
       const hasHiddenMeta = containsHiddenMeta(txt)
-      const hasHiddenStartMarker = containsHiddenStartMarker(txt)
+      const hasHiddenStartMarker = containsHiddenStartMarker(txt) || containsHiddenStartMarker(txt.trimStart())
 
       if (hasHiddenMeta) usedSubliminalForText = true
 

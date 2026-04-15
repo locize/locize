@@ -1,3 +1,7 @@
+### 4.0.19
+
+- fix InContext editor not detecting translated text with leading whitespace (e.g. Angular templates with icon siblings: `<h4><mat-icon>icon</mat-icon> {{ 'key' | i18next }}</h4>`). The subliminal start marker check now handles leading template whitespace.
+
 ### 4.0.18
 
 - fix InContext editor highlights appearing on top of modals and overlays. Uses `document.elementFromPoint()` to detect when a translated element is visually covered and suppresses the highlight.
