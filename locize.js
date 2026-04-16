@@ -3291,11 +3291,12 @@
         if (child.nodeName !== '#text') return;
         var txt = child.textContent;
         if (containsOnlySpaces(txt)) return;
-        var hasHiddenMeta = containsHiddenMeta(txt);
-        var hasHiddenStartMarker = containsHiddenStartMarker(txt) || containsHiddenStartMarker(txt.trimStart());
+        var trimmedTxt = txt.trim();
+        var hasHiddenMeta = containsHiddenMeta(trimmedTxt);
+        var hasHiddenStartMarker = containsHiddenStartMarker(trimmedTxt);
         if (hasHiddenMeta) usedSubliminalForText = true;
         if (hasHiddenStartMarker && hasHiddenMeta) {
-          var meta = unwrap(txt);
+          var meta = unwrap(trimmedTxt);
           uninstrumentedStore.remove(node.uniqueID, node);
           store.save(node.uniqueID, meta.invisibleMeta, 'text', extractHiddenMeta(node.uniqueID, 'text', meta), node);
         } else if (hasHiddenStartMarker) {

@@ -176,8 +176,11 @@ function handleNode (node) {
       const txt = child.textContent
       if (containsOnlySpaces(txt)) return
 
-      const hasHiddenMeta = containsHiddenMeta(txt)
-      const hasHiddenStartMarker = containsHiddenStartMarker(txt.trimStart())
+      // Trim whitespace for subliminal marker detection — Angular/framework
+      // templates add leading/trailing whitespace around interpolated text
+      const trimmedTxt = txt.trim()
+      const hasHiddenMeta = containsHiddenMeta(trimmedTxt)
+      const hasHiddenStartMarker = containsHiddenStartMarker(trimmedTxt)
 
       if (hasHiddenMeta) usedSubliminalForText = true
 
@@ -191,7 +194,7 @@ function handleNode (node) {
       // )
 
       if (hasHiddenStartMarker && hasHiddenMeta) {
-        const meta = unwrap(txt)
+        const meta = unwrap(trimmedTxt)
 
         uninstrumentedStore.remove(node.uniqueID, node) // might be instrumented later and already in uninstrumentedStore - so remove it there first
         store.save(

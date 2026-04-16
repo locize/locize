@@ -173,7 +173,7 @@
       // Mixed content: icon sibling + text with leading whitespace (Angular pattern)
       document.getElementById('tc-icon-text-inner').firstChild.data = i18next.t('common:button.clickMe')
       // Text with leading whitespace (simulates Angular template indentation)
-      document.getElementById('tc-whitespace-text').firstChild.data = '\n    ' + i18next.t('title')
+      document.getElementById('tc-whitespace-text').firstChild.data = '\n    ' + i18next.t('title') + '\n  '
       console.log('textContent test: updated existing text nodes via .data (characterData mutation, no data-i18n)')
     }, 2000)
   </script>

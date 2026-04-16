@@ -1,3 +1,7 @@
+### 4.0.20
+
+- fix InContext editor not detecting translated text with trailing whitespace or line breaks (e.g. Angular templates where `{{ 'key' | i18next }}` is followed by a newline before the closing tag). The subliminal marker detection now fully trims template whitespace before checking.
+
 ### 4.0.19
 
 - fix InContext editor not detecting translated text with leading whitespace (e.g. Angular templates with icon siblings: `<h4><mat-icon>icon</mat-icon> {{ 'key' | i18next }}</h4>`). The subliminal start marker check now handles leading template whitespace.
