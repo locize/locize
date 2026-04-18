@@ -1,3 +1,12 @@
+### 4.0.21
+
+Security release — all issues found via an internal audit. GHSA advisory filed after release.
+
+- security: validate `event.origin` against the configured iframe origin (`getIframeUrl()`) at the top of the `window.addEventListener('message', …)` listener in `src/api/postMessage.js`. Prior to 4.0.21 the listener dispatched to registered handlers based only on attacker-controlled `event.data.sender` — any web page that could embed or be embedded by the locize-enabled host could invoke `editKey`, `commitKey`, `commitKeys`, `isLocizeEnabled`, `requestInitialize`, etc., against it. In combination with the `innerHTML`/`setAttribute` sinks in `handleEditKey`/`commitKeys`, this enabled cross-origin DOM XSS; via `isLocizeEnabled`, attackers could hijack `api.source`/`api.origin` and redirect all outgoing messages (CWE-346, CWE-79). The check is computed once at message time and uses the already-existing `getIframeUrl()` so custom environments (development/staging) continue to work (GHSA-TBD)
+- security (defence-in-depth): harden the `editKey` handler in `src/api/handleEditKey.js`. On `attr:` writes, reject event-handler names (`on*`), `style`, and `javascript:` / `data:` / `vbscript:` / `file:` URLs on `href`/`src`/`action`/`formaction`/`xlink:href`. On `html` writes, parse the translation through a throwaway `DOMParser` document, strip `<script>`/`<iframe>`/`<object>`/`<embed>`/`<link>`/`<meta>`/`<base>`/`<style>` elements along with all event-handler attributes and dangerous URL schemes, then assign the sanitised result to `innerHTML`. Legitimate translation formatting (`<b>`, `<em>`, `<strong>`, `<a href="https://…">`, etc.) is preserved.
+- security (defence-in-depth): reject malformed `containerStyle.height` / `.width` values in `src/api/handleRequestPopupChanges.js`. Values must match a strict CSS-length pattern (e.g. `420px`, `50%`, `12em`); anything carrying a semicolon, `url(…)`, `calc(…)` chain, or arbitrary property-injection escape is dropped. Prevents CSS-injection escapes from the attacker-controlled popup-resize payload.
+- chore: ignore `.env*` and `*.pem`/`*.key` files in `.gitignore`
+
 ### 4.0.20
 
 - fix InContext editor not detecting translated text with trailing whitespace or line breaks (e.g. Angular templates where `{{ 'key' | i18next }}` is followed by a newline before the closing tag). The subliminal marker detection now fully trims template whitespace before checking.

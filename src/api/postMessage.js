@@ -146,8 +146,24 @@ export const api = {
   }
 }
 
+// Compute the expected origin once at module load. The locize InContext
+// editor iframe is the only legitimate source of messages handled here.
+// Without this check, any page that can embed the host (or that the host
+// embeds) can invoke editKey/commitKeys/etc. against it — browser-enforced
+// e.origin is the right signal, not the attacker-controlled e.data.sender.
+const getExpectedIframeOrigin = () => {
+  try {
+    return new URL(getIframeUrl()).origin
+  } catch (err) {
+    return null
+  }
+}
+
 if (typeof window !== 'undefined') {
   window.addEventListener('message', e => {
+    const expectedOrigin = getExpectedIframeOrigin()
+    if (!expectedOrigin || e.origin !== expectedOrigin) return
+
     const { sender, /* senderAPIVersion, */ action, message, payload } = e.data
     // console.warn(sender, action, message, payload)
 
