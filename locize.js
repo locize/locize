@@ -986,11 +986,18 @@
         popup.style.setProperty('left', "calc(".concat(popup.style.left, " - ").concat(_diff, ")"));
         popup.style.setProperty('width', containerStyle.width);
       }
-      if (storedPos && storedPos.top && containerStyle.height && storedPos.top < window.innerHeight - containerStyle.height.replace('px', '')) {
-        popup.style.setProperty('top', storedPos.top + 'px');
+      var MIN_VISIBLE = 40;
+      if (storedPos && typeof storedPos.top === 'number' && containerStyle.height) {
+        var maxTop = Math.max(0, window.innerHeight - MIN_VISIBLE);
+        var top = Math.max(0, Math.min(storedPos.top, maxTop));
+        popup.style.setProperty('top', top + 'px');
       }
-      if (storedPos && storedPos.left && containerStyle.width && storedPos.left < window.innerWidth - containerStyle.width.replace('px', '')) {
-        popup.style.setProperty('left', storedPos.left + 'px');
+      if (storedPos && typeof storedPos.left === 'number' && containerStyle.width) {
+        var width = parseInt(containerStyle.width, 10) || 0;
+        var minLeft = Math.min(0, MIN_VISIBLE - width);
+        var maxLeft = Math.max(0, window.innerWidth - MIN_VISIBLE);
+        var left = Math.max(minLeft, Math.min(storedPos.left, maxLeft));
+        popup.style.setProperty('left', left + 'px');
       }
     }
   }
@@ -3542,6 +3549,17 @@
     };
   }
 
+  var MIN_VISIBLE = 40;
+  function clampTop(top) {
+    var max = Math.max(0, window.innerHeight - MIN_VISIBLE);
+    return Math.max(0, Math.min(top, max));
+  }
+  function clampLeft(left, el) {
+    var width = el.offsetWidth || 0;
+    var min = Math.min(0, MIN_VISIBLE - width);
+    var max = Math.max(0, window.innerWidth - MIN_VISIBLE);
+    return Math.max(min, Math.min(left, max));
+  }
   function initDragElement() {
     var pos1 = 0;
     var pos2 = 0;
@@ -3585,8 +3603,8 @@
       pos2 = pos4 - e.clientY;
       pos3 = e.clientX;
       pos4 = e.clientY;
-      elmnt.style.top = elmnt.offsetTop - pos2 + 'px';
-      elmnt.style.left = elmnt.offsetLeft - pos1 + 'px';
+      elmnt.style.top = clampTop(elmnt.offsetTop - pos2) + 'px';
+      elmnt.style.left = clampLeft(elmnt.offsetLeft - pos1, elmnt) + 'px';
     }
     function closeDragElement() {
       startMouseTracking();

@@ -1,3 +1,7 @@
+### 4.0.22
+
+- fix InContext editor popup being draggable off-screen, making the title bar (and controls like "save") unreachable. `src/ui/popup.js` now clamps `top`/`left` during drag so the header row always stays within the viewport with a small grabbable margin on the sides. `src/api/handleRequestPopupChanges.js` applies the same clamp when restoring a previously stored position from `localStorage`, so users whose `locize_popup_pos` was saved off-screen in an earlier version auto-recover on reload (no more manual `localStorage` reset workaround).
+
 ### 4.0.21
 
 Security release — all issues found via an internal audit. See published advisory [GHSA-w937-fg2h-xhq2](https://github.com/locize/locize/security/advisories/GHSA-w937-fg2h-xhq2).

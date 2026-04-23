@@ -1,5 +1,22 @@
 import { startMouseTracking, stopMouseTracking } from './mouseDistance.js'
 
+// Minimum slice of the popup that must stay on-screen on each axis so the
+// user can always grab it back. We keep the full header row visible on top
+// and a small grabbable strip on the sides / bottom.
+const MIN_VISIBLE = 40
+
+function clampTop (top) {
+  const max = Math.max(0, window.innerHeight - MIN_VISIBLE)
+  return Math.max(0, Math.min(top, max))
+}
+
+function clampLeft (left, el) {
+  const width = el.offsetWidth || 0
+  const min = Math.min(0, MIN_VISIBLE - width)
+  const max = Math.max(0, window.innerWidth - MIN_VISIBLE)
+  return Math.max(min, Math.min(left, max))
+}
+
 export function initDragElement () {
   let pos1 = 0
   let pos2 = 0
@@ -52,9 +69,10 @@ export function initDragElement () {
     pos2 = pos4 - e.clientY
     pos3 = e.clientX
     pos4 = e.clientY
-    // set the element's new position:
-    elmnt.style.top = elmnt.offsetTop - pos2 + 'px'
-    elmnt.style.left = elmnt.offsetLeft - pos1 + 'px'
+    // set the element's new position, clamped to the viewport so the popup
+    // cannot be dragged off-screen (title bar must stay reachable).
+    elmnt.style.top = clampTop(elmnt.offsetTop - pos2) + 'px'
+    elmnt.style.left = clampLeft(elmnt.offsetLeft - pos1, elmnt) + 'px'
   }
 
   function closeDragElement () {

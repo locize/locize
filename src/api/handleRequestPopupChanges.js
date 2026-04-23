@@ -54,20 +54,22 @@ function handler (payload) {
       popup.style.setProperty('width', containerStyle.width)
     }
 
-    if (
-      storedPos &&
-      storedPos.top &&
-      containerStyle.height &&
-      storedPos.top <
-        window.innerHeight - containerStyle.height.replace('px', '')
-    ) { popup.style.setProperty('top', storedPos.top + 'px') }
-    if (
-      storedPos &&
-      storedPos.left &&
-      containerStyle.width &&
-      storedPos.left <
-        window.innerWidth - containerStyle.width.replace('px', '')
-    ) { popup.style.setProperty('left', storedPos.left + 'px') }
+    // Clamp any stored position to the current viewport so previously
+    // off-screen values (e.g. saved before the bounds check existed, or
+    // restored on a smaller window) can't leave the popup unreachable.
+    const MIN_VISIBLE = 40
+    if (storedPos && typeof storedPos.top === 'number' && containerStyle.height) {
+      const maxTop = Math.max(0, window.innerHeight - MIN_VISIBLE)
+      const top = Math.max(0, Math.min(storedPos.top, maxTop))
+      popup.style.setProperty('top', top + 'px')
+    }
+    if (storedPos && typeof storedPos.left === 'number' && containerStyle.width) {
+      const width = parseInt(containerStyle.width, 10) || 0
+      const minLeft = Math.min(0, MIN_VISIBLE - width)
+      const maxLeft = Math.max(0, window.innerWidth - MIN_VISIBLE)
+      const left = Math.max(minLeft, Math.min(storedPos.left, maxLeft))
+      popup.style.setProperty('left', left + 'px')
+    }
   }
 }
 
