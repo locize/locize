@@ -49,7 +49,10 @@ export function getImplementation (i18n) {
           '.locize.'
         ) > 0
       ) {
-        backendName = 'I18nextLocizeBackend'
+        // Must match the actual class name exported by i18next-locize-backend
+        // (capital N in "Next"). The locize editor compares this string
+        // exactly to decide whether the host is talking to the Locize CDN.
+        backendName = 'I18NextLocizeBackend'
       } else {
         backendName = i18n.services.backendConnector.backend
           ? i18n.services.backendConnector.backend.constructor.name

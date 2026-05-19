@@ -22,8 +22,19 @@ export function setEditorLng (lng) {
 let pendingMsgs = []
 const allowedActionsBeforeInit = ['locizeIsEnabled', 'requestInitialize']
 export function sendMessage (action, payload) {
-  if (!api.source) {
-    api.source = document.getElementById('i18next-editor-iframe')?.contentWindow
+  // Re-resolve the iframe's contentWindow on every call rather than
+  // caching the first value seen. Re-attaching the popup to the DOM
+  // (e.g. our hydration-recovery resurrection observer) causes the
+  // browser to re-navigate the iframe to its `src` — the original
+  // contentWindow becomes a discarded `Window` that silently swallows
+  // postMessage. If the source changed under us, treat it as a fresh
+  // editor session: drop `initialized` so the handshake runs again.
+  const currentSource = document.getElementById('i18next-editor-iframe')?.contentWindow
+  if (currentSource) {
+    if (api.source && api.source !== currentSource) {
+      api.initialized = false
+    }
+    api.source = currentSource
   }
   if (!api.origin) api.origin = getIframeUrl()
 
@@ -94,6 +105,11 @@ export const api = {
     sendMessage('requestInitialize', payload)
 
     if (api.initInterval) return
+    // Reset the retry budget at the start of each handshake cycle.
+    // Without this, a second handshake (e.g. after the popup iframe
+    // was re-navigated by host hydration recovery) would fire only
+    // once before the leftover negative `repeat` aborted the loop.
+    repeat = 5
     api.initInterval = setInterval(() => {
       repeat = repeat - 1
       api.requestInitialize(payload)
