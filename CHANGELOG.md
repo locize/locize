@@ -1,3 +1,7 @@
+### 4.0.23
+
+- fix `isInIframe` incorrectly evaluating to `true` in Node 20+ SSR builds (Gatsby, Next.js, Astro, Nuxt, etc.). `src/utils.js`'s module-level iframe detection ran `self !== top` inside a try/catch that historically threw `ReferenceError` in Node, leaving the safe default. Since Node 20 added `self` as an alias for `globalThis` (with `top` still `undefined`), `self !== top` evaluates to `true` without throwing — making locize wrongly conclude it is running inside the Locize editor iframe during the SSR render pass. The check now runs only when `typeof window !== 'undefined'`; a thrown `top` access (cross-origin parent) is still treated as "in iframe", preserving the previous browser behaviour.
+
 ### 4.0.22
 
 - fix InContext editor popup being draggable off-screen, making the title bar (and controls like "save") unreachable. `src/ui/popup.js` now clamps `top`/`left` during drag so the header row always stays within the viewport with a small grabbable margin on the sides. `src/api/handleRequestPopupChanges.js` applies the same clamp when restoring a previously stored position from `localStorage`, so users whose `locize_popup_pos` was saved off-screen in an earlier version auto-recover on reload (no more manual `localStorage` reset workaround).

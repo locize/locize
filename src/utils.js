@@ -234,10 +234,15 @@ export function getQsParameterByName (name, url) {
   return decodeURIComponent(results[2].replace(/\+/g, ' '))
 }
 
-let _isInIframe = typeof window !== 'undefined'
-try {
-  // eslint-disable-next-line no-undef, no-restricted-globals
-  _isInIframe = self !== top
-  // eslint-disable-next-line no-empty
-} catch (e) {}
+let _isInIframe = false
+if (typeof window !== 'undefined') {
+  try {
+    // eslint-disable-next-line no-undef, no-restricted-globals
+    _isInIframe = self !== top
+  } catch (e) {
+    // Cross-origin parent: accessing `top` throws SecurityError. If we
+    // can't see the top window, assume we are inside an iframe.
+    _isInIframe = true
+  }
+}
 export const isInIframe = _isInIframe

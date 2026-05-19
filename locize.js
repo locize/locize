@@ -427,10 +427,14 @@
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
   }
-  var _isInIframe = typeof window !== 'undefined';
-  try {
-    _isInIframe = self !== top;
-  } catch (e) {}
+  var _isInIframe = false;
+  if (typeof window !== 'undefined') {
+    try {
+      _isInIframe = self !== top;
+    } catch (e) {
+      _isInIframe = true;
+    }
+  }
   var isInIframe = _isInIframe;
 
   function ownKeys$5(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
