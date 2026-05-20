@@ -5,6 +5,7 @@ export * from 'i18next-subliminal'
  */
 export interface LocizePlugin {
   type: '3rdParty'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   init(i18next: any): () => void
 }
 
@@ -74,6 +75,7 @@ export function setEditorLng(lng: string): void
 /**
  * To load the translations somewhere.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function addLocizeSavedHandler(fn: (data: any) => void): void
 
 /**
@@ -106,7 +108,16 @@ export interface VueI18nImplementationOptions {
   ns?: string[]
   targetLngs?: string[]
   backendName?: string
-  watch?: (getter: () => any, cb: (val: any) => void) => any
+  /**
+   * Signature matches the subset of Vue's `watch` that
+   * `getVueI18nImplementation` actually invokes: a getter that returns
+   * the current locale code, and a callback fired with the new locale
+   * each time it changes. The return value is ignored (Vue's `watch`
+   * returns a stop handle but we don't use it), so any function whose
+   * shape extends this signature — including the real Vue `watch`
+   * import — is assignable here.
+   */
+  watch?: (source: () => string, cb: (val: string) => void) => void
 }
 
 /**
@@ -129,6 +140,13 @@ export interface VueI18nImplementationOptions {
  *   startStandalone({ implementation: impl, show: true })
  */
 export function getVueI18nImplementation(
+  // The vue-i18n composer's real type (`Composer<...>` from `vue-i18n`)
+  // has dozens of generic params and references types from `vue` /
+  // `@intlify/core-base`. Mirroring it here would force a peer dep on
+  // those packages; a hand-rolled structural subset risks tripping on
+  // covariance / readonly mismatches with the real Composer. Typed as
+  // `any` so any composer-shaped object is accepted at the call site.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   i18n: any,
   options?: VueI18nImplementationOptions
 ): Implementation
