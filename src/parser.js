@@ -204,6 +204,44 @@ function handleNode (node) {
           extractHiddenMeta(node.uniqueID, 'text', meta),
           node
         )
+      } else if (hasHiddenMeta && !merge.length) {
+        // End marker found in the text node but the start marker
+        // isn't at the beginning AND we're not already in a merge.
+        // This happens when a framework's template compiler collapses
+        // a literal-text prefix + dynamic `{{ t('...') }}` into a
+        // single text node, e.g. Vue's `<a>→ {{ t('goto.second') }}</a>`
+        // renders as one text node "→ ‌…Go to second page…‌".
+        // `containsHiddenStartMarker` uses `text.startsWith(marker)` so
+        // the prefix shifts the start marker off position-0 and the
+        // existing case-A check fails. `unwrap` can still decode the
+        // meta from anywhere in the string, so we can store the parent
+        // element as a translation segment — the editor's highlight
+        // covers the whole parent (prefix and all), which matches what
+        // a translator would expect to click on.
+        //
+        // Safe against regressions in other frameworks because:
+        //   - i18next + React Trans: produces separate text nodes per
+        //     segment (no prefix-merge), case A keeps firing.
+        //   - Angular / ngx-translate pipe: dynamic value is the whole
+        //     text node, case A keeps firing.
+        //   - vue-i18n split-marker (i18n-t component with slots): the
+        //     first text starts with a start marker, lands in case B
+        //     (merge), so `merge.length` is > 0 by the time we see the
+        //     end marker — the new branch's `!merge.length` guard
+        //     short-circuits, case D still closes the merge as 'html'.
+        //   - Stray invisible chars from other sources: `containsHiddenMeta`
+        //     requires the last 9 chars to decode to '}', which only
+        //     happens for an actual i18next-subliminal end marker.
+        const meta = unwrap(trimmedTxt)
+
+        uninstrumentedStore.remove(node.uniqueID, node)
+        store.save(
+          node.uniqueID,
+          meta.invisibleMeta,
+          'text',
+          extractHiddenMeta(node.uniqueID, 'text', meta),
+          node
+        )
       } else if (hasHiddenStartMarker) {
         merge.push({ childIndex: i, child, text: txt })
       } else if (merge.length && !hasHiddenMeta) {
