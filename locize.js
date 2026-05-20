@@ -3375,6 +3375,10 @@
           var meta = unwrap(trimmedTxt);
           uninstrumentedStore.remove(node.uniqueID, node);
           store.save(node.uniqueID, meta.invisibleMeta, 'text', extractHiddenMeta(node.uniqueID, 'text', meta), node);
+        } else if (hasHiddenMeta && !merge.length) {
+          var _meta = unwrap(trimmedTxt);
+          uninstrumentedStore.remove(node.uniqueID, node);
+          store.save(node.uniqueID, _meta.invisibleMeta, 'text', extractHiddenMeta(node.uniqueID, 'text', _meta), node);
         } else if (hasHiddenStartMarker) {
           merge.push({
             childIndex: i,
@@ -3393,11 +3397,11 @@
             child: child,
             text: txt
           });
-          var _meta = unwrap(merge.reduce(function (mem, item) {
+          var _meta2 = unwrap(merge.reduce(function (mem, item) {
             return mem + item.text;
           }, ''));
           uninstrumentedStore.removeKey(node.uniqueID, 'html', node, txt);
-          store.save(node.uniqueID, _meta.invisibleMeta, 'html', extractHiddenMeta(node.uniqueID, 'html', _meta, merge), node, merge);
+          store.save(node.uniqueID, _meta2.invisibleMeta, 'html', extractHiddenMeta(node.uniqueID, 'html', _meta2, merge), node, merge);
           merge = [];
         }
       });
@@ -3690,7 +3694,7 @@
 
   function ownKeys$1(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
   function _objectSpread$1(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys$1(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys$1(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-  function getImplementation$1(i18n) {
+  function getImplementation$2(i18n) {
     var impl = {
       getResource: function getResource(lng, ns, key) {
         return i18n.getResource && i18n.getResource(lng, ns, key);
@@ -3766,6 +3770,79 @@
       },
       triggerRerender: function triggerRerender() {
         i18n.emit('editorSaved');
+      }
+    };
+    return impl;
+  }
+
+  function getImplementation$1(i18n) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var sourceLng = options.sourceLng || 'en';
+    var defaultNS = options.defaultNS || 'common';
+    var readLocale = function readLocale() {
+      if (i18n.locale && _typeof(i18n.locale) === 'object' && 'value' in i18n.locale) {
+        return i18n.locale.value;
+      }
+      return i18n.locale;
+    };
+    var impl = {
+      getResource: function getResource(lng, ns, key) {
+        var msgs = i18n.getLocaleMessage(lng) || {};
+        return msgs[ns] && msgs[ns][key];
+      },
+      setResource: function setResource(lng, ns, key, value) {
+        i18n.mergeLocaleMessage(lng, _defineProperty({}, ns, _defineProperty({}, key, value)));
+      },
+      getResourceBundle: function getResourceBundle(lng, ns, cb) {
+        var msgs = i18n.getLocaleMessage(lng) || {};
+        cb(msgs[ns] || {});
+      },
+      getDefaultNS: function getDefaultNS() {
+        return defaultNS;
+      },
+      getLng: readLocale,
+      getSourceLng: function getSourceLng() {
+        return sourceLng;
+      },
+      getLocizeDetails: function getLocizeDetails() {
+        return {
+          projectId: options.projectId,
+          version: options.version || 'latest',
+          backendName: options.backendName,
+          sourceLng: sourceLng,
+          i18nFormat: 'vuei18n',
+          i18nFramework: 'vue-i18n',
+          defaultNS: defaultNS,
+          ns: options.ns || [defaultNS],
+          targetLngs: (options.targetLngs || []).filter(function (l) {
+            return l !== sourceLng;
+          })
+        };
+      },
+      bindLanguageChange: function bindLanguageChange(cb) {
+        if (typeof options.watch !== 'function') return;
+        options.watch(readLocale, function (lng) {
+          try {
+            cb(lng);
+          } catch (_) {}
+        });
+      },
+      bindMissingKeyHandler: function bindMissingKeyHandler(cb) {
+        var prev = i18n.missing;
+        i18n.missing = function (locale, key, vm, values) {
+          var dot = key.indexOf('.');
+          var ns = dot >= 0 ? key.slice(0, dot) : defaultNS;
+          var actualKey = dot >= 0 ? key.slice(dot + 1) : key;
+          try {
+            cb(locale, ns, actualKey, key);
+          } catch (_) {}
+          if (typeof prev === 'function') return prev(locale, key, vm, values);
+        };
+      },
+      triggerRerender: function triggerRerender() {
+        var lng = readLocale();
+        var msgs = i18n.getLocaleMessage(lng) || {};
+        i18n.setLocaleMessage(lng, Object.assign({}, msgs));
       }
     };
     return impl;
@@ -3913,7 +3990,7 @@
       init: function init(i18n) {
         var options = i18n.options;
         i18next = i18n;
-        var impl = getImplementation$1(i18n);
+        var impl = getImplementation$2(i18n);
         var showInContext = opt.show || getQsParameterByName(opt.qsProp) === 'true';
         if (isInIframe || showInContext) configurePostProcessor(i18next, options);
         start(impl, opt);
@@ -3942,13 +4019,15 @@
     locizePlugin: locizePlugin,
     locizeEditorPlugin: locizeEditorPlugin,
     setEditorLng: setEditorLng,
-    startStandalone: startStandalone
+    startStandalone: startStandalone,
+    getVueI18nImplementation: getImplementation$1
   };
 
   exports.PostProcessor = SubliminalPostProcessor;
   exports.addLocizeSavedHandler = addLocizeSavedHandler;
   exports.containsHiddenMeta = containsHiddenMeta;
   exports["default"] = index;
+  exports.getVueI18nImplementation = getImplementation$1;
   exports.locizeEditorPlugin = locizeEditorPlugin;
   exports.locizePlugin = locizePlugin;
   exports.setEditorLng = setEditorLng;
