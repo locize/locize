@@ -20,6 +20,7 @@ expectType<void>(turnOff())
 expectType<LocizePlugin>(locizePlugin)
 expectType<LocizePlugin>(locizeEditorPlugin())
 expectType<LocizePlugin>(locizeEditorPlugin({ ribbonPosition: 'bottom-left' }))
+expectType<LocizePlugin>(locizeEditorPlugin({ shadowDOM: true }))
 expectType<void>(setEditorLng('en'))
 expectType<void>(addLocizeSavedHandler((data) => {}))
 
@@ -31,3 +32,4 @@ i18next.use(PostProcessor).init()
 
 expectType<void>(startStandalone())
 expectType<void>(startStandalone({ ribbonPosition: 'bottom-right' }))
+expectType<void>(startStandalone({ shadowDOM: true }))
