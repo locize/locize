@@ -1,8 +1,8 @@
 import { colors } from '../vars.js'
 import { RibbonBox } from './elements/ribbonBox.js'
-import { HighlightBox } from './elements/highlightBox.js'
+import { HighlightBox, positionHighlightBox } from './elements/highlightBox.js'
 import { computePosition, flip, shift, offset, arrow } from '@floating-ui/dom'
-import { getOptimizedBoundingRectEle } from './utils.js'
+import { getOptimizedBoundingRectEle, isInViewport } from './utils.js'
 
 // const eleToOutline = [
 //   'DIV',
@@ -29,10 +29,10 @@ import { getOptimizedBoundingRectEle } from './utils.js'
 // const originalStyles = {}
 const selected = {}
 
-// Place the ribbon next to its element. Shared by the initial highlight and by
-// repositionHighlight, so a ribbon that follows drifting content lands exactly
-// where it would have on creation.
-function positionRibbon (rectEle, actions, arrowEle) {
+// Positions (or re-positions) a ribbon box next to its reference element.
+// Split out of highlight() so an existing ribbon can be moved in place when
+// its node moves, instead of being torn down and re-created.
+function positionRibbonBox (rectEle, actions, arrowEle) {
   return computePosition(rectEle, actions, {
     placement: 'right',
     middleware: [
@@ -83,6 +83,43 @@ function positionRibbon (rectEle, actions, arrowEle) {
   })
 }
 
+// Re-aligns an item's existing overlays with its node, in place. A box is
+// positioned in page coordinates once, when it is created - when the node
+// moves without the page scrolling (a scrolling container, a reflow above
+// it), the box stays behind. Moving the existing elements avoids the
+// flicker that destroy-and-recreate would cause on every recompute tick.
+export function repositionOverlays (item, node) {
+  if (!item.highlightBox || !node) return
+
+  const rectEle = getOptimizedBoundingRectEle(node)
+  const rect = rectEle.getBoundingClientRect()
+  const style = item.highlightBox.style
+  const drifted =
+    Math.abs(parseFloat(style.top) - (rect.top - 2 + window.scrollY)) > 1 ||
+    Math.abs(parseFloat(style.left) - (rect.left - 2 + window.scrollX)) > 1 ||
+    Math.abs(parseFloat(style.height) - (rect.height + 4)) > 1 ||
+    Math.abs(parseFloat(style.width) - (rect.width + 4)) > 1
+
+  // The ribbon is placed with floating-ui's shift(), which clamps it into the
+  // viewport - re-placing it for an off-screen node would pin it to the screen
+  // edge, pointing at nothing. Hide it while the node is off-screen; re-placing
+  // it below turns it back on (positionRibbonBox sets display).
+  const ribbonHidden =
+    item.ribbonBox && item.ribbonBox.style.display === 'none'
+  if (item.ribbonBox && !isInViewport(node)) {
+    item.ribbonBox.style.display = 'none'
+    if (drifted) positionHighlightBox(item.highlightBox, rectEle)
+    return
+  }
+
+  if (!drifted && !ribbonHidden) return
+
+  positionHighlightBox(item.highlightBox, rectEle)
+  if (item.ribbonBox && item.ribbonArrow) {
+    positionRibbonBox(rectEle, item.ribbonBox, item.ribbonArrow)
+  }
+}
+
 export function highlight (item, node, keys) {
   // const { id } = item
 
@@ -124,9 +161,9 @@ export function highlight (item, node, keys) {
     const { box: actions, arrow: arrowEle } = RibbonBox(keys)
     document.body.appendChild(actions)
 
-    positionRibbon(rectEle, actions, arrowEle)
+    positionRibbonBox(rectEle, actions, arrowEle)
 
-    // store them for remove
+    // store them for remove and for repositioning in place
     item.ribbonBox = actions
     item.ribbonArrow = arrowEle
   }
@@ -206,34 +243,6 @@ export function selectedHighlight (item, node, keys) {
   // }
 
   selected[id] = true
-}
-
-// A highlight box is positioned in page coordinates once, when it is created,
-// and nothing moved it afterwards - so content that shifts under a still mouse
-// (a container scrolling, a layout change) left the overlay behind on its old
-// spot. Update the existing elements in place instead of removing and
-// rebuilding them: no flicker, no ribbon rebuild, and a selected key's box -
-// which no distance rule is allowed to clear - keeps following its text.
-export function repositionHighlight (item, node) {
-  if (!item.highlightBox) return
-
-  const rectEle = getOptimizedBoundingRectEle(node)
-  const rect = rectEle.getBoundingClientRect()
-  const top = `${rect.top - 2 + window.scrollY}px`
-  const left = `${rect.left - 2 + window.scrollX}px`
-
-  // page scrolling moves rect and scrollY by the same amount, so the page
-  // coordinates stay put and this is a no-op - only real drift gets through
-  if (item.highlightBox.style.top === top && item.highlightBox.style.left === left) return
-
-  Object.assign(item.highlightBox.style, {
-    top,
-    left,
-    height: `${rect.height + 4}px`,
-    width: `${rect.width + 4}px`
-  })
-
-  if (item.ribbonBox && item.ribbonArrow) positionRibbon(rectEle, item.ribbonBox, item.ribbonArrow)
 }
 
 export function recalcSelectedHighlight (item, node, keys) {

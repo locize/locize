@@ -186,6 +186,33 @@
     <shadow-nested></shadow-nested>
   </div>
 
+  </div>
+
+  <hr />
+  <div id="reposition-test">
+    <h4>Selected key in a scrolling container (overlay follows the text):</h4>
+    <p>
+      The line below sits in a scrollable container, so the document never
+      scrolls and <code>window.scrollY</code> stays 0. Click the button to
+      select it (simulated - selection normally comes from the editor iframe),
+      then scroll the <em>container</em>: the selection box must follow the
+      text, moved in place rather than torn down and re-created. It used to
+      stay fixed on screen while the text moved away underneath it, and the
+      selection guard meant nothing could ever correct it. Scroll the whole
+      page until the line leaves the viewport: the ribbon must hide (floating-ui
+      would otherwise clamp it to the screen edge, pointing at nothing) and come
+      back when the line scrolls back into view.
+    </p>
+    <button id="simulateSelect" style="padding: 8px 16px; cursor: pointer;">
+      select the line below
+    </button>
+    <div id="repositionContainer" style="height: 140px; overflow-y: auto; border: 1px solid #6a9ac9; padding: 8px; margin-top: 8px;">
+      <div style="height: 60px;">(scroll inside this box)</div>
+      <p id="repositionLine" data-i18n="title">Select me, then scroll the container</p>
+      <div style="height: 300px;"></div>
+    </div>
+  </div>
+
   <div id="non-loc-i18next">
     <h4>Some instrumented stuff</h4>
     <p data-i18n="translation:aNonI18nextKey;[title]common:anotherNonI18nextKey" title="some non i18next title">
@@ -364,6 +391,25 @@
       localizeShadow(root)
       console.log('shadow DOM test: attached a shadow root after locize started')
     }, 7000)
+    // Reposition test: mark the line as selected the way the editor would.
+    // Selection is normally driven by a message from the editor iframe, which
+    // needs a locize login - simulate just the selection so the container
+    // scroll case is testable without one.
+    document.getElementById('simulateSelect').addEventListener('click', async function () {
+      const { store } = await import('/../../src/store.js')
+      const { highlight, selectedHighlight } = await import('/../../src/ui/highlightNode.js')
+      const line = document.getElementById('repositionLine')
+      const item = Object.values(store.data).find(function (it) { return it.node === line })
+      if (!item) {
+        console.warn('reposition test: line not parsed yet, try again in a second')
+        return
+      }
+      // hover first, like a real click-to-select: the item keeps its ribbon
+      // through the selection, so the ribbon behaviour is covered too
+      highlight(item, item.node, item.keys)
+      selectedHighlight(item, item.node, item.keys)
+      console.log('reposition test: selection box + ribbon created - now scroll the container')
+    })
   </script>
 
   <!-- <script

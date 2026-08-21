@@ -6,7 +6,7 @@ import { isShadowDOMEnabled } from '../shadowRoots.js'
 import {
   highlight,
   highlightUninstrumented,
-  repositionHighlight,
+  repositionOverlays,
   resetHighlight
 } from './highlightNode.js'
 
@@ -115,14 +115,16 @@ const debouncedUpdateDistance = debounce(function (e, observer) {
   }
 
   Object.values(store.data).forEach(item => {
+    // an existing overlay may belong to content that has moved (container
+    // scroll, reflow above it) - realign it in place first. Matters most for
+    // a selected key's box, which the resets below deliberately leave alone.
+    if (item.highlightBox) repositionOverlays(item, item.node)
     // if not visible do not calculate distance of mouse - but do clear a
     // highlight it may still be holding, it cannot be under the mouse
     if (!isInViewport(item.node)) {
       if (hasOverlay(item)) resetHighlight(item, item.node, item.keys)
       return
     }
-    // content may have moved under a still mouse - keep the overlay on its node
-    repositionHighlight(item, item.node)
     // if covered by modal/overlay do not highlight
     if (isOccluded(item.node, e)) { resetHighlight(item, item.node, item.keys); return }
 
@@ -139,14 +141,16 @@ const debouncedUpdateDistance = debounce(function (e, observer) {
   })
 
   Object.values(uninstrumentedStore.data).forEach(item => {
+    // an existing overlay may belong to content that has moved (container
+    // scroll, reflow above it) - realign it in place first. Matters most for
+    // a selected key's box, which the resets below deliberately leave alone.
+    if (item.highlightBox) repositionOverlays(item, item.node)
     // if not visible do not calculate distance of mouse - but do clear a
     // highlight it may still be holding, it cannot be under the mouse
     if (!isInViewport(item.node)) {
       if (hasOverlay(item)) resetHighlight(item, item.node, item.keys)
       return
     }
-    // content may have moved under a still mouse - keep the overlay on its node
-    repositionHighlight(item, item.node)
     // if covered by modal/overlay do not highlight
     if (isOccluded(item.node, e)) { resetHighlight(item, item.node, item.keys); return }
 
