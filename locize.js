@@ -962,11 +962,11 @@
       return;
     }
     Object.values(store.data).forEach(function (item) {
+      if (item.highlightBox) repositionOverlays(item, item.node);
       if (!isInViewport(item.node)) {
         if (hasOverlay(item)) resetHighlight(item, item.node, item.keys);
         return;
       }
-      repositionHighlight(item, item.node);
       if (isOccluded(item.node, e)) {
         resetHighlight(item, item.node, item.keys);
         return;
@@ -980,11 +980,11 @@
       }
     });
     Object.values(uninstrumentedStore.data).forEach(function (item) {
+      if (item.highlightBox) repositionOverlays(item, item.node);
       if (!isInViewport(item.node)) {
         if (hasOverlay(item)) resetHighlight(item, item.node, item.keys);
         return;
       }
-      repositionHighlight(item, item.node);
       if (isOccluded(item.node, e)) {
         resetHighlight(item, item.node, item.keys);
         return;
@@ -1386,11 +1386,18 @@
     };
   }
 
-  function HighlightBox(ele, borderColor, shadowColor) {
+  function positionHighlightBox(box, ele) {
     var rect = ele.getBoundingClientRect();
+    box.style.top = "".concat(rect.top - 2 + window.scrollY, "px");
+    box.style.left = "".concat(rect.left - 2 + window.scrollX, "px");
+    box.style.height = "".concat(rect.height + 4, "px");
+    box.style.width = "".concat(rect.width + 4, "px");
+  }
+  function HighlightBox(ele, borderColor, shadowColor) {
     var box = document.createElement('div');
     box.classList.add('i18next-editor-highlight');
-    box.style = "position: absolute; z-index: 99999; pointer-events: none; top: ".concat(rect.top - 2 + window.scrollY, "px; left: ").concat(rect.left - 2 + window.scrollX, "px; height: ").concat(rect.height + 4, "px; width: ").concat(rect.width + 4, "px; border: ").concat(borderColor === 'none' ? 'none' : "1px solid ".concat(borderColor), "; border-radius: 15px; ").concat(shadowColor ? "box-shadow: inset 1px 1px 5px rgba(255, 255, 255, 0.1), inset -1px -1px 5px rgba(61, 67, 69, 0.3), 0 0 20px 0 ".concat(shadowColor, ";") : '');
+    box.style = "position: absolute; z-index: 99999; pointer-events: none; border: ".concat(borderColor === 'none' ? 'none' : "1px solid ".concat(borderColor), "; border-radius: 15px; ").concat(shadowColor ? "box-shadow: inset 1px 1px 5px rgba(255, 255, 255, 0.1), inset -1px -1px 5px rgba(61, 67, 69, 0.3), 0 0 20px 0 ".concat(shadowColor, ";") : '');
+    positionHighlightBox(box, ele);
     box.setAttribute('data-i18next-editor-element', 'true');
     return box;
   }
@@ -3321,7 +3328,7 @@
   };
 
   var selected = {};
-  function positionRibbon(rectEle, actions, arrowEle) {
+  function positionRibbonBox(rectEle, actions, arrowEle) {
     return computePosition(rectEle, actions, {
       placement: 'right',
       middleware: [flip({
@@ -3364,6 +3371,24 @@
       }
     });
   }
+  function repositionOverlays(item, node) {
+    if (!item.highlightBox || !node) return;
+    var rectEle = getOptimizedBoundingRectEle(node);
+    var rect = rectEle.getBoundingClientRect();
+    var style = item.highlightBox.style;
+    var drifted = Math.abs(parseFloat(style.top) - (rect.top - 2 + window.scrollY)) > 1 || Math.abs(parseFloat(style.left) - (rect.left - 2 + window.scrollX)) > 1 || Math.abs(parseFloat(style.height) - (rect.height + 4)) > 1 || Math.abs(parseFloat(style.width) - (rect.width + 4)) > 1;
+    var ribbonHidden = item.ribbonBox && item.ribbonBox.style.display === 'none';
+    if (item.ribbonBox && !isInViewport(node)) {
+      item.ribbonBox.style.display = 'none';
+      if (drifted) positionHighlightBox(item.highlightBox, rectEle);
+      return;
+    }
+    if (!drifted && !ribbonHidden) return;
+    positionHighlightBox(item.highlightBox, rectEle);
+    if (item.ribbonBox && item.ribbonArrow) {
+      positionRibbonBox(rectEle, item.ribbonBox, item.ribbonArrow);
+    }
+  }
   function highlight(item, node, keys) {
     var rectEle = getOptimizedBoundingRectEle(node);
     if (!item.highlightBox) {
@@ -3376,7 +3401,7 @@
         actions = _RibbonBox.box,
         arrowEle = _RibbonBox.arrow;
       document.body.appendChild(actions);
-      positionRibbon(rectEle, actions, arrowEle);
+      positionRibbonBox(rectEle, actions, arrowEle);
       item.ribbonBox = actions;
       item.ribbonArrow = arrowEle;
     }
@@ -3400,21 +3425,6 @@
       item.highlightBox = box;
     }
     selected[id] = true;
-  }
-  function repositionHighlight(item, node) {
-    if (!item.highlightBox) return;
-    var rectEle = getOptimizedBoundingRectEle(node);
-    var rect = rectEle.getBoundingClientRect();
-    var top = "".concat(rect.top - 2 + window.scrollY, "px");
-    var left = "".concat(rect.left - 2 + window.scrollX, "px");
-    if (item.highlightBox.style.top === top && item.highlightBox.style.left === left) return;
-    Object.assign(item.highlightBox.style, {
-      top: top,
-      left: left,
-      height: "".concat(rect.height + 4, "px"),
-      width: "".concat(rect.width + 4, "px")
-    });
-    if (item.ribbonBox && item.ribbonArrow) positionRibbon(rectEle, item.ribbonBox, item.ribbonArrow);
   }
   function recalcSelectedHighlight(item, node, keys) {
     if (!selected[item.id]) return;
