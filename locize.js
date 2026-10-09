@@ -4160,7 +4160,7 @@
     var showInContext = opt.show || getQsParameterByName(opt.qsProp || 'incontext') === 'true';
     var scriptEle = document.getElementById('locize');
     var config = {};
-    ['projectId', 'version', 'ribbonPosition', 'shadowDOM'].forEach(function (attr) {
+    ['projectId', 'version', 'ribbonPosition', 'shadowDOM', 'ssoIdentifier'].forEach(function (attr) {
       if (!scriptEle) return;
       var value = scriptEle.getAttribute(attr.toLowerCase()) || scriptEle.getAttribute('data-' + attr.toLowerCase());
       if (value === 'true') value = true;
@@ -4196,7 +4196,8 @@
           console.error('[locize] InContext editor did not connect within 15s. Likely causes: you are not logged in at locize (open https://www.locize.app in another tab and log in), the page CSP blocks frame-src ' + getIframeUrl() + ', or an adblocker blocked the iframe. Enable diagnostics via localStorage.setItem(\'locize-debug\', \'true\').');
           showPopupError('Could not connect to the locize editor. Are you logged in at locize.app? See the browser console for details.');
         }, 15000);
-        var popupEl = Popup(getIframeUrl(), function () {
+        var iframeUrl = getIframeUrl() + (config.ssoIdentifier ? "?sso=".concat(encodeURIComponent(config.ssoIdentifier)) : '');
+        var popupEl = Popup(iframeUrl, function () {
           var _document$getElementB;
           api.source = (_document$getElementB = document.getElementById('i18next-editor-iframe')) === null || _document$getElementB === void 0 ? void 0 : _document$getElementB.contentWindow;
           api.initialized = false;
