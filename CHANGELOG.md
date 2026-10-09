@@ -1,3 +1,7 @@
+### 4.5.1
+
+- fix: `ssoIdentifier` can now also be set in the i18next `editor` options (`editor: { ssoIdentifier }`). The i18next adapter only copied `projectId` and `version` from the `backend`/`editor` blocks into the plugin config, so setups that register the plugin without options - locizify, or a plain `locizePlugin` - had no way to pass the option except a script attribute on an element with `id="locize"`. A plugin option or script attribute still takes precedence.
+
 ### 4.5.0
 
 - feat: `ssoIdentifier` option for teams that sign in to locize through SAML SSO. Without a locize session the editor popup signs the user in through a small top-level locize window, and an SSO user had to type their email there first so locize could find their provider. With `ssoIdentifier` set (the `<id>` of the `https://www.locize.app/login/<id>` link) the popup passes it to the editor as `?sso=<id>`, and the sign-in window goes straight to that identity provider - with an active session at the provider, one click and no typing. Accepted as a plugin option, a `startStandalone` option or an `ssoidentifier` script attribute, typed in `index.d.ts`/`index.d.mts`. An editor that does not know the parameter simply ignores it.

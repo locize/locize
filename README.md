@@ -160,6 +160,7 @@ step and go straight to your identity provider:
 
 ```js
 i18next.use(locizeEditorPlugin({ ssoIdentifier: 'your-sso-id' }))
+// or in the i18next options, e.g. with locizify: editor: { ssoIdentifier: 'your-sso-id' }
 // or startStandalone({ ssoIdentifier: 'your-sso-id' })
 // or <script id="locize" ssoidentifier="your-sso-id" ...>
 ```

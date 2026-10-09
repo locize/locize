@@ -101,7 +101,10 @@ export function getImplementation (i18n) {
       return {
         ...opts,
         projectId: pickFrom.projectId,
-        version: pickFrom.version
+        version: pickFrom.version,
+        // lets `editor: { ssoIdentifier }` reach the popup where the plugin
+        // is registered without options (locizify, plain `locizePlugin`)
+        ssoIdentifier: pickFrom.ssoIdentifier
       }
     },
     bindLanguageChange: cb => {
