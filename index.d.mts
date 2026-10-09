@@ -78,6 +78,13 @@ export function locizeEditorPlugin(opt?: {
    * unnecessary for pages that don't use shadow DOM.
    */
   shadowDOM?: boolean
+  /**
+   * Identifier of your SAML SSO provider (the `<id>` of your
+   * `https://www.locize.app/login/<id>` login link). When the editor popup
+   * finds no locize session, the sign-in window goes straight to that
+   * provider instead of asking for the email first.
+   */
+  ssoIdentifier?: string
 }): LocizePlugin
 
 /**
@@ -113,6 +120,7 @@ export function startStandalone(opt?: {
   version?: string
   ribbonPosition?: 'bottom-right' | 'bottom-left'
   shadowDOM?: boolean
+  ssoIdentifier?: string
   implementation?: Implementation
 }): void
 

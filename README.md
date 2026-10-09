@@ -150,6 +150,20 @@ started.
 It is off by default because it widens what the editor touches, which is
 unnecessary for pages that do not use shadow DOM.
 
+## SSO login
+
+When the editor popup finds no locize session, it offers to sign in through a
+small locize window. SSO users enter their email there first, so locize can
+find their provider. If your team signs in through SAML SSO (the
+`https://www.locize.app/login/<id>` link), pass that `<id>` to skip the email
+step and go straight to your identity provider:
+
+```js
+i18next.use(locizeEditorPlugin({ ssoIdentifier: 'your-sso-id' }))
+// or startStandalone({ ssoIdentifier: 'your-sso-id' })
+// or <script id="locize" ssoidentifier="your-sso-id" ...>
+```
+
 ## troubleshooting
 
 If the editor popup stays blank or "could not connect" is shown:

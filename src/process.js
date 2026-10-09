@@ -27,7 +27,7 @@ export function start (
   const scriptEle = document.getElementById('locize')
 
   let config = {}
-  ;['projectId', 'version', 'ribbonPosition', 'shadowDOM'].forEach(attr => {
+  ;['projectId', 'version', 'ribbonPosition', 'shadowDOM', 'ssoIdentifier'].forEach(attr => {
     if (!scriptEle) return
     let value =
       scriptEle.getAttribute(attr.toLowerCase()) ||
@@ -112,7 +112,10 @@ export function start (
           'Could not connect to the locize editor. Are you logged in at locize.app? See the browser console for details.'
         )
       }, 15000)
-      const popupEl = Popup(getIframeUrl(), () => {
+      // ssoIdentifier: a user without a session gets sent straight to the
+      // SSO login of that provider instead of typing their email first
+      const iframeUrl = getIframeUrl() + (config.ssoIdentifier ? `?sso=${encodeURIComponent(config.ssoIdentifier)}` : '')
+      const popupEl = Popup(iframeUrl, () => {
         // The iframe `load` event fires on every navigation, including
         // the implicit re-navigation that the browser performs when our
         // resurrection observer re-attaches the popup after a hydration-
