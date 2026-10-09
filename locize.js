@@ -4033,7 +4033,8 @@
         var pickFrom = _objectSpread$1(_objectSpread$1({}, i18n.options.backend), i18n.options.editor);
         return _objectSpread$1(_objectSpread$1({}, opts), {}, {
           projectId: pickFrom.projectId,
-          version: pickFrom.version
+          version: pickFrom.version,
+          ssoIdentifier: pickFrom.ssoIdentifier
         });
       },
       bindLanguageChange: function bindLanguageChange(cb) {
