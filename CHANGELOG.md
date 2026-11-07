@@ -1,3 +1,7 @@
+### 4.5.2
+
+- fix: with i18next 27, a text that falls back to the key or the default value because its translation is an empty string or an object is no longer marked as a translation for the InContext editor (i18next-subliminal 1.0.2). The editor only reads the stored text for real translations, so it no longer gets an empty string or an object there.
+
 ### 4.5.1
 
 - fix: `ssoIdentifier` can now also be set in the i18next `editor` options (`editor: { ssoIdentifier }`). The i18next adapter only copied `projectId` and `version` from the `backend`/`editor` blocks into the plugin config, so setups that register the plugin without options - locizify, or a plain `locizePlugin` - had no way to pass the option except a script attribute on an element with `id="locize"`. A plugin option or script attribute still takes precedence.

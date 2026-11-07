@@ -153,12 +153,10 @@
         key = options.i18nResolved.exactUsedKey;
         ns = options.i18nResolved.usedNS;
         lng = options.i18nResolved.usedLng;
-        if (options.i18nResolved.res === undefined) {
-          if (key !== value) {
-            source = 'default';
-          } else {
-            source = 'key';
-          }
+        var res = options.i18nResolved.res;
+        var fellBack = res === undefined || res === null || res === '' && value !== '' || _typeof(res) === 'object' && !Array.isArray(res);
+        if (fellBack) {
+          source = key !== value ? 'default' : 'key';
         } else {
           source = 'translation';
         }
