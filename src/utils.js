@@ -225,13 +225,51 @@ export function getElementNamespace (el) {
 export function getQsParameterByName (name, url) {
   if (typeof window === 'undefined') return null
   if (!url) url = window.location.href.toLowerCase()
+  // the url is compared in lower case, so the name is too (a qsProp like 'myParam' never matched)
   // eslint-disable-next-line no-useless-escape
-  name = name.replace(/[\[\]]/g, '\\$&')
+  name = name.toLowerCase().replace(/[\[\]]/g, '\\$&')
   const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)')
   const results = regex.exec(url)
   if (!results) return null
   if (!results[2]) return ''
   return decodeURIComponent(results[2].replace(/\+/g, ' '))
+}
+
+// ?incontext=true is remembered for the tab (sessionStorage), so the editor opens again on the page a link leads to;
+// ?incontext=false forgets it. Without storage (server side, blocked) only the query counts.
+export function isInContextRequested (qsProp = 'incontext') {
+  if (typeof window === 'undefined') return false
+  const qs = getQsParameterByName(qsProp)
+  const storageKey = `locize-${qsProp}`
+  try {
+    if (qs === 'true') window.sessionStorage.setItem(storageKey, 'true')
+    if (qs === 'false') {
+      window.sessionStorage.removeItem(storageKey)
+      rememberMinimized(false)
+    }
+    return qs === 'true' || window.sessionStorage.getItem(storageKey) === 'true'
+  } catch (e) {
+    return qs === 'true'
+  }
+}
+
+// a minimized popup is remembered for the tab too (ui/elements/popup.js), so the next page starts minimized;
+// restoring it from the ribbon or ?incontext=false forgets it
+const minimizedKey = 'locize-incontext-minimized'
+
+export function rememberMinimized (minimized) {
+  try {
+    if (minimized) window.sessionStorage.setItem(minimizedKey, 'true')
+    else window.sessionStorage.removeItem(minimizedKey)
+  } catch (e) {}
+}
+
+export function wasMinimized () {
+  try {
+    return window.sessionStorage.getItem(minimizedKey) === 'true'
+  } catch (e) {
+    return false
+  }
 }
 
 // Opt-in diagnostics: localStorage.setItem('locize-debug', 'true') or ?locizeDebug=true

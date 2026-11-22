@@ -1,6 +1,6 @@
 import { PostProcessor, unwrap } from 'i18next-subliminal'
 import { start } from './process.js'
-import { isInIframe, getQsParameterByName } from './utils.js'
+import { isInIframe, isInContextRequested } from './utils.js'
 import * as implementations from './implementations/index.js'
 
 function configurePostProcessor (i18next, options) {
@@ -147,7 +147,7 @@ export const locizeEditorPlugin = (opt = {}) => {
 
       const impl = implementations.i18next.getImplementation(i18n)
 
-      const showInContext = opt.show || getQsParameterByName(opt.qsProp) === 'true'
+      const showInContext = opt.show || isInContextRequested(opt.qsProp)
 
       // do only manipulate html if incontext popup is shown or if website is rendered in iframe in incontext view of locize ui.
       if (isInIframe || showInContext) configurePostProcessor(i18next, options)

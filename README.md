@@ -61,7 +61,7 @@ If not using recommended 1) or 2) the script will send the raw texts to the edit
 
 This plugin is already included in [locizify](https://github.com/locize/locizify) >= v4.1.0
 
-**Hint:** show the incontext editor popup by adding incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
+**Hint:** show the incontext editor popup by adding incontext=true query paramenter, i.e. http://localhost:8080?incontext=true. The editor then stays on for that browser tab, also on the pages a link leads to; `incontext=false` switches it off again.
 
 ## with i18next
 
@@ -73,7 +73,7 @@ import { locizePlugin } from 'locize'
 i18next.use(locizePlugin)
 ```
 
-**Hint:** this will show the Locize incontext editor as a popup in your website only if the url contains the incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
+**Hint:** this will show the Locize incontext editor as a popup in your website only if the url contains (or earlier in this tab contained) the incontext=true query paramenter, i.e. http://localhost:8080?incontext=true. The editor then stays on for that browser tab, also on the pages a link leads to; `incontext=false` switches it off again.
 
 Open as default:
 
@@ -208,7 +208,7 @@ startStandalone({
 })
 ```
 
-**Hint:** show the incontext editor popup by adding incontext=true query paramenter, i.e. http://localhost:8080?incontext=true
+**Hint:** show the incontext editor popup by adding incontext=true query paramenter, i.e. http://localhost:8080?incontext=true. The editor then stays on for that browser tab, also on the pages a link leads to; `incontext=false` switches it off again.
 
 or
 

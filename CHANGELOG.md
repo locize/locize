@@ -1,3 +1,8 @@
+### 4.6.0
+
+- feat: the InContext editor popup stays open when you follow a link on your site. It was only started when the url contained `?incontext=true` (or your `qsProp`), so a click on a link - on purpose, or while trying to pick a text that is a link - loaded a page without the parameter, and the popup was gone until you added it again by hand. The parameter is now remembered for the browser tab in `sessionStorage`, so the next page in the same tab opens the editor again; `?incontext=false` forgets it. Without storage (server side, storage blocked) only the url counts, as before. The view inside Locize is unchanged. A minimized popup is remembered for the tab the same way, also with `show: true`, so the next page or a reload starts minimized instead of opening the editor full size again; restoring it from the ribbon forgets that, and so does `?incontext=false` on a site without `show: true`. On such a page the ribbon exists from the start, so the watcher that re-attaches the popup after a hydration recovery re-attaches the ribbon too.
+- fix: a custom `qsProp` with capital letters, such as `qsProp: 'myParam'`, never opened the editor. The url is compared in lower case, but the parameter name was not, so `?myParam=true` never matched; the name is now lowercased too.
+
 ### 4.5.2
 
 - fix: with i18next 27, a text that falls back to the key or the default value because its translation is an empty string or an object is no longer marked as a translation for the InContext editor (i18next-subliminal 1.0.2). The editor only reads the stored text for real translations, so it no longer gets an empty string or an object there.

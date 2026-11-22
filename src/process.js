@@ -6,7 +6,7 @@ import { initDragElement, initResizeElement } from './ui/popup.js'
 import { Popup, popupId, showPopupError } from './ui/elements/popup.js'
 import { getIframeUrl } from './vars.js'
 import { api } from './api/index.js'
-import { isInIframe, getQsParameterByName, debugLog } from './utils.js'
+import { isInIframe, isInContextRequested, debugLog } from './utils.js'
 import * as implementations from './implementations/index.js'
 
 const dummyImplementation = implementations.dummy.getImplementation()
@@ -20,8 +20,7 @@ export function start (
 ) {
   if (typeof document === 'undefined') return
 
-  const showInContext =
-    opt.show || getQsParameterByName(opt.qsProp || 'incontext') === 'true'
+  const showInContext = opt.show || isInContextRequested(opt.qsProp || 'incontext')
 
   // get locize id, version
   const scriptEle = document.getElementById('locize')
@@ -143,13 +142,16 @@ export function start (
         let reattachments = 0
         // eslint-disable-next-line no-undef
         const watcher = new MutationObserver(() => {
-          if (document.getElementById(popupId)) return
+          // a popup that started minimized has its ribbon beside it, the only way back while the popup is off screen
+          const ribbonGone = popupEl.ribbon && !popupEl.ribbon.isConnected
+          if (document.getElementById(popupId) && !ribbonGone) return
           if (reattachments >= MAX_REATTACHMENTS) {
             watcher.disconnect()
             return
           }
           reattachments++
-          document.documentElement.append(popupEl)
+          if (!document.getElementById(popupId)) document.documentElement.append(popupEl)
+          if (ribbonGone) document.documentElement.append(popupEl.ribbon)
         })
         watcher.observe(document.documentElement, { childList: true, subtree: true })
         setTimeout(() => watcher.disconnect(), WATCH_DURATION_MS)

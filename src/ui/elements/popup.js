@@ -2,6 +2,7 @@ import { colors } from '../../vars.js'
 import { sheet } from '../stylesheet.js'
 import { startMouseTracking, stopMouseTracking } from '../mouseDistance.js'
 import { api } from '../../api/postMessage.js'
+import { rememberMinimized, wasMinimized } from '../../utils.js'
 
 import { minimizeIconUrl, locizeIconUrl } from './icons.js'
 
@@ -241,23 +242,32 @@ export function Popup (url, cb, opt = {}) {
   `
 
   popup.appendChild(header)
-  header.appendChild(
-    Minimize(popup, () => {
-      const ribbon = Ribbon(popup, () => {
-        popup.style.animation = 'i18next-editor-animate-top 1s'
+  const minimize = Minimize(popup, () => {
+    rememberMinimized(true)
+    const ribbon = Ribbon(popup, () => {
+      rememberMinimized(false)
+      popup.ribbon = null
+      // slide back to where the popup is now: the editor may have moved or resized it while it was minimized (a page
+      // that started minimized copied the default corner)
+      popup.style.setProperty('--i18next-editor-popup-position-top', popup.style.top)
+      popup.style.setProperty('--i18next-editor-popup-position-left', popup.style.left)
+      popup.style.animation = 'i18next-editor-animate-top 1s'
 
-        // don't resume highlighting if the editor paused it (navigate mode)
-        if (api.editingEnabled !== false) startMouseTracking()
+      // don't resume highlighting if the editor paused it (navigate mode)
+      if (api.editingEnabled !== false) startMouseTracking()
 
-        setTimeout(() => {
-          document.body.removeChild(ribbon)
-        }, 1000)
-      }, opt.ribbonPosition)
+      setTimeout(() => {
+        ribbon.remove()
+      }, 1000)
+    }, opt.ribbonPosition)
 
-      document.body.appendChild(ribbon)
-      stopMouseTracking()
-    })
-  )
+    // beside the popup on <html>; the only way back to the editor while the popup is off screen, so the watcher in
+    // process.js that re-attaches the popup after a hydration recovery re-attaches the ribbon too (popup.ribbon)
+    popup.ribbon = ribbon
+    document.documentElement.append(ribbon)
+    stopMouseTracking()
+  })
+  header.appendChild(minimize)
 
   const iframe = document.createElement('iframe')
   iframe.setAttribute('id', 'i18next-editor-iframe')
@@ -290,6 +300,12 @@ export function Popup (url, cb, opt = {}) {
   backdrop-filter: blur(2px);
 `
   popup.appendChild(overlay)
+
+  // minimized on an earlier page of this tab: start minimized, without the slide
+  if (wasMinimized()) {
+    minimize.onclick()
+    popup.style.animation = 'i18next-editor-animate-bottom 0s forwards'
+  }
 
   return popup
 }
