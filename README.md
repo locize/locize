@@ -218,6 +218,19 @@ startStandalone({
 })
 ```
 
+If your setup decides itself whether the editor is on, for example because it marks its own texts for the editor (a vue-i18n app), use the url check the script uses, so the tab memory and `incontext=false` work there too. Like the script, also start when the page is shown inside the Locize incontext view (an iframe):
+
+```js
+import { isInContextRequested, startStandalone } from 'locize'
+
+const inIframe = (() => { try { return self !== top } catch (e) { return true } })()
+
+if (inIframe || isInContextRequested()) {
+  // mark your texts for the editor...
+  startStandalone({ show: true })
+}
+```
+
 ### vanilla javascript
 
 Only relevant when your website is shown inside the Locize incontext solution via incontext view (https://www.locize.com/docs/incontext).

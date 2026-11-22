@@ -110,6 +110,16 @@ export function turnOff(): void
 export function addLocizeSavedHandler(fn: (data: any) => void): void
 
 /**
+ * Whether the InContext editor was asked for in this browser tab: `?incontext=true` (or your `qsProp`) in the url
+ * now, or earlier in the same tab (remembered in sessionStorage); `?incontext=false` forgets it. The url check the
+ * plugin and `startStandalone` use, for a setup that decides itself whether to start the editor and mark its texts,
+ * e.g. vue-i18n with `startStandalone({ show: true })`. It does not cover a page shown inside the InContext view of
+ * Locize (an iframe): check `self !== top` for that, as the plugin does. Like the script on start, a call stores or
+ * clears the flag for the tab. False on the server.
+ */
+export function isInContextRequested(qsProp?: string): boolean
+
+/**
  * If used without i18next.
  *
  * Pass `implementation` when wiring up a non-i18next host (e.g.

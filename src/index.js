@@ -2,6 +2,7 @@ import { locizePlugin, locizeEditorPlugin } from './locizePlugin.js'
 import { startStandalone } from './startStandalone.js'
 import { api, addLocizeSavedHandler, setEditorLng } from './api/index.js'
 import { getImplementation as getVueI18nImplementation } from './implementations/vueI18nImplementation.js'
+import { isInContextRequested } from './utils.js'
 import {
   wrap,
   unwrap,
@@ -27,7 +28,8 @@ export {
   addLocizeSavedHandler,
   setEditorLng,
   startStandalone,
-  getVueI18nImplementation
+  getVueI18nImplementation,
+  isInContextRequested
 }
 
 export default {
@@ -41,6 +43,7 @@ export default {
   setEditorLng,
   startStandalone,
   getVueI18nImplementation,
+  isInContextRequested,
   turnOn,
   turnOff
 }

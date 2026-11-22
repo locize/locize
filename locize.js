@@ -4357,6 +4357,7 @@
     setEditorLng: setEditorLng,
     startStandalone: startStandalone,
     getVueI18nImplementation: getImplementation$1,
+    isInContextRequested: isInContextRequested,
     turnOn: turnOn,
     turnOff: turnOff
   };
@@ -4366,6 +4367,7 @@
   exports.containsHiddenMeta = containsHiddenMeta;
   exports["default"] = index;
   exports.getVueI18nImplementation = getImplementation$1;
+  exports.isInContextRequested = isInContextRequested;
   exports.locizeEditorPlugin = locizeEditorPlugin;
   exports.locizePlugin = locizePlugin;
   exports.setEditorLng = setEditorLng;

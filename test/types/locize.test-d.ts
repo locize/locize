@@ -12,7 +12,8 @@ import {
   unwrap,
   containsHiddenMeta,
   PostProcessor,
-  startStandalone
+  startStandalone,
+  isInContextRequested
 } from '../../index'
 
 expectType<void>(turnOn())
@@ -33,3 +34,6 @@ i18next.use(PostProcessor).init()
 expectType<void>(startStandalone())
 expectType<void>(startStandalone({ ribbonPosition: 'bottom-right' }))
 expectType<void>(startStandalone({ shadowDOM: true }))
+
+expectType<boolean>(isInContextRequested())
+expectType<boolean>(isInContextRequested('myParam'))
