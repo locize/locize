@@ -1,3 +1,7 @@
+### 4.7.1
+
+- fix: with i18next's `fallbackLng` as an object with a string under `default`, such as `fallbackLng: { default: 'en' }`, the editor took the whole object as the source language instead of `'en'`. The source language was then listed among the target languages, "Add project" in the InContext view could not use it, and the source text of the keys shown was looked up under `[object Object]`. An array under `default` was already read correctly.
+
 ### 4.7.0
 
 - feat: `isInContextRequested(qsProp?)` is exported. It is the check the plugin and `startStandalone` use to decide whether the editor starts: `?incontext=true` (or your `qsProp`) in the url now or earlier in the same browser tab, `?incontext=false` forgets it. A setup that decides this itself, because it marks its own texts for the editor before starting it with `show: true` (vue-i18n, for example), had to read the url on its own and so lost the editor on the next page load in the tab, which 4.6.0 fixed only for the plugin and for `startStandalone` without `show: true`. The helper covers the url only; a page shown inside the InContext view of Locize (an iframe) still needs its own `self !== top` check, as the README shows. Typed in `index.d.ts`/`index.d.mts`; false on the server.

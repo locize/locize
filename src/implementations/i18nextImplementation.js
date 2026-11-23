@@ -21,13 +21,14 @@ export function getImplementation (i18n) {
         i18n.options.lng
       )
     },
+    // sister copy: i18next-editor packages/i18next-plugin/src/i18nextPlugin.js
     getSourceLng: () => {
       const fallback = i18n.options.fallbackLng
       if (typeof fallback === 'string') return fallback
       if (Array.isArray(fallback)) return fallback[fallback.length - 1]
 
       if (fallback && fallback.default) {
-        if (typeof fallback.default === 'string') return fallback
+        if (typeof fallback.default === 'string') return fallback.default
         if (Array.isArray(fallback.default)) { return fallback.default[fallback.default.length - 1] }
       }
 
