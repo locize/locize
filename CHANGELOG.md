@@ -7,6 +7,7 @@
 - fix: editing an attribute translation (`title`, `placeholder`, `alt`, also through `data-i18n="[title]key"`) did not show on the page: the parser names the type after the attribute, the edit only handled an `attr:` prefix nothing sets. Only these attributes, the ones the editor reads, are written.
 - fix: an edited text could be marked with the key of an attribute of the same element (the element kept only the last marker it saw), so the next parse tied the text to the wrong key. Markers are kept per type now.
 - fix: a second `init()` of the same i18next instance (a re-init, a hot reload) added the post-processor a second time, so every text was wrapped twice, and started a second set of observers and page listeners. The post-processor is added once and the page is set up once now; a later `init()` only hands the editor its instance.
+- chore: the demo and the type tests use i18next 27.2.9.
 
 ### 4.7.1
 
