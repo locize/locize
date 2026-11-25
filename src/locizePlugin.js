@@ -6,13 +6,11 @@ import * as implementations from './implementations/index.js'
 function configurePostProcessor (i18next, options) {
   i18next.use(PostProcessor)
 
-  if (typeof options.postProcess === 'string') {
-    options.postProcess = [options.postProcess, 'subliminal']
-  } else if (Array.isArray(options.postProcess)) {
-    options.postProcess.push('subliminal')
-  } else {
-    options.postProcess = 'subliminal'
-  }
+  // once: a second init() of the instance keeps its options, and a second entry wraps every text twice
+  const list = typeof options.postProcess === 'string'
+    ? [options.postProcess]
+    : Array.isArray(options.postProcess) ? options.postProcess : []
+  if (!list.includes('subliminal')) options.postProcess = [...list, 'subliminal']
 
   options.postProcessPassResolved = true
 }

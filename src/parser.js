@@ -1,5 +1,6 @@
 import {
   unwrap,
+  unwrapAll,
   containsHiddenMeta,
   containsHiddenStartMarker
 } from 'i18next-subliminal'
@@ -166,6 +167,8 @@ function handleNode (node) {
 
   const nodeI18nMeta = getI18nMetaFromNode(node)
   let usedSubliminalForText = false
+  // translated texts directly in this element: 'text', then 'text#2', 'text#3'...
+  let textCount = 0
 
   // test for inner text - but ignore text for elements merged to html containing translation
   if (node.childNodes && !ignoreMergedEleUniqueIds.includes(node.uniqueID)) {
@@ -184,10 +187,25 @@ function handleNode (node) {
       // Trim whitespace for subliminal marker detection — Angular/framework
       // templates add leading/trailing whitespace around interpolated text
       const trimmedTxt = txt.trim()
-      const hasHiddenMeta = containsHiddenMeta(trimmedTxt)
+      const segments = unwrapAll(txt)
       const hasHiddenStartMarker = containsHiddenStartMarker(trimmedTxt)
+      // Decided by where the translations in this node start. One without
+      // its start marker here is the end of a translation begun in an
+      // earlier node; a start marker at the beginning whose translation does
+      // not end here begins one that spans several nodes (Trans, html), and
+      // the translations inside it (a translated value) belong to it.
+      const leading = txt.length - txt.trimStart().length
+      const endsEarlier = segments.some(s => !containsHiddenStartMarker(txt.slice(s.start).trimStart()))
+      const beginsSpanning = hasHiddenStartMarker && !segments.some(s => s.start <= leading)
+      const closesMerge = merge.length > 0 && endsEarlier
+      // Whole translations, also with text after them (`{{ t('name') }}:`).
+      // Inside a spanning translation only a node that is one whole
+      // translation, as before.
+      const isText = merge.length
+        ? !endsEarlier && hasHiddenStartMarker && containsHiddenMeta(trimmedTxt)
+        : segments.length > 0 && !beginsSpanning
 
-      if (hasHiddenMeta) usedSubliminalForText = true
+      if (segments.length) usedSubliminalForText = true
 
       // console.warn(
       //   'child',
@@ -195,63 +213,41 @@ function handleNode (node) {
       //   child.nodeName,
       //   child.innerText,
       //   hasHiddenStartMarker,
-      //   hasHiddenMeta
+      //   segments
       // )
 
-      if (hasHiddenStartMarker && hasHiddenMeta) {
-        const meta = unwrap(trimmedTxt)
-
-        uninstrumentedStore.remove(node.uniqueID) // might be instrumented later and already in uninstrumentedStore - so remove it there first
-        store.save(
-          node.uniqueID,
-          meta.invisibleMeta,
-          'text',
-          extractHiddenMeta(node.uniqueID, 'text', meta),
-          node
-        )
-      } else if (hasHiddenMeta && !merge.length) {
-        // End marker found in the text node but the start marker
-        // isn't at the beginning AND we're not already in a merge.
-        // This happens when a framework's template compiler collapses
-        // a literal-text prefix + dynamic `{{ t('...') }}` into a
-        // single text node, e.g. Vue's `<a>→ {{ t('goto.second') }}</a>`
-        // renders as one text node "→ ‌…Go to second page…‌".
-        // `containsHiddenStartMarker` uses `text.startsWith(marker)` so
-        // the prefix shifts the start marker off position-0 and the
-        // existing case-A check fails. `unwrap` can still decode the
-        // meta from anywhere in the string, so we can store the parent
-        // element as a translation segment — the editor's highlight
-        // covers the whole parent (prefix and all), which matches what
-        // a translator would expect to click on.
+      if (isText) {
+        // The text node holds one or more whole translations: its own
+        // text, or a framework's template compiler joined a literal prefix
+        // or several interpolations into one text node (Vue's
+        // `<a>→ {{ t('goto.second') }}</a>`, `{{ t('a') }} {{ t('b') }}` in
+        // Vue or Angular). Every translation gets its own key, so each
+        // shows in the ribbon and a live edit replaces only its own text.
         //
         // Safe against regressions in other frameworks because:
         //   - i18next + React Trans: produces separate text nodes per
-        //     segment (no prefix-merge), case A keeps firing.
-        //   - Angular / ngx-translate pipe: dynamic value is the whole
-        //     text node, case A keeps firing.
+        //     segment, each one whole here.
         //   - vue-i18n split-marker (i18n-t component with slots): the
-        //     first text starts with a start marker, lands in case B
-        //     (merge), so `merge.length` is > 0 by the time we see the
-        //     end marker — the new branch's `!merge.length` guard
-        //     short-circuits, case D still closes the merge as 'html'.
-        //   - Stray invisible chars from other sources: `containsHiddenMeta`
-        //     requires the last 9 chars to decode to '}', which only
-        //     happens for an actual i18next-subliminal end marker.
-        const meta = unwrap(trimmedTxt)
-
-        uninstrumentedStore.remove(node.uniqueID)
-        store.save(
-          node.uniqueID,
-          meta.invisibleMeta,
-          'text',
-          extractHiddenMeta(node.uniqueID, 'text', meta),
-          node
-        )
-      } else if (hasHiddenStartMarker) {
-        merge.push({ childIndex: i, child, text: txt })
-      } else if (merge.length && !hasHiddenMeta) {
-        merge.push({ childIndex: i, child, text: txt })
-      } else if (merge.length && hasHiddenMeta) {
+        //     first text starts with a start marker but no end marker and
+        //     opens a merge, so `merge.length` is > 0 by the time the end
+        //     marker comes; the merge then closes as 'html' below.
+        //   - Stray invisible chars from other sources: `unwrapAll` only
+        //     returns a translation whose end marker carries a readable key.
+        uninstrumentedStore.remove(node.uniqueID) // might be instrumented later and already in uninstrumentedStore - so remove it there first
+        segments.forEach((segment, index) => {
+          textCount++
+          const type = textCount === 1 ? 'text' : `text#${textCount}`
+          store.save(
+            node.uniqueID,
+            segment.invisibleMeta,
+            type,
+            extractHiddenMeta(node.uniqueID, type, segment),
+            node,
+            undefined,
+            { node: child, index }
+          )
+        })
+      } else if (closesMerge) {
         merge.push({ childIndex: i, child, text: txt })
 
         const meta = unwrap(
@@ -272,8 +268,14 @@ function handleNode (node) {
 
         // reset
         merge = []
+      } else if (beginsSpanning || merge.length) {
+        // begins a translation that spans several nodes, or is part of one
+        merge.push({ childIndex: i, child, text: txt })
       }
     })
+
+    // translations this element no longer has (the editor may still name them by type)
+    store.trimTexts(node.uniqueID, textCount)
 
     // no subliminal in text
     if (!usedSubliminalForText) {

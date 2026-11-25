@@ -84,6 +84,16 @@
   </div>
 
   <hr />
+  <div id="multi-text-test">
+    <h4>Several translations in one element:</h4>
+    <p>The first line is one text node holding two translations (Vue and Angular join adjacent interpolations like this). The second has two translations in separate text nodes around a plain link, and a title attribute. Each translation is its own key in the ribbon (text, text#2, title); editing one changes only that one, the link stays.</p>
+    <p id="mt-one-node">loading...</p>
+    <p id="mt-two-nodes"></p>
+    <p>A translation followed by plain text in the same text node, then a translated child (Vue's <code>&lt;label&gt;{{ t('name') }}:&lt;/label&gt;</code>): both are keys.</p>
+    <p id="mt-suffix">loading...</p>
+  </div>
+
+  <hr />
   <div id="modal-test">
     <h4>Modal overlay test (occlusion detection):</h4>
     <p>Click the button to open a modal. Text behind the modal should NOT be highlighted by the InContext editor.</p>
@@ -289,6 +299,25 @@
       // Text with leading whitespace (simulates Angular template indentation)
       document.getElementById('tc-whitespace-text').firstChild.data = '\n    ' + i18next.t('title') + '\n  '
       console.log('textContent test: updated existing text nodes via .data (characterData mutation, no data-i18n)')
+    }, 2000)
+
+    // several translations in one element: joined in one text node, and split around a link
+    setTimeout(function () {
+      document.getElementById('mt-one-node').firstChild.data =
+        i18next.t('common:button.hoverMe') + ' / ' + i18next.t('common:button.clickMe')
+      var two = document.getElementById('mt-two-nodes')
+      two.title = i18next.t('test.title')
+      two.appendChild(document.createTextNode(i18next.t('title') + ' '))
+      var link = document.createElement('a')
+      link.href = '#'
+      link.textContent = '(a plain link)'
+      two.appendChild(link)
+      two.appendChild(document.createTextNode(' ' + i18next.t('common:button.clickMeInner')))
+      var suffix = document.getElementById('mt-suffix')
+      suffix.firstChild.data = i18next.t('test.title') + ': '
+      var bold = document.createElement('b')
+      bold.textContent = i18next.t('test.alt')
+      suffix.appendChild(bold)
     }, 2000)
 
     // Orphaned highlight boxes: remove a node WHILE it is highlighted, without

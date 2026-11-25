@@ -10,6 +10,7 @@ import {
   addLocizeSavedHandler,
   wrap,
   unwrap,
+  unwrapAll,
   containsHiddenMeta,
   PostProcessor,
   startStandalone,
@@ -26,7 +27,8 @@ expectType<void>(setEditorLng('en'))
 expectType<void>(addLocizeSavedHandler((data) => {}))
 
 expectType<string>(wrap('text', { key: 'some.key' }))
-expectType<string>(unwrap('text'))
+expectType<string>(unwrap('text').text)
+expectType<string | undefined>(unwrapAll('text')[0]?.invisibleMeta?.key)
 expectType<boolean>(containsHiddenMeta('text'))
 
 i18next.use(PostProcessor).init()

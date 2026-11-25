@@ -6,6 +6,7 @@ import { isInContextRequested } from './utils.js'
 import {
   wrap,
   unwrap,
+  unwrapAll,
   containsHiddenMeta,
   PostProcessor
 } from 'i18next-subliminal'
@@ -21,6 +22,7 @@ export function turnOff () {
 export {
   wrap,
   unwrap,
+  unwrapAll,
   containsHiddenMeta,
   PostProcessor,
   locizePlugin,
@@ -35,6 +37,7 @@ export {
 export default {
   wrap,
   unwrap,
+  unwrapAll,
   containsHiddenMeta,
   PostProcessor,
   addLocizeSavedHandler,

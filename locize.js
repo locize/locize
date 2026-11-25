@@ -4,6 +4,36 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.locize = {}));
 })(this, (function (exports) { 'use strict';
 
+  function _arrayLikeToArray$1(r, a) {
+    (null == a || a > r.length) && (a = r.length);
+    for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+    return n;
+  }
+
+  function _arrayWithoutHoles(r) {
+    if (Array.isArray(r)) return _arrayLikeToArray$1(r);
+  }
+
+  function _iterableToArray(r) {
+    if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r);
+  }
+
+  function _unsupportedIterableToArray$1(r, a) {
+    if (r) {
+      if ("string" == typeof r) return _arrayLikeToArray$1(r, a);
+      var t = {}.toString.call(r).slice(8, -1);
+      return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray$1(r, a) : void 0;
+    }
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  function _toConsumableArray(r) {
+    return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray$1(r) || _nonIterableSpread();
+  }
+
   function _typeof(o) {
     "@babel/helpers - typeof";
 
@@ -39,67 +69,140 @@
     }) : e[r] = t, e;
   }
 
-  var isBrowser = typeof window !== 'undefined';
-  var INVISIBLE_CHARACTERS = isBrowser ? ["\u200C", "\u200D"] : ["\u200B", "\u200C"];
-  var INVISIBLE_REGEX = RegExp("([".concat(INVISIBLE_CHARACTERS.join(''), "]{9})+"), 'gu');
-  var TEMPLATE_MINIMUM_LENGTH = '{"k":"a"}'.length;
-  var invisibleStartMarker = 'subliminal:start';
-  var toBytes = function toBytes(text) {
-    return Array.from(new TextEncoder().encode(text));
+  function _arrayWithHoles(r) {
+    if (Array.isArray(r)) return r;
+  }
+
+  function _iterableToArrayLimit(r, l) {
+    var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+    if (null != t) {
+      var e,
+        n,
+        i,
+        u,
+        a = [],
+        f = !0,
+        o = !1;
+      try {
+        if (i = (t = t.call(r)).next, 0 === l) {
+          if (Object(t) !== t) return;
+          f = !1;
+        } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0);
+      } catch (r) {
+        o = !0, n = r;
+      } finally {
+        try {
+          if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return;
+        } finally {
+          if (o) throw n;
+        }
+      }
+      return a;
+    }
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  function _slicedToArray(r, e) {
+    return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray$1(r, e) || _nonIterableRest();
+  }
+
+  function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: true } : { done: false, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = true, u = false; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = true, o = r; }, f: function f() { try { a || null == t.return || t.return(); } finally { if (u) throw o; } } }; }
+  function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+  function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+  var FRAME = "\u2060";
+  var DIGITS = ["\u2061", "\u2062", "\u2063", "\u2064"];
+  var START_MARKER = FRAME + DIGITS[0] + FRAME;
+  var MARKER_SOURCE = "\u2060([\u2061-\u2064]+)\u2060";
+  var END_MARKER_AT_END = /\u2060(?:[\u2061-\u2064]{4})+\u2060$/;
+  var MARKERS = new RegExp(MARKER_SOURCE, 'g');
+  var SOURCE_CODES = {
+    translation: 't',
+    default: 'd',
+    key: 'k'
   };
-  var fromBytes = function fromBytes(bytes) {
+  var SOURCE_NAMES = {
+    t: 'translation',
+    d: 'default',
+    k: 'key'
+  };
+  var has = function has(map, name) {
+    return Object.prototype.hasOwnProperty.call(map, name);
+  };
+  var stringOrUndefined = function stringOrUndefined(value) {
+    return typeof value === 'string' && value || undefined;
+  };
+  var encodeMeta = function encodeMeta() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+      key = _ref.key,
+      ns = _ref.ns,
+      lng = _ref.lng,
+      source = _ref.source;
+    var bytes = new TextEncoder().encode(JSON.stringify([key, ns, lng, has(SOURCE_CODES, source) ? SOURCE_CODES[source] : source]));
+    var digits = '';
+    var _iterator = _createForOfIteratorHelper(bytes),
+      _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var byte = _step.value;
+        digits += DIGITS[byte >> 6] + DIGITS[byte >> 4 & 3] + DIGITS[byte >> 2 & 3] + DIGITS[byte & 3];
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+    return FRAME + digits + FRAME;
+  };
+  var decodeMeta = function decodeMeta(digits) {
+    if (digits.length % 4) return;
+    var bytes = new Uint8Array(digits.length / 4);
+    for (var i = 0; i < digits.length; i++) {
+      bytes[i >> 2] = bytes[i >> 2] * 4 + digits.charCodeAt(i) - 0x2061;
+    }
+    var parsed;
+    try {
+      parsed = JSON.parse(new TextDecoder().decode(bytes));
+    } catch (e) {
+      return;
+    }
+    if (!Array.isArray(parsed)) return;
+    var _parsed = parsed,
+      _parsed2 = _slicedToArray(_parsed, 4),
+      key = _parsed2[0],
+      ns = _parsed2[1],
+      lng = _parsed2[2],
+      source = _parsed2[3];
+    return {
+      key: stringOrUndefined(key),
+      ns: stringOrUndefined(ns),
+      lng: stringOrUndefined(lng),
+      source: has(SOURCE_NAMES, source) ? SOURCE_NAMES[source] : stringOrUndefined(source)
+    };
+  };
+  var LEGACY_CHARACTERS = ["\u200C", "\u200D"];
+  var LEGACY_RUNS = /(?:[\u200C\u200D]{9})+/g;
+  var LEGACY_START_MARKER = Array.from(new TextEncoder().encode('subliminal:start')).map(function (byte) {
+    return byte.toString(2).padStart(8, '0') + '0';
+  }).join('').replace(/[01]/g, function (bit) {
+    return LEGACY_CHARACTERS[bit];
+  });
+  var decodeLegacy = function decodeLegacy(run) {
+    var bytes = [];
+    for (var i = 0; i + 9 <= run.length; i += 9) {
+      bytes.push(parseInt(Array.from(run.slice(i, i + 8), function (c) {
+        return LEGACY_CHARACTERS.indexOf(c);
+      }).join(''), 2));
+    }
     return new TextDecoder().decode(new Uint8Array(bytes));
   };
-  var padToWholeBytes = function padToWholeBytes(binary) {
-    var needsToAdd = 8 - binary.length;
-    return '0'.repeat(needsToAdd) + binary;
-  };
-  var encodeMessage = function encodeMessage(text) {
-    var bytes = toBytes(text).map(Number);
-    var binary = bytes.map(function (byte) {
-      return padToWholeBytes(byte.toString(2)) + '0';
-    }).join('');
-    var result = Array.from(binary).map(function (b) {
-      return INVISIBLE_CHARACTERS[Number(b)];
-    }).join('');
-    return result;
-  };
-  var encodedInvisibleStartMarker = encodeMessage(invisibleStartMarker) ;
-  var decodeMessage = function decodeMessage(message) {
-    var binary = Array.from(message).map(function (character) {
-      return INVISIBLE_CHARACTERS.indexOf(character);
-    }).map(String).join('');
-    var textBytes = binary.match(/(.{9})/g);
-    var codes = Uint8Array.from((textBytes === null || textBytes === void 0 ? void 0 : textBytes.map(function (byte) {
-      return parseInt(byte.slice(0, 8), 2);
-    })) || []);
-    return fromBytes(codes);
-  };
-  var decodeFromText = function decodeFromText(text) {
-    var _text$match;
-    var invisibleMessages = (_text$match = text.match(INVISIBLE_REGEX)) === null || _text$match === void 0 ? void 0 : _text$match.filter(function (m) {
-      return m.length > TEMPLATE_MINIMUM_LENGTH - 1;
-    });
-    if (!invisibleMessages || invisibleMessages.length === 0) return;
-    return decodeMessage(invisibleMessages[invisibleMessages.length - 1]);
-  };
-  var removeInvisibles = function removeInvisibles(text) {
-    return text.replace(INVISIBLE_REGEX, '');
-  };
-  var encodeValue = function encodeValue(data) {
-    if (Object.keys(data).length === 0) return data;
-    var value = {
-      k: data.key,
-      n: data.ns,
-      l: data.lng,
-      s: data.source
-    };
-    return JSON.stringify(value);
-  };
-  var decodeValue = function decodeValue(value) {
-    if (!value || typeof value !== 'string' || value.indexOf('{') !== 0) return;
+  var legacyMeta = function legacyMeta(text) {
+    var runs = text.match(LEGACY_RUNS);
+    if (!runs) return;
     try {
-      var parsed = JSON.parse(value || '{}');
+      var parsed = JSON.parse(decodeLegacy(runs[runs.length - 1]));
       return {
         key: parsed.k,
         ns: parsed.n,
@@ -110,30 +213,70 @@
       return undefined;
     }
   };
+  var containsLegacyMeta = function containsLegacyMeta(text) {
+    return text.length >= 27 && /[\u200C\u200D]{9}$/.test(text) && decodeLegacy(text.slice(-9)) === '}';
+  };
+  var removeInvisibles = function removeInvisibles(text) {
+    return text.replace(MARKERS, '').replace(LEGACY_RUNS, '');
+  };
   function wrap(text) {
     var invisibleMeta = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var encodedValue = encodeValue(invisibleMeta);
-    var invisibleMark = encodeMessage(encodedValue);
-    return typeof text === 'string' && text ? encodedInvisibleStartMarker + text + invisibleMark : text;
+    return typeof text === 'string' && text ? START_MARKER + text + encodeMeta(invisibleMeta) : text;
+  }
+  function unwrapAll(text) {
+    if (typeof text !== 'string') return [];
+    var segments = [];
+    var starts = [];
+    var from = 0;
+    var markers = new RegExp(MARKER_SOURCE, 'g');
+    var match;
+    while (match = markers.exec(text)) {
+      if (match[1].length === 1) {
+        starts.push(match.index);
+        continue;
+      }
+      var invisibleMeta = decodeMeta(match[1]);
+      if (!invisibleMeta) continue;
+      var start = starts.length ? starts.pop() : from;
+      var end = match.index + match[0].length;
+      segments.push({
+        text: removeInvisibles(text.slice(start, match.index)),
+        invisibleMeta: invisibleMeta,
+        start: start,
+        end: end
+      });
+      from = end;
+    }
+    if (!segments.length) {
+      var _invisibleMeta = legacyMeta(text);
+      if (_invisibleMeta) segments.push({
+        text: removeInvisibles(text),
+        invisibleMeta: _invisibleMeta,
+        start: 0,
+        end: text.length
+      });
+    }
+    return segments;
   }
   function unwrap(text) {
-    var encodedValue = decodeFromText(text);
-    var decodedVal = decodeValue(encodedValue);
-    var result = removeInvisibles(text);
+    if (typeof text !== 'string') return {
+      text: text,
+      invisibleMeta: undefined
+    };
+    var segments = unwrapAll(text);
+    var last = segments[segments.length - 1];
     return {
-      text: result,
-      invisibleMeta: decodedVal
+      text: removeInvisibles(text),
+      invisibleMeta: last && last.invisibleMeta
     };
   }
   function containsHiddenMeta(text) {
-    if (!text || text.length < 27) return false;
-    if (!INVISIBLE_REGEX.test(text)) return false;
-    var lastByte = text.substring(text.length - 9);
-    var lastChar = decodeMessage(lastByte);
-    return lastChar === '}';
+    if (!text || typeof text !== 'string') return false;
+    return END_MARKER_AT_END.test(text) || containsLegacyMeta(text);
   }
   function containsHiddenStartMarker(text) {
-    return text.startsWith(encodedInvisibleStartMarker);
+    if (!text || typeof text !== 'string') return false;
+    return text.startsWith(START_MARKER) || text.startsWith(LEGACY_START_MARKER);
   }
 
   function ownKeys$7(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -144,10 +287,10 @@
     type: 'postProcessor',
     options: {},
     setOptions: function setOptions(options) {
-      this.options = _objectSpread$7(_objectSpread$7({}, options), this.options);
+      this.options = _objectSpread$7(_objectSpread$7({}, this.options), options);
     },
     process: function process(value, keyIn, options, translator) {
-      var opt = this.options = _objectSpread$7(_objectSpread$7({}, options), this.options);
+      var opt = _objectSpread$7(_objectSpread$7({}, this.options), options);
       var key, ns, lng, source;
       if (options.i18nResolved) {
         key = options.i18nResolved.exactUsedKey;
@@ -168,7 +311,7 @@
           namespaces = _translator$extractFr.namespaces;
         key = extractedKey;
         ns = (_ref2 = (_namespaces$ = namespaces === null || namespaces === void 0 ? void 0 : namespaces[0]) !== null && _namespaces$ !== void 0 ? _namespaces$ : opt.ns) !== null && _ref2 !== void 0 ? _ref2 : translator === null || translator === void 0 || (_translator$options2 = translator.options) === null || _translator$options2 === void 0 ? void 0 : _translator$options2.defaultNS;
-        lng = options.lng || this.language;
+        lng = options.lng || (translator === null || translator === void 0 ? void 0 : translator.language);
         if (key === value) {
           source = 'key';
         } else {
@@ -220,60 +363,6 @@
     document.head.appendChild(style);
     return style.sheet;
   }();
-
-  function _arrayWithHoles(r) {
-    if (Array.isArray(r)) return r;
-  }
-
-  function _iterableToArrayLimit(r, l) {
-    var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
-    if (null != t) {
-      var e,
-        n,
-        i,
-        u,
-        a = [],
-        f = !0,
-        o = !1;
-      try {
-        if (i = (t = t.call(r)).next, 0 === l) {
-          if (Object(t) !== t) return;
-          f = !1;
-        } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0);
-      } catch (r) {
-        o = !0, n = r;
-      } finally {
-        try {
-          if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return;
-        } finally {
-          if (o) throw n;
-        }
-      }
-      return a;
-    }
-  }
-
-  function _arrayLikeToArray(r, a) {
-    (null == a || a > r.length) && (a = r.length);
-    for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
-    return n;
-  }
-
-  function _unsupportedIterableToArray(r, a) {
-    if (r) {
-      if ("string" == typeof r) return _arrayLikeToArray(r, a);
-      var t = {}.toString.call(r).slice(8, -1);
-      return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
-    }
-  }
-
-  function _nonIterableRest() {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-
-  function _slicedToArray(r, e) {
-    return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest();
-  }
 
   function debounce(func, wait, immediate) {
     var timeout;
@@ -762,11 +851,19 @@
   function setValueOnNode(meta, value) {
     var item = store.get(meta.eleUniqueID);
     if (!item || !item.keys[meta.textType]) return;
-    var txtWithHiddenMeta = item.subliminal ? wrap(value, item.subliminal) : value;
-    if (meta.textType === 'text') {
+    if (meta.qualifiedKey && item.keys[meta.textType].qualifiedKey !== meta.qualifiedKey) return;
+    var subliminal = item.subliminals && item.subliminals[meta.textType];
+    var txtWithHiddenMeta = subliminal ? wrap(value, subliminal) : value;
+    var textTarget = item.textTargets && item.textTargets[meta.textType];
+    if (textTarget) {
+      var text = textTarget.node.nodeValue || '';
+      var segment = unwrapAll(text)[textTarget.index];
+      if (segment) textTarget.node.nodeValue = text.slice(0, segment.start) + txtWithHiddenMeta + text.slice(segment.end);
+    } else if (meta.textType === 'text') {
       item.node.textContent = txtWithHiddenMeta;
-    } else if (meta.textType.indexOf('attr:') === 0) {
-      var attr = meta.textType.replace('attr:', '');
+    } else if (meta.textType !== 'html') {
+      var attr = meta.textType;
+      if (!validAttributes.includes(attr)) return;
       if (!isSafeAttributeWrite(attr, txtWithHiddenMeta)) return;
       item.node.setAttribute(attr, txtWithHiddenMeta);
     } else if (meta.textType === 'html') {
@@ -826,22 +923,6 @@
     }
   }
   api.addHandler('commitKey', handler$7);
-
-  function _arrayWithoutHoles(r) {
-    if (Array.isArray(r)) return _arrayLikeToArray(r);
-  }
-
-  function _iterableToArray(r) {
-    if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r);
-  }
-
-  function _nonIterableSpread() {
-    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-
-  function _toConsumableArray(r) {
-    return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread();
-  }
 
   function handler$6(payload) {
     var updated = payload.updated;
@@ -3496,21 +3577,36 @@
       }
     });
   }
-  function save(id, subliminal, type, meta, node, children) {
+  function save(id, subliminal, type, meta, node, children, textTarget) {
     if (!id || !type || !meta || !node) return;
     if (!data$1[id]) {
       data$1[id] = {
         id: id,
-        node: node,
-        subliminal: subliminal
+        node: node
       };
     }
-    if (subliminal) data$1[id].subliminal = subliminal;
+    if (subliminal) data$1[id].subliminals = _objectSpread$3(_objectSpread$3({}, data$1[id].subliminals), {}, _defineProperty({}, "".concat(type), subliminal));
+    if (textTarget) data$1[id].textTargets = _objectSpread$3(_objectSpread$3({}, data$1[id].textTargets), {}, _defineProperty({}, "".concat(type), textTarget));
     data$1[id].keys = _objectSpread$3(_objectSpread$3({}, data$1[id].keys), {}, _defineProperty({}, "".concat(type), meta));
     if (children) {
       data$1[id].children = _objectSpread$3(_objectSpread$3({}, data$1[id].children), {}, _defineProperty({}, "".concat(type, "-").concat(children.map(function (c) {
         return c.childIndex;
       }).join(',')), children));
+    }
+  }
+  function trimTexts(id, count) {
+    var item = data$1[id];
+    if (!item || !item.textTargets) return;
+    Object.keys(item.textTargets).forEach(function (type) {
+      var position = type === 'text' ? 1 : parseInt(type.slice('text#'.length), 10);
+      if (position <= count) return;
+      delete item.textTargets[type];
+      if (item.subliminals) delete item.subliminals[type];
+      delete item.keys[type];
+    });
+    if (!Object.keys(item.keys).length) {
+      resetHighlight(item, item.node, item.keys, false);
+      delete data$1[id];
     }
   }
   function get(id) {
@@ -3519,6 +3615,7 @@
   var store = {
     save: save,
     clean: clean,
+    trimTexts: trimTexts,
     get: get,
     data: data$1
   };
@@ -3642,6 +3739,7 @@
     if (ignoreElements.indexOf(node.nodeName) > -1) return;
     var nodeI18nMeta = getI18nMetaFromNode(node);
     var usedSubliminalForText = false;
+    var textCount = 0;
     if (node.childNodes && !ignoreMergedEleUniqueIds.includes(node.uniqueID)) {
       var merge = [];
       node.childNodes.forEach(function (child, i) {
@@ -3656,43 +3754,49 @@
         var txt = child.textContent;
         if (containsOnlySpaces(txt)) return;
         var trimmedTxt = txt.trim();
-        var hasHiddenMeta = containsHiddenMeta(trimmedTxt);
+        var segments = unwrapAll(txt);
         var hasHiddenStartMarker = containsHiddenStartMarker(trimmedTxt);
-        if (hasHiddenMeta) usedSubliminalForText = true;
-        if (hasHiddenStartMarker && hasHiddenMeta) {
-          var meta = unwrap(trimmedTxt);
+        var leading = txt.length - txt.trimStart().length;
+        var endsEarlier = segments.some(function (s) {
+          return !containsHiddenStartMarker(txt.slice(s.start).trimStart());
+        });
+        var beginsSpanning = hasHiddenStartMarker && !segments.some(function (s) {
+          return s.start <= leading;
+        });
+        var closesMerge = merge.length > 0 && endsEarlier;
+        var isText = merge.length ? !endsEarlier && hasHiddenStartMarker && containsHiddenMeta(trimmedTxt) : segments.length > 0 && !beginsSpanning;
+        if (segments.length) usedSubliminalForText = true;
+        if (isText) {
           uninstrumentedStore.remove(node.uniqueID);
-          store.save(node.uniqueID, meta.invisibleMeta, 'text', extractHiddenMeta(node.uniqueID, 'text', meta), node);
-        } else if (hasHiddenMeta && !merge.length) {
-          var _meta = unwrap(trimmedTxt);
-          uninstrumentedStore.remove(node.uniqueID);
-          store.save(node.uniqueID, _meta.invisibleMeta, 'text', extractHiddenMeta(node.uniqueID, 'text', _meta), node);
-        } else if (hasHiddenStartMarker) {
+          segments.forEach(function (segment, index) {
+            textCount++;
+            var type = textCount === 1 ? 'text' : "text#".concat(textCount);
+            store.save(node.uniqueID, segment.invisibleMeta, type, extractHiddenMeta(node.uniqueID, type, segment), node, undefined, {
+              node: child,
+              index: index
+            });
+          });
+        } else if (closesMerge) {
           merge.push({
             childIndex: i,
             child: child,
             text: txt
           });
-        } else if (merge.length && !hasHiddenMeta) {
-          merge.push({
-            childIndex: i,
-            child: child,
-            text: txt
-          });
-        } else if (merge.length && hasHiddenMeta) {
-          merge.push({
-            childIndex: i,
-            child: child,
-            text: txt
-          });
-          var _meta2 = unwrap(merge.reduce(function (mem, item) {
+          var meta = unwrap(merge.reduce(function (mem, item) {
             return mem + item.text;
           }, ''));
           uninstrumentedStore.removeKey(node.uniqueID, 'html');
-          store.save(node.uniqueID, _meta2.invisibleMeta, 'html', extractHiddenMeta(node.uniqueID, 'html', _meta2, merge), node, merge);
+          store.save(node.uniqueID, meta.invisibleMeta, 'html', extractHiddenMeta(node.uniqueID, 'html', meta, merge), node, merge);
           merge = [];
+        } else if (beginsSpanning || merge.length) {
+          merge.push({
+            childIndex: i,
+            child: child,
+            text: txt
+          });
         }
       });
+      store.trimTexts(node.uniqueID, textCount);
       if (!usedSubliminalForText) {
         node.childNodes.forEach(function (child, i) {
           if (merge.length && child.nodeName !== '#text') {
@@ -4189,6 +4293,7 @@
   function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
   var dummyImplementation = getImplementation();
   var data = [];
+  var started = false;
   function start() {
     var implementation = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : dummyImplementation;
     var opt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
@@ -4216,6 +4321,8 @@
     });
     function continueToStart() {
       if (!isInIframe && !showInContext) return;
+      if (started) return;
+      started = true;
       var observer = createObserver(document.body, function (eles) {
         eles.forEach(function (ele) {
           data = parseTree(ele);
@@ -4302,13 +4409,8 @@
 
   function configurePostProcessor(i18next, options) {
     i18next.use(SubliminalPostProcessor);
-    if (typeof options.postProcess === 'string') {
-      options.postProcess = [options.postProcess, 'subliminal'];
-    } else if (Array.isArray(options.postProcess)) {
-      options.postProcess.push('subliminal');
-    } else {
-      options.postProcess = 'subliminal';
-    }
+    var list = typeof options.postProcess === 'string' ? [options.postProcess] : Array.isArray(options.postProcess) ? options.postProcess : [];
+    if (!list.includes('subliminal')) options.postProcess = [].concat(_toConsumableArray(list), ['subliminal']);
     options.postProcessPassResolved = true;
   }
   var i18next;
@@ -4349,6 +4451,7 @@
   var index = {
     wrap: wrap,
     unwrap: unwrap,
+    unwrapAll: unwrapAll,
     containsHiddenMeta: containsHiddenMeta,
     PostProcessor: SubliminalPostProcessor,
     addLocizeSavedHandler: addLocizeSavedHandler,
@@ -4375,6 +4478,7 @@
   exports.turnOff = turnOff;
   exports.turnOn = turnOn;
   exports.unwrap = unwrap;
+  exports.unwrapAll = unwrapAll;
   exports.wrap = wrap;
 
   Object.defineProperty(exports, '__esModule', { value: true });

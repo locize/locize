@@ -13,6 +13,7 @@ const dummyImplementation = implementations.dummy.getImplementation()
 
 // eslint-disable-next-line no-unused-vars
 let data = []
+let started = false
 
 export function start (
   implementation = dummyImplementation,
@@ -52,6 +53,10 @@ export function start (
   function continueToStart () {
     // don't show if not in iframe and no qs
     if (!isInIframe && !showInContext) return
+    // once per page: a second init() (another i18next instance, a re-init, a hot reload) only
+    // swaps the implementation above instead of adding observers and listeners twice
+    if (started) return
+    started = true
 
     const observer = createObserver(document.body, eles => {
       eles.forEach(ele => {

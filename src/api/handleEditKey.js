@@ -1,7 +1,8 @@
 /* global DOMParser */
-import { wrap } from 'i18next-subliminal'
+import { wrap, unwrapAll } from 'i18next-subliminal'
 import { api } from './postMessage.js'
 import { store } from '../store.js'
+import { validAttributes } from '../vars.js'
 
 // Attributes that are never legitimate translation targets. Event handlers
 // (on*) execute script; `style` allows CSS-exfil patterns; `href`/`src`
@@ -65,15 +66,29 @@ export function setValueOnNode (meta, value) {
 
   // check if we have an item and that item has same textType
   if (!item || !item.keys[meta.textType]) return
+  // the editor keeps the type it first saw for an element; when the element's translations changed
+  // since, that type can belong to another key now, and the edit must not land in that key's text
+  if (meta.qualifiedKey && item.keys[meta.textType].qualifiedKey !== meta.qualifiedKey) return
 
-  const txtWithHiddenMeta = item.subliminal
-    ? wrap(value, item.subliminal)
+  const subliminal = item.subliminals && item.subliminals[meta.textType]
+  const txtWithHiddenMeta = subliminal
+    ? wrap(value, subliminal)
     : value
 
-  if (meta.textType === 'text') {
+  const textTarget = item.textTargets && item.textTargets[meta.textType]
+  if (textTarget) {
+    // a translation inside a text node: replace just that one, the element's other texts and
+    // children stay
+    const text = textTarget.node.nodeValue || ''
+    const segment = unwrapAll(text)[textTarget.index]
+    if (segment) textTarget.node.nodeValue = text.slice(0, segment.start) + txtWithHiddenMeta + text.slice(segment.end)
+  } else if (meta.textType === 'text') {
+    // data-i18n="key": the element's whole text is the translation
     item.node.textContent = txtWithHiddenMeta
-  } else if (meta.textType.indexOf('attr:') === 0) {
-    const attr = meta.textType.replace('attr:', '')
+  } else if (meta.textType !== 'html') {
+    // an attribute: the parser names the type after it, and reads only these few
+    const attr = meta.textType
+    if (!validAttributes.includes(attr)) return
     // Drop writes to dangerous attribute names (event handlers, style) and
     // reject javascript:/data:/vbscript:/file: URLs on href/src/action/etc.
     if (!isSafeAttributeWrite(attr, txtWithHiddenMeta)) return
