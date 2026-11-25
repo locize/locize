@@ -1,6 +1,6 @@
 // const i18next = require('i18next');
-// const FsBackend = require('i18next-node-fs-backend');
-// const middleware = require('i18next-express-middleware');
+// const FsBackend = require('i18next-fs-backend');
+// const middleware = require('i18next-http-middleware');
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
